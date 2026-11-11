@@ -4,12 +4,18 @@
 
 ## 結構
 
-- [ ] 檔案路徑與 frontmatter 符合 SKILL.md 的規定
-- [ ] 八個 `##` 標題與 `template.md` 完全一致，順序正確
+- [ ] 檔案路徑與 frontmatter 符合 `SKILL.md` 的規定
+- [ ] 九個 `##` 標題與 `assets/template.md` 完全一致，順序正確
 - [ ] 所有 template 註解都已刪除
 - [ ] 「怎麼運作」結尾回答了「先想想」的問題
 - [ ] 「取捨與替代方案」有比較表與「什麼時候不該用」
 - [ ] 「常見坑」每個都有 症狀 → 原因 → 對策
+- [ ] 「快閃卡」有 5 到 10 張，每張都是 `<details>` 加 `<summary>`，`<summary>` 內沒有 Markdown 語法
+- [ ] 快閃卡至少涵蓋三種題型，判斷題至少 2 張，每張答案都能在本文找到依據
+
+## Markdown
+
+- [ ] 逐條符合 `references/markdown-lint.md`（特別是粗體緊貼全形標點、`<details>` 內的空行、角括號包反引號）
 
 ## 內容
 
@@ -18,11 +24,12 @@
 - [ ] 至少一張圖
 - [ ] 例子使用短網址服務（`ai` 領域用該軌道的貫穿例子），且版本與層級相符
 - [ ] 術語與 `docs/glossary.md` 一致，新術語已加入
+- [ ] 該領域有 `references/fields/<field>.md` 時，逐條符合其中規則
 - [ ] 沒有編造的連結、數字或事故
 
 ## 程式碼
 
-- [ ] `examples/...` 存在，且有測試
+- [ ] `playground/golang/...`（`ai` 領域為 `playground/python/...`）存在，且有測試
 - [ ] 文章中的片段與範例檔案內容一致
 - [ ] `go vet ./...` 與 `go test ./...` 通過；`ai` 領域則是 `uv run ruff check .` 與 `uv run pytest` 通過（或已註明未執行與原因）
 

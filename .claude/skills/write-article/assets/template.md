@@ -7,7 +7,7 @@ sidebar:
 
 <!--
   使用方式：複製本檔，填寫每個段落，寫完刪除所有註解。
-  八個 ## 標題一字不改、順序不變。
+  九個 ## 標題一字不改、順序不變。
 -->
 
 ## 先想想
@@ -35,7 +35,7 @@ sidebar:
 
 <!--
   原理與圖解。由淺到深，用 ### 子標題分步驟。
-  至少一張圖（格式見 style-guide.md 的「圖」）。
+  至少一張圖（格式見 references/style-guide.md 的「圖」）。
   結尾用一個段落回答「先想想」的問題，開頭寫「回到一開始的問題：」。
 -->
 
@@ -57,8 +57,24 @@ sidebar:
 
 <!--
   用 Go 動手做（`ai` 領域用 Python）。1 到 3 題，由易到難。
-  每題說明：目標、起始程式碼的位置（examples/...）、怎麼驗證做對了（例如哪個測試會通過）。
+  每題說明：目標、起始程式碼的位置（playground/golang/...，`ai` 領域為 playground/python/...）、怎麼驗證做對了（例如哪個測試會通過）。
   參考解答放在 <details><summary>參考解答</summary>…</details>。
+-->
+
+## 快閃卡
+
+<!--
+  5 到 10 張，涵蓋本文「是什麼」「為什麼存在」「怎麼運作」「取捨與替代方案」「常見坑」的核心概念。
+  寫法規則見 references/style-guide.md 的「快閃卡」。
+  每張一個 <details>：正面寫在 <summary> 裡（只用純文字或 HTML，不用 Markdown），
+  背面與 <summary> 之間、與 </details> 之間各空一行。例如：
+
+  <details>
+  <summary>https://a.com 和 https://a.com:443 是同源嗎？</summary>
+
+  是。https 的預設 port 是 443，明確寫出的預設 port 會被正規化，兩者的 scheme、host、port 都相同。
+
+  </details>
 -->
 
 ## 延伸閱讀

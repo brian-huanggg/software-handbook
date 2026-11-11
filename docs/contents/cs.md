@@ -132,6 +132,7 @@
 - [ ] DNS 怎麼解析一個網域
 - [ ] HTTP/1.1、HTTP/2、HTTP/3 的差異
 - [ ] TLS 與 HTTPS 怎麼保護連線
+- [x] Origin 與同源政策：瀏覽器怎麼劃出信任邊界（CORS 主線 1/3，接後端 1.4）→ [文章](../../site/src/content/docs/cs/n-network/n-4-application/same-origin-policy.md)
 - [ ] 代理、負載平衡、CDN 的角色
 - [ ] WebSocket 與長連線
 

@@ -96,6 +96,7 @@
 
 - [ ] XSS：反射、儲存、DOM 型與對應修補
 - [ ] CSRF：原理與 token／SameSite 修補
+- [x] CORS 錯誤設定：反射 Origin、`null` origin、搭配 credentials 讀取他人資料與修補（CORS 主線 3/3，承後端 1.4） → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/cors-misconfig.md)
 - [ ] SSRF：原理與出站控制修補
 
 ### 2.4 存取控制與認證

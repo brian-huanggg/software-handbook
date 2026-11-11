@@ -1,0 +1,17 @@
+# Cloudflare Workers static-assets deployment for the Starlight site.
+# There is no Worker script: Cloudflare serves the built files in ./dist directly.
+#
+#   pnpm build                  # astro build -> ./dist
+#   pnpm dlx wrangler deploy    # upload ./dist
+
+name = "software-handbook"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./dist"
+# Astro emits dist/404.html; serve it (with a 404 status) for unknown paths
+# instead of Cloudflare's default empty 404.
+not_found_handling = "404-page"
+# Astro builds /foo/ as foo/index.html, so redirect /foo -> /foo/ and serve
+# the index file. This is the default, stated here so the intent is visible.
+html_handling = "auto-trailing-slash"

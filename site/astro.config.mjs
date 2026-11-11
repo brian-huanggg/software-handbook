@@ -3,9 +3,11 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
 
+import ai from './src/sidebar/ai.ts';
 import backend from './src/sidebar/backend.ts';
 import cyber from './src/sidebar/cyber.ts';
 import devops from './src/sidebar/devops.ts';
+import testing from './src/sidebar/testing.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -29,6 +31,8 @@ export default defineConfig({
 					{ label: '後端', link: '/backend/', icon: 'seti:go', items: backend },
 					{ label: '維運', link: '/devops/', icon: 'rocket', items: devops },
 					{ label: '資安', link: '/cyber/', icon: 'warning', items: cyber },
+					{ label: '測試', link: '/testing/', icon: 'approve-check', items: testing },
+					{ label: 'AI', link: '/ai/', icon: 'puzzle', items: ai },
 				]),
 			],
 		}),

@@ -22,7 +22,7 @@ export const levels: Level[] = [
 			{ label: '1.2 HTTP 服務與 API', dir: '1-2-http-api' },
 			{ label: '1.3 關聯式資料庫入門', dir: '1-3-relational-db' },
 			{ label: '1.4 認證與基礎安全', dir: '1-4-auth-basics' },
-			{ label: '1.5 測試與品質', dir: '1-5-testing' },
+			{ label: '1.5 測試入門與程式碼品質', dir: '1-5-testing' },
 			{ label: '1.6 小結專案', dir: '1-6-project' },
 		],
 	},

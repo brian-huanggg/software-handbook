@@ -1,40 +1,33 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: 軟體工程手冊
+description: 寫給自學初級工程師的後端、DevOps 與資安學習路線。
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: 寫給自學的初級工程師，以 Go 為主要語言，從電腦基礎一路走到架構決策。
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: 從後端開始
+      link: /backend/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## 選擇領域
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+<CardGrid>
+	<LinkCard
+		title="後端"
+		description="從電腦、網路到分散式系統，用 Go 寫出能上線、能擴展的服務。"
+		href="/backend/"
+	/>
+	<LinkCard
+		title="維運"
+		description="把程式自動建置、部署到正式環境，並讓它持續穩定運作。（規劃中）"
+		href="/devops/"
+	/>
+	<LinkCard
+		title="資安"
+		description="理解攻擊怎麼發生，並在自己的程式裡修補它。（規劃中）"
+		href="/cyber/"
+	/>
 </CardGrid>

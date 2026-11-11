@@ -17,6 +17,9 @@ importers:
       sharp:
         specifier: ^0.35.3
         version: 0.35.5(@types/node@24.19.2)
+      starlight-sidebar-topics:
+        specifier: 0.9.0
+        version: 0.9.0(@astrojs/starlight@0.42.10(astro@7.4.10(@types/node@24.19.2)(yaml@2.9.1)))(astro@7.4.10(@types/node@24.19.2)(yaml@2.9.1))
 
 packages:
 
@@ -1406,6 +1409,13 @@ packages:
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
+
+  starlight-sidebar-topics@0.9.0:
+    resolution: {integrity: sha512-xFwMAAtTVyqsO5DZ8Ldk0vN+2QoPdtjtDi8fbrzvQATIJvIvfaBLL9JzfXAjNHI9vMkj35VMWMd8tTICeO6RIA==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.42.0'
+      astro: ^7.2.10
 
   std-env@4.3.0:
     resolution: {integrity: sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag==}
@@ -3192,6 +3202,12 @@ snapshots:
   source-map-js@1.2.2: {}
 
   space-separated-tokens@2.0.2: {}
+
+  starlight-sidebar-topics@0.9.0(@astrojs/starlight@0.42.10(astro@7.4.10(@types/node@24.19.2)(yaml@2.9.1)))(astro@7.4.10(@types/node@24.19.2)(yaml@2.9.1)):
+    dependencies:
+      '@astrojs/starlight': 0.42.10(astro@7.4.10(@types/node@24.19.2)(yaml@2.9.1))
+      astro: 7.4.10(@types/node@24.19.2)(yaml@2.9.1)
+      picomatch: 4.0.7
 
   std-env@4.3.0: {}
 

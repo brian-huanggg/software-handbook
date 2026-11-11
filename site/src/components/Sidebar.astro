@@ -1,0 +1,11 @@
+---
+// Replaces the plugin's sidebar override: on desktop the field switcher lives
+// in the header, so the sidebar shows only the current field's tree. On mobile
+// the header hides the switcher, so it is shown at the top of the menu instead.
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+
+import FieldNav from './FieldNav.astro';
+---
+
+<div class="md:sl-hidden"><FieldNav variant="list" /></div>
+<Default><slot /></Default>

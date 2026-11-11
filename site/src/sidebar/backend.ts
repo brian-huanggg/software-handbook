@@ -2,18 +2,8 @@ import { fieldSidebar, type Level } from './helpers';
 
 // Mirrors docs/contents/backend.md. The `dir` values are the canonical
 // directory names under src/content/docs/backend/; articles must use them.
+// Backend starts at L1: the foundations it assumes live in the cs field (cs.ts).
 export const levels: Level[] = [
-	{
-		label: 'L0 基礎',
-		dir: 'l0',
-		sections: [
-			{ label: '0.1 程式與資料', dir: '0-1-program-and-data' },
-			{ label: '0.2 作業系統', dir: '0-2-operating-system' },
-			{ label: '0.3 網路', dir: '0-3-network' },
-			{ label: '0.4 開發工具', dir: '0-4-dev-tools' },
-			{ label: '0.5 把它串起來', dir: '0-5-putting-it-together' },
-		],
-	},
 	{
 		label: 'L1 入門',
 		dir: 'l1',

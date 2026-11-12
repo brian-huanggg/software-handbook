@@ -1,0 +1,22 @@
+# AI-generated. Not part of the example's tests: nothing builds or runs this file.
+services:
+  shortener:
+    image: sho.rt/shortener:latest
+    ports:
+      - "8080:8080"
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+    user: "65532:65532"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  log-agent:
+    image: sho.rt/log-agent@sha256:5c3f1d0e8a7b4c2d9e6f1a3b5c7d9e0f2a4b6c8d0e1f3a5b7c9d1e3f5a7b9c0d
+    volumes:
+      # follow the shortener's container logs for the dashboard
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    privileged: true
+    restart: unless-stopped

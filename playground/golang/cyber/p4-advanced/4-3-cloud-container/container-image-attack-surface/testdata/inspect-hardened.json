@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "/sho-shortener",
+    "Config": {
+      "User": "65532:65532"
+    },
+    "HostConfig": {
+      "Privileged": false,
+      "CapAdd": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "PidMode": "",
+      "NetworkMode": "bridge",
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ]
+    },
+    "Mounts": []
+  }
+]

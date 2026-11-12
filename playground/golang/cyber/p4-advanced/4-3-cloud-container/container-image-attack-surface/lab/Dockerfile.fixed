@@ -1,0 +1,7 @@
+FROM alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+WORKDIR /app
+# The token exists only while this RUN step executes: it is mounted from
+# the host at build time and never written into a layer.
+RUN --mount=type=secret,id=admin_token test -s /run/secrets/admin_token
+USER 65532:65532
+CMD ["sh"]

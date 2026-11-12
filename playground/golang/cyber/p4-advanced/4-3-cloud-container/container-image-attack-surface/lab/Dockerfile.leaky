@@ -1,0 +1,5 @@
+FROM alpine:3.20
+WORKDIR /app
+COPY demo.env /app/.env
+RUN rm /app/.env
+CMD ["sh"]

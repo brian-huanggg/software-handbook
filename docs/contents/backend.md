@@ -93,6 +93,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 ### 2.2 資料庫深入
 
 - [ ] 索引原理：B+ 樹、複合索引、覆蓋索引
+- [x] 主鍵選型：自增 BIGINT vs UUID vs UUIDv7／Snowflake（Postgres 為主、MySQL 對照）→ [文章](../../site/src/content/docs/backend/l2/2-2-database/primary-key-choice.md)
 - [ ] 讀懂執行計畫：`EXPLAIN`
 - [ ] 交易與 ACID
 - [ ] 隔離級別與異常現象：dirty read、phantom read
@@ -174,6 +175,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 一致性模型：強一致、最終一致、因果一致
 - [ ] 時鐘與順序：Lamport clock、vector clock
 - [ ] 複寫：主從、多主、無主
+- [x] MariaDB 標準版與 Galera 叢集 → [文章](../../site/src/content/docs/backend/l3/3-1-distributed-basics/mariadb-galera.md)
 - [ ] 分片（sharding）與一致性雜湊
 - [ ] 共識演算法：Paxos 與 Raft
 - [ ] 領導者選舉與分散式鎖

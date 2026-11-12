@@ -1,0 +1,31 @@
+# 刻意用非預設 port，避免和本機已在跑的 Postgres／MySQL 衝突。
+# shared_buffers 與 innodb_buffer_pool_size 都設得比資料量小，
+# 才看得出隨機主鍵「工作集放不進記憶體」的代價。
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_wal_size=4GB", "-c", "fsync=off"]
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: demo
+      MYSQL_DATABASE: demo
+    command: ["--innodb-buffer-pool-size=64M", "--innodb-flush-log-at-trx-commit=0", "--skip-log-bin"]
+    ports:
+      - "53306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pdemo"]
+      interval: 2s
+      timeout: 3s
+      retries: 60

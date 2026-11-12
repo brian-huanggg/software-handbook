@@ -26,5 +26,5 @@
 - 程式碼通過 `ruff check`，公開函式加型別標註。
 - 訓練類範例固定隨機種子，並在 README 寫明預期的執行時間與硬體。
 - 需要 API key 時只從環境變數讀取，並附上 `.env.example`，不放真實金鑰。
-- 片段標題寫法與 Go 相同：` ```python title="playground/python/ai/engineering/l2/2-4-rag/handbook-qa-v1/src/qa.py" `，省略處用 `# ...`。
+- 片段標題寫法與 Go 相同：` ```python title="qa.py" `（只寫檔名，不寫路徑），省略處用 `# ...`。
 - 其餘規則（片段長度、註解寫「為什麼」）照 `references/style-guide.md` 的「程式碼」。

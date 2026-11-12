@@ -56,9 +56,10 @@ sidebar:
 ## 小練習
 
 <!--
-  用 Go 動手做（`ai` 領域用 Python）。1 到 3 題，由易到難。
-  每題說明：目標、起始程式碼的位置（playground/golang/...，`ai` 領域為 playground/python/...）、怎麼驗證做對了（例如哪個測試會通過）。
-  參考解答放在 <details><summary>參考解答</summary>…</details>。
+  1 到 3 題，由易到難，至少包含一題動手寫與一題辨識（規則見 references/style-guide.md 的「小練習的題型」）。
+  動手寫（用 Go，`ai` 領域用 Python）：說明目標、起始程式碼的位置（playground/golang/...，`ai` 領域為 playground/python/...）、怎麼驗證做對了（例如哪個測試會通過）。
+  辨識：用 ### 辨識 當子標題，貼一段 AI 產生的程式碼（程式碼區塊標題只寫檔名），請讀者做 code review：好壞對照，或找出藏在其中的錯誤。
+  每題的參考解答放在 <details><summary>參考解答</summary>…</details>。
 -->
 
 ## 快閃卡

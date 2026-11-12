@@ -33,7 +33,7 @@ description: 撰寫或改寫本書（計算機科學、後端、DevOps、資安�
    - 該領域有 `references/fields/<field>.md` 時也要讀（`ai` 領域讀 `references/fields/ai.md`，不分軌道）。
 2. **寫大綱**：依 `assets/template.md` 的九個段落，每段一到兩句話說明要寫什麼。主題橫跨兩篇以上，或篇幅明顯超出範圍時，先把大綱給使用者確認。
 3. **寫正文**：複製 `assets/template.md`，照段落順序填寫。段落標題一字不改，不新增、不刪除、不調換順序。
-4. **寫程式範例**：Go 範例放在 `playground/golang/<field>/<level>/<section>/<slug>/`，是可獨立執行的 Go module；`ai` 領域的 Python 範例放在 `playground/python/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案（見 `references/style-guide.md` 的「程式碼」與 `references/fields/ai.md`）。
+4. **寫程式範例**：Go 範例放在 `playground/golang/<field>/<level>/<section>/<slug>/`，是可獨立執行的 Go module；辨識題的程式碼放在該目錄的 `recognize/` 下；`ai` 領域的 Python 範例放在 `playground/python/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案（見 `references/style-guide.md` 的「程式碼」與 `references/fields/ai.md`）。
 5. **驗證**：逐項檢查 `references/checklist.md`。Go 範例在環境有 `go` 時執行 `go vet ./...` 與 `go test ./...`；Python 範例在環境有 `uv` 時執行 `uv run ruff check .` 與 `uv run pytest`。工具不存在、或範例需要 GPU、付費 API 而無法執行時，在回報中寫明「程式碼未經執行驗證」與原因。
 6. **收尾**
    - 新術語加進 `docs/glossary.md`。

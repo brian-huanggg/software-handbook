@@ -1,0 +1,8 @@
+# Naive version: one stage, so the toolchain ships to production.
+FROM golang:1.26
+WORKDIR /src
+COPY . .
+RUN go build -o /shortener .
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["/shortener"]

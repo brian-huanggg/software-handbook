@@ -157,6 +157,7 @@
 
 ### 4.3 雲與容器攻擊面
 
+- [ ] Container 與 Image 的攻擊面：映像供應鏈（惡意映像、殘留機密）與執行期濫用（docker.sock、privileged、過寬 capabilities）及防禦
 - [ ] 容器逃逸的概念與邊界
 - [ ] 雲端身分與權限設定錯誤
 - [ ] Kubernetes 的攻擊面概覽與強化

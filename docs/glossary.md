@@ -12,6 +12,7 @@
 | capabilities | capabilities | 權能、能力 | Linux 把 root 權力拆成的細項（如 `NET_ADMIN`）；不翻譯 |
 | certification | certification | 認證、驗證 | 不翻譯；Galera 各節點用同樣規則檢查 write-set 是否與已 commit 的交易衝突 |
 | clustered index | 叢集索引 | 聚簇索引 | 表本身就是依主鍵排序的 B+ 樹，資料列在葉節點；InnoDB 的預設儲存方式 |
+| consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
 | container | 容器 | 貨櫃 | 共用主機核心、靠 namespace 與 cgroup 隔離的行程 |
 | cross-origin | 跨源 | 跨域 | 「域」會和網域混淆；跨源連 scheme 與 port 不同都算 |
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
@@ -28,6 +29,7 @@
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
+| load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
 | load shedding | 負載卸除 | 負載篡除 | |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
@@ -43,7 +45,9 @@
 | same-site | 同站 | | 只看 scheme 與可註冊網域，不看子網域與 port |
 | secondary index | 次要索引 | 二級索引、輔助索引 | 非主鍵的索引；InnoDB 的葉節點存主鍵值，Postgres 存 ctid |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
+| session persistence | session 保持 | 會話黏滯、黏性會話 | 讓同一個使用者的請求固定到同一台後端；nginx 用 `ip_hash` 或 `hash` 實現 |
 | simple request | 簡單請求 | | 不需預檢的跨源請求，條件見後端 1.4 CORS |
+| smooth weighted round robin | 平滑加權輪詢 | | 每次把 weight 加到分數、挑最高分、從贏家扣總 weight，讓重的 server 不連續被選 |
 | Snowflake ID | Snowflake ID | 雪花 ID、雪花演算法 | 不翻譯；64 bits：時間、機器編號、序號，有序且可分散產生 |
 | software bill of materials (SBOM) | 軟體物料清單（SBOM） | 軟體材料清單 | 列出映像內所有元件與版本；第一次出現寫全名，之後只寫 SBOM |
 | split-brain | split-brain | 腦裂 | 不翻譯；叢集分裂後兩邊都以為自己是主節點 |
@@ -52,7 +56,9 @@
 | tag | tag | 標籤 | 不翻譯；映像上可被改指的名稱，與 digest 相對 |
 | thread | 執行緒 | 線程 | |
 | timeout | 逾時 | 超時 | |
+| upstream | upstream | 上游 | 不翻譯；nginx 中一組後端 server 的群組，用 `proxy_pass` 指向它 |
 | UUID | UUID | 通用唯一識別碼 | 128 bits；v4 全隨機、v7 前 48 bits 是毫秒時間戳（RFC 9562） |
 | virtually synchronous | virtually synchronous | 虛擬同步 | 不翻譯；已 commit 的交易保證會被每個節點套用，但不保證同一時刻 |
+| weighted round robin | 加權輪詢 | 加權循環 | 依 weight 比例輪流分配請求；nginx upstream 的預設方式 |
 | whiteout | whiteout | 白除、刪除標記 | 不翻譯；後面 layer 以 `.wh.` 前綴檔標示「這個檔案已刪除」，舊 layer 內容不變 |
 | write-set | write-set | 寫入集 | 不翻譯；一筆交易要複寫給其他節點的變更內容 |

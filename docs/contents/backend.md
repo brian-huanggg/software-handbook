@@ -198,6 +198,9 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 服務間通訊：同步 vs 非同步
 - [ ] 服務探索與設定中心
 - [ ] API Gateway 與 BFF
+- [x] Nginx 負載平衡 1/3：選型與演算法 → [文章](../../site/src/content/docs/backend/l3/3-3-service-architecture/nginx-lb-selection.md)
+- [ ] Nginx 負載平衡 2/3 可靠性：被動 vs 主動健康檢查、`proxy_next_upstream` 重試風險、upstream keepalive、upstream DNS 解析陷阱、Nginx 本身的單點故障（keepalived／VRRP）
+- [ ] Nginx 負載平衡 3/3 營運與替代方案：`X-Forwarded-For` 與 `real_ip`、用 `stream` 平衡 TCP（如 MariaDB Galera）、何時改用 HAProxy、Envoy 或 Kubernetes Ingress
 - [ ] 事件驅動架構
 - [ ] 乾淨架構、六角架構與 Go 的實務專案分層
 

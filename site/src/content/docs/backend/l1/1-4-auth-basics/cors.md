@@ -241,6 +241,40 @@ func TestOtherOriginGetStillServed(t *testing.T) {
 
 </details>
 
+### 辨識
+
+下面這段程式碼由 AI 產生，目的是「只讓 sho.rt 自己的網頁帶著 Cookie 跨源讀取 API」。它能編譯，用 `https://app.sho.rt` 的頁面測試讀取與刪除也都正常。請做 code review，找出它的問題（至少兩個）。
+
+```go title="cors.go"
+// withCORS lets pages from sho.rt read the API with their cookies.
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if strings.HasSuffix(origin, "sho.rt") {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Methods", "GET, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+```
+
+完整程式碼在 `recognize/cors.go`，它有 `//go:build ignore`，不會被 `go test ./...` 掃到。
+
+<details>
+<summary>參考解答</summary>
+
+1. **`strings.HasSuffix(origin, "sho.rt")`**：`https://evilsho.rt` 也以 `sho.rt` 結尾，會通過檢查。攻擊者註冊這樣的網域，就能讓已登入使用者的瀏覽器帶著 Cookie 讀走 API 的回應，因為這裡同時回了 `Access-Control-Allow-Credentials: true`。正確寫法是用 map 整串比對：`allowed[origin]`，白名單寫 `https://app.sho.rt`。
+2. **沒有 `Vary: Origin`**：回應會隨 `Origin` 改變，卻沒有告訴快取。API 前面有 CDN 時，A 網站的回應可能被快取後交給 B 網站，B 的瀏覽器就拒絕讀取，症狀是時好時壞的 CORS 錯誤。正確寫法是在函式開頭 `w.Header().Add("Vary", "Origin")`，不在白名單的請求也要加。
+
+</details>
+
 ## 快閃卡
 
 <details>

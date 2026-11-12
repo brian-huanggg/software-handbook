@@ -223,6 +223,39 @@ func IgnorePort(origin string) Check {
 
 </details>
 
+### 辨識
+
+下面這段程式碼由 AI 產生，目的是「只讓 sho.rt 自己的前端帶著 Cookie 跨源讀取 `/api/me`」。它能編譯，用 `https://app.sho.rt` 的頁面測試也能正常讀取。請做 code review，找出它的問題（至少兩個）。
+
+```go title="origins.go"
+// allowedOrigins lists the front ends that may read the API with cookies.
+var allowedOrigins = map[string]bool{
+	"https://app.sho.rt":    true,
+	"http://app.sho.rt":     true,
+	"http://localhost:3000": true,
+	"null":                  true,
+}
+
+// originAllowed accepts listed front ends and any sho.rt subdomain.
+func originAllowed(origin string) bool {
+	if allowedOrigins[origin] {
+		return true
+	}
+	return strings.HasSuffix(origin, "sho.rt")
+}
+```
+
+完整程式碼在 `recognize/origins.go`，它有 `//go:build ignore`，不會被 `go test ./...` 掃到。
+
+<details>
+<summary>參考解答</summary>
+
+1. **`"null": true`**：任何網站都能用帶 `sandbox` 屬性的 iframe 送出 `Origin: null`，信任 `null` 等於信任所有人，攻擊頁面因此讀得到已登入使用者的資料。正確寫法是把 `null` 從清單移除，本機開發改用 `http://localhost:<port>` 起伺服器。
+2. **`strings.HasSuffix(origin, "sho.rt")`**：`https://evilsho.rt` 也以 `sho.rt` 結尾，攻擊者註冊這個網域就能通過。而且它放在白名單之後當後備，讓整份精確清單形同虛設。正確寫法是刪掉後備；真要支援子網域，先解析出 host，再比對 `host == "sho.rt" || strings.HasSuffix(host, ".sho.rt")`，注意前導的點，並限定 scheme 為 `https`。
+3. **`"http://app.sho.rt": true`**：HTTPS 的 API 信任了 HTTP 的 origin，網路中間人能攔截那個 HTTP 連線、偽造請求，繞過 HTTPS 的保護。正確寫法是白名單只放 `https://` 的 origin；`http://localhost:3000` 也只該出現在開發設定，不該帶進正式環境。
+
+</details>
+
 ## 快閃卡
 
 <details>

@@ -93,7 +93,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 ### 2.2 資料庫深入
 
 - [ ] 索引原理：B+ 樹、複合索引、覆蓋索引
-- [x] 主鍵選型：自增 BIGINT vs UUID vs UUIDv7／Snowflake（Postgres 為主、MySQL 對照）→ [文章](../../site/src/content/docs/backend/l2/2-2-database/primary-key-choice.md)
+- [x] [主鍵選型：自增 BIGINT vs UUID vs UUIDv7／Snowflake](../../site/src/content/docs/backend/l2/2-2-database/primary-key-choice.md)
 - [ ] 讀懂執行計畫：`EXPLAIN`
 - [ ] 交易與 ACID
 - [ ] 隔離級別與異常現象：dirty read、phantom read

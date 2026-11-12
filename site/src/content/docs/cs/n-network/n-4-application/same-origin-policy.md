@@ -259,6 +259,38 @@ log 會記下 `Origin="https://sho.rt"`。瀏覽器不讓網頁偽造這個 head
 
 </details>
 
+### 辨識
+
+下面這段程式碼由 AI 產生，目的是「只讓自己網站的頁面能刪除短網址」。它能編譯，用 `https://sho.rt` 的頁面測試也都正常。請做 code review，找出它的問題（至少兩個）。
+
+```go title="guard.go"
+const trustedSite = "https://sho.rt"
+
+// guard only lets pages from our own site change links.
+func guard(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			next.ServeHTTP(w, r)
+			return
+		}
+		origin := r.Header.Get("Origin")
+		if !strings.HasPrefix(origin, trustedSite) {
+			http.Error(w, "forbidden origin", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+```
+
+完整程式碼在 `recognize/guard.go`，它有 `//go:build ignore`，不會被 `go test ./...` 掃到。
+
+<details><summary>參考解答</summary>
+
+1. **`strings.HasPrefix(origin, trustedSite)`**：`https://sho.rt.evil.example` 以 `https://sho.rt` 開頭，會通過檢查。攻擊者只要註冊這樣的網域，就能讓頁面刪除使用者的短網址。正確寫法是用 `origin.Parse` 解析後整組比較，或乾脆對整個字串做相等比對：`origin == trustedSite`。
+2. **把 `Origin` header 當成存取控制**：`curl -X DELETE -H 'Origin: https://sho.rt' ...` 就能通過，因為只有瀏覽器會替網頁誠實填這個 header。這段程式碼完全沒有認證，任何人偽造一個 header 就能刪資料。`Origin` 檢查最多當成「擋掉瀏覽器裡其他網站的頁面」的額外一層，真正的存取控制要靠 Cookie 或 token 的認證與授權。
+</details>
+
 ## 快閃卡
 
 <details>

@@ -1,0 +1,12 @@
+[mysqld]
+binlog_format=ROW
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+
+wsrep_on=ON
+wsrep_provider=/usr/lib/galera/libgalera_smm.so
+wsrep_cluster_name=shortener
+wsrep_cluster_address=gcomm://db1,db2,db3
+wsrep_node_name=db1
+wsrep_node_address=db1
+wsrep_sst_method=mariabackup

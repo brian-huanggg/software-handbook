@@ -174,6 +174,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] CAP 定理與 PACELC
 - [ ] 一致性模型：強一致、最終一致、因果一致
 - [ ] 時鐘與順序：Lamport clock、vector clock
+- [ ] 分散式 ID 產生：Snowflake 的原理、時鐘倒退與機器編號分配
 - [ ] 複寫：主從、多主、無主
 - [x] MariaDB 標準版與 Galera 叢集 → [文章](../../site/src/content/docs/backend/l3/3-1-distributed-basics/mariadb-galera.md)
 - [ ] 分片（sharding）與一致性雜湊

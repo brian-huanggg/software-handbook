@@ -1,0 +1,6 @@
+CHANGE MASTER TO
+  MASTER_HOST='db1',
+  MASTER_USER='repl',
+  MASTER_PASSWORD='change-me',
+  MASTER_USE_GTID=slave_pos;
+START SLAVE;

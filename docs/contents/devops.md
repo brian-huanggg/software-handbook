@@ -57,7 +57,7 @@
 - [ ] 從 Dockerfile 到映像：layer、快取、multi-stage build
 - [ ] 把映像做小、做安全：非 root、最小基底
 - [x] Distroless 映像：去掉 shell 與套件管理器以縮小攻擊面，及其除錯取捨 → [文章](../../site/src/content/docs/devops/l1/1-2-container-image/distroless-image.md)
-- [ ] Golden Image：組織核准的 base image、固定 digest、掃描與簽章，以及如何強制只能從它開始
+- [x] Golden Image：組織核准的 base image、固定 digest、掃描與簽章，以及如何強制只能從它開始 → [文章](../../site/src/content/docs/devops/l1/1-2-container-image/golden-image.md)
 - [ ] 映像倉庫：推送、拉取、標籤策略
 
 ### 1.3 持續整合（CI）

@@ -1,0 +1,4 @@
+ARG BASE=registry.internal.example/golden/go-static@sha256:2222222222222222222222222222222222222222222222222222222222222222
+FROM ${BASE}
+COPY shortener /shortener
+ENTRYPOINT ["/shortener"]

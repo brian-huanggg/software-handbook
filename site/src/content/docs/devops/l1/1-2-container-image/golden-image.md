@@ -1,5 +1,5 @@
 ---
-title: Golden Image：組織核准的 base image、固定 digest、掃描與簽章，以及如何強制只能從它開始
+title: Golden Image
 description: 建立一份受信任的基底映像清單，用 digest、掃描、簽章把關，並用 Conftest 擋下任何不從它開始的 Dockerfile。
 sidebar:
   order: 4

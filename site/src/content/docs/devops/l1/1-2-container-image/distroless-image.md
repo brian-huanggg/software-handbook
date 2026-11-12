@@ -1,5 +1,5 @@
 ---
-title: Distroless 映像：去掉 shell 與套件管理器以縮小攻擊面，及其除錯取捨
+title: Distroless 映像
 description: 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。
 sidebar:
   order: 3

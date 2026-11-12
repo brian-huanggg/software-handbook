@@ -1,5 +1,5 @@
 ---
-title: Container 與 Image 的攻擊面：映像供應鏈（惡意映像、殘留機密）與執行期濫用（docker.sock、privileged、過寬 capabilities）及防禦
+title: Container 與 Image 的攻擊面
 description: 在本機重現殘留機密與 docker.sock 濫用，再用掃描、固定 digest 與最小權限擋下它們。
 sidebar:
   order: 1

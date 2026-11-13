@@ -42,7 +42,7 @@ Cookie 的規則很單純：瀏覽器要送請求給 victim.test，就把 victim
 以下所有攻擊只在你自己機器上的範例服務進行，兩個主機名都指向 `127.0.0.1`。絕不要對第三方網站或你沒有書面授權的系統測試 CSRF。
 :::
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/csrf/`。`victim.test:8080` 是受害服務，`evil.test:9666` 是攻擊者的頁面。先把兩個主機名指向本機（測完記得從 `/etc/hosts` 刪掉這一行）：
+範例在 `playground/cyber/p2-web/2-3-cross-site/csrf/`。`victim.test:8080` 是受害服務，`evil.test:9666` 是攻擊者的頁面。先把兩個主機名指向本機（測完記得從 `/etc/hosts` 刪掉這一行）：
 
 ```bash
 echo "127.0.0.1 victim.test evil.test" | sudo tee -a /etc/hosts
@@ -226,7 +226,7 @@ go test ./...
 
 ## 小練習
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/csrf/`。先 `go test ./...` 確認全部通過。
+範例在 `playground/cyber/p2-web/2-3-cross-site/csrf/`。先 `go test ./...` 確認全部通過。
 
 **1. 預測並用瀏覽器驗證。** 不改程式，分別用 `-samesite lax` 與 `-samesite strict`、`-defense none` 啟動，登入後各打開攻擊 A 與攻擊 B 的頁面，記下四種組合（`lax`／`strict` × A／B）中 `/a1` 有沒有被改走。再換成 `-defense token`，哪一格會變？
 

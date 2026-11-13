@@ -31,7 +31,7 @@
 
 ## 程式碼
 
-- [ ] `playground/golang/...`（`ai` 領域為 `playground/python/...`）存在，且有測試
+- [ ] `playground/<field>/...` 存在，且有測試
 - [ ] 文章中的片段與範例檔案內容一致，程式碼區塊標題只寫檔名（不含路徑）
 - [ ] 辨識題的程式碼放在 `recognize/`，且不會讓 `go test ./...`（或 pytest）失敗
 - [ ] `go vet ./...` 與 `go test ./...` 通過；`ai` 領域則是 `uv run ruff check .` 與 `uv run pytest` 通過（或已註明未執行與原因）

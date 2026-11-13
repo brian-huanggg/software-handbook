@@ -39,7 +39,7 @@ Galera 想解決的就是這兩件事：已確認的寫入不能只存在一台�
 ## 怎麼運作
 
 :::note
-本篇的範例在 `playground/golang/backend/l3/3-1-distributed-basics/mariadb-galera/`。它是用記憶體模擬資料移動的小程式，不連真的 MariaDB，也不模擬網路與磁碟。設定檔在 `conf/`，沒有實際啟動叢集驗證過。
+本篇的範例在 `playground/backend/l3/3-1-distributed-basics/mariadb-galera/`。它是用記憶體模擬資料移動的小程式，不連真的 MariaDB，也不模擬網路與磁碟。設定檔在 `conf/`，沒有實際啟動叢集驗證過。
 :::
 
 ### 標準版：非同步複寫
@@ -197,7 +197,7 @@ Galera 的 commit 延遲大約等於到最慢節點的來回時間（RTT）。�
 
 範例裡的 `galera.Certify` 是 Galera 防止「讀到舊資料還寫」的核心。請補完 `exercise/certify.go` 的 `Certify`：當 `writes` 中任何一個 key 在 `snapshot` 之後被別的交易 commit 過，回傳 `ErrConflict`。
 
-起始程式碼在 `playground/golang/backend/l3/3-1-distributed-basics/mariadb-galera/exercise/`。做對時，下面的指令會通過：
+起始程式碼在 `playground/backend/l3/3-1-distributed-basics/mariadb-galera/exercise/`。做對時，下面的指令會通過：
 
 ```bash
 go test -tags exercise ./exercise/

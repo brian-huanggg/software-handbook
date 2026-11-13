@@ -40,7 +40,7 @@
 ## 程式碼
 
 - Go 使用最新穩定版，預設只用標準函式庫；只有當文章主題本身是某個套件（例如 Redis client）時才引入第三方套件。
-- 每個 Go 範例都放在 `playground/golang/<field>/<level>/<section>/<slug>/`，是獨立的 module（module 路徑為 `handbook/playground/golang/<field>/<slug>`）：`go.mod`、`main.go` 或套件檔，以及 `*_test.go`。
+- 每個 Go 範例都放在 `playground/<field>/<level>/<section>/<slug>/`，是獨立的 module（module 路徑為 `handbook/playground/<field>/<slug>`）：`go.mod`、`main.go` 或套件檔，以及 `*_test.go`。
 - 文章裡的程式碼片段必須是範例檔案的真實片段，程式碼區塊的標題只寫檔名，不寫路徑：` ```go title="main.go" `。範例目錄的位置在「小練習」交代，不在每個區塊重複。同一篇有兩個以上同名檔案時，才在檔名前加最近一層目錄區分，例如 `policy/policy.go`。
 - 單一片段不超過 40 行；更長的程式碼只貼關鍵部分，其餘以註解 `// ...` 省略。
 - 錯誤一律處理，不寫 `_ = err`；註解寫「為什麼」，不寫「做什麼」。

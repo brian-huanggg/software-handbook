@@ -42,7 +42,7 @@ Samy 蠕蟲是最有名的例子。2005 年一位使用者在 MySpace 個人頁�
 以下所有攻擊只在你自己機器上的範例服務進行，兩個主機名都指向 `127.0.0.1`。絕不要對第三方網站或你沒有書面授權的系統測試 XSS。
 :::
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/xss/`。環境和 CSRF 那篇相同：`victim.test:8080` 是受害服務，`evil.test:9666` 是攻擊者，兩個主機名要先指向本機（測完記得刪掉 `/etc/hosts` 那一行）：
+範例在 `playground/cyber/p2-web/2-3-cross-site/xss/`。環境和 CSRF 那篇相同：`victim.test:8080` 是受害服務，`evil.test:9666` 是攻擊者，兩個主機名要先指向本機（測完記得刪掉 `/etc/hosts` 那一行）：
 
 ```bash
 echo "127.0.0.1 victim.test evil.test" | sudo tee -a /etc/hosts
@@ -249,7 +249,7 @@ CSP 由瀏覽器執行。Go 測試只能驗證伺服器送出的標頭與頁面�
 
 ## 小練習
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/xss/`。先 `go test ./...` 確認全部通過。
+範例在 `playground/cyber/p2-web/2-3-cross-site/xss/`。先 `go test ./...` 確認全部通過。
 
 **1. 預測並用瀏覽器驗證。** 不改程式，用 `-defense none` 啟動，登入後打開攻擊 A 與攻擊 C，記下終端機收到的 Cookie；再加上 `-httponly` 重跑攻擊 A 與攻擊 B。最後換成 `-defense csp`，三種攻擊各發生什麼事？儲存型要用上面的 `curl` 另外測。
 

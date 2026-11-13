@@ -41,7 +41,7 @@ Golden Image 把這件事收斂到一個地方：平台團隊負責基底的內�
 ## 怎麼運作
 
 :::note
-本篇的範例都在 `playground/golang/devops/l1/1-2-container-image/golden-image/`。Conftest 範例需要安裝 [conftest](https://www.conftest.dev/)，建置 golden image 需要 Docker。掃描與簽章的指令只示範用法，本篇沒有實際執行。
+本篇的範例都在 `playground/devops/l1/1-2-container-image/golden-image/`。Conftest 範例需要安裝 [conftest](https://www.conftest.dev/)，建置 golden image 需要 Docker。掃描與簽章的指令只示範用法，本篇沒有實際執行。
 :::
 
 Golden Image 靠四道關卡串成一條線，缺任何一道，後面的就失去意義：
@@ -237,7 +237,7 @@ deny contains msg if {
 
 目前的政策只檢查「是不是 golden image、有沒有 digest」。假設某一版 golden image 被發現有嚴重漏洞，平台團隊把它的 digest 列為撤銷。請補完 `exercise/policy/revoked.rego`：寫一條 `deny` 規則，拒絕任何 `FROM` 的 digest 落在 `revoked_digests` 裡的 Dockerfile。
 
-起始程式碼在 `playground/golang/devops/l1/1-2-container-image/golden-image/exercise/`。執行下面的指令，做對時兩個測試都會通過：
+起始程式碼在 `playground/devops/l1/1-2-container-image/golden-image/exercise/`。執行下面的指令，做對時兩個測試都會通過：
 
 ```bash
 conftest verify -p exercise/policy

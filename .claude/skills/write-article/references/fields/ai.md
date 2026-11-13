@@ -22,7 +22,7 @@
 
 ## Python 範例
 
-- 每個範例放在 `playground/python/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案：`pyproject.toml`（鎖定 Python 版本與套件版本）、`uv.lock`、原始碼與 `tests/`（pytest）。
+- 每個範例放在 `playground/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案：`pyproject.toml`（鎖定 Python 版本與套件版本）、`uv.lock`、原始碼與 `tests/`（pytest）。
 - 程式碼通過 `ruff check`，公開函式加型別標註。
 - 訓練類範例固定隨機種子，並在 README 寫明預期的執行時間與硬體。
 - 需要 API key 時只從環境變數讀取，並附上 `.env.example`，不放真實金鑰。

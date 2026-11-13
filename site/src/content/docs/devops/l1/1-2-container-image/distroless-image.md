@@ -67,7 +67,7 @@ Distroless 的做法是反過來：不是把不需要的東西一個個刪掉，
 ## 怎麼運作
 
 :::note
-本篇的範例都在 `playground/golang/devops/l1/1-2-container-image/distroless-image/`，要執行需要 Docker。
+本篇的範例都在 `playground/devops/l1/1-2-container-image/distroless-image/`，要執行需要 Docker。
 :::
 
 ### 兩個階段：先建置，再只帶產物
@@ -223,7 +223,7 @@ Distroless 的好處在前面都講了：攻擊面小、CVE 少、體積小、�
 
 ## 小練習
 
-範例程式在 `playground/golang/devops/l1/1-2-container-image/distroless-image/`。先執行 `go test ./...` 確認全部通過。
+範例程式在 `playground/devops/l1/1-2-container-image/distroless-image/`。先執行 `go test ./...` 確認全部通過。
 
 **1. 比較兩種打包方式。** 目錄裡有 `Dockerfile.single`（單階段）與 `Dockerfile`（multi-stage + distroless）。分別建置成 `sho-single` 與 `sho-distroless`，用 `docker images` 比較大小，再各執行一次 `docker run --rm --entrypoint sh <映像> -c 'id'`。預測結果，再對照實際輸出。
 

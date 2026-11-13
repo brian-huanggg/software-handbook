@@ -189,7 +189,7 @@ CORS 必須包在最外層。預檢請求不帶 Cookie，如果先經過 `requir
 
 ## 小練習
 
-範例程式在 `playground/golang/backend/l1/1-4-auth-basics/cors/`。先執行 `go test ./...` 確認全部通過。
+範例程式在 `playground/backend/l1/1-4-auth-basics/cors/`。先執行 `go test ./...` 確認全部通過。
 
 **1. 讓前端讀得到自訂 header。** API 想在回應裡加 `X-Request-ID`，但跨源的 JavaScript 預設只能讀到少數幾個 header。替 `cors.Policy` 加一個 `Exposed []string` 欄位，在非預檢的回應寫出 `Access-Control-Expose-Headers`，並在 `cors/cors_test.go` 加一個測試驗證。
 

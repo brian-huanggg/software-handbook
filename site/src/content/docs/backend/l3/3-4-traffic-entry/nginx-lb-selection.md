@@ -42,7 +42,7 @@ Nginx 可以工作在兩層：`http` 模組是第 7 層（L7），看得懂 HTTP
 ## 怎麼運作
 
 :::note
-本篇的範例在 `playground/golang/backend/l3/3-4-traffic-entry/nginx-lb-selection/`。Go 程式用記憶體重做 nginx 的選擇演算法，不轉發任何流量。設定檔在 `conf/nginx.conf`
+本篇的範例在 `playground/backend/l3/3-4-traffic-entry/nginx-lb-selection/`。Go 程式用記憶體重做 nginx 的選擇演算法，不轉發任何流量。設定檔在 `conf/nginx.conf`
 :::
 
 ### 先分 L4 與 L7
@@ -246,7 +246,7 @@ spread out:     a=341 b=327 c=332
 
 範例的 `smoothPick` 是 nginx 預設輪詢的核心。請補完 `exercise/wrr.go` 的 `Next`：依本文的規則（每台加上 weight、挑分數最高的、從贏家扣掉總 weight）挑出下一台，清單為空時回傳 `nil`。
 
-起始程式碼在 `playground/golang/backend/l3/3-4-traffic-entry/nginx-lb-selection/exercise/`。做對時，下面的指令會通過：
+起始程式碼在 `playground/backend/l3/3-4-traffic-entry/nginx-lb-selection/exercise/`。做對時，下面的指令會通過：
 
 ```bash
 go test -tags exercise ./exercise/

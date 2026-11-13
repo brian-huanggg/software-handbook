@@ -223,7 +223,7 @@ Cookie 的範圍也是以網域劃分，不看 port。所以同一台機器上�
 
 ## 小練習
 
-範例程式在 `playground/golang/cs/n-network/n-4-application/same-origin-policy/`。
+範例程式在 `playground/cs/n-network/n-4-application/same-origin-policy/`。
 
 **1. 先猜再驗證。** 在 `origin/origin_test.go` 的 `TestSameOrigin` 加入三個網址，先寫下你預測的 `want`，再執行 `go test ./origin/`：`https://sho.rt:443/x`、`https://sho.rt./`（結尾多一個點）、`http://[::1]:8080/`。哪一個和你預期的不同？
 

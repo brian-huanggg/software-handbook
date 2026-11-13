@@ -75,7 +75,7 @@ Postgres 不同：表是 **heap** （沒有排序的一堆頁面），主鍵索�
 
 ### 實測：同一台機器上的三種主鍵
 
-範例放在 `playground/golang/backend/l2/2-2-database/primary-key-choice/`，用 Docker Compose 起 Postgres 18 與 MySQL 8.4，各插入 200 萬筆（短網址 `links` 表：主鍵、短碼、網址）。記憶體刻意設小（64 MB），讓索引放不進去。
+範例放在 `playground/backend/l2/2-2-database/primary-key-choice/`，用 Docker Compose 起 Postgres 18 與 MySQL 8.4，各插入 200 萬筆（短網址 `links` 表：主鍵、短碼、網址）。記憶體刻意設小（64 MB），讓索引放不進去。
 
 ```bash
 make up          # 起 Postgres（55432）與 MySQL（53306）
@@ -220,7 +220,7 @@ return ms<<(workerBits+sequenceBits) | s.workerID<<sequenceBits | s.sequence, ni
 
 ### 動手寫：ParseV7
 
-範例目錄：`playground/golang/backend/l2/2-2-database/primary-key-choice/`。
+範例目錄：`playground/backend/l2/2-2-database/primary-key-choice/`。
 
 先跑 `go test ./...`，確認 `NewV7` 與 `Snowflake` 的測試通過。接著補完 `exercise/parse.go` 的 `ParseV7`：把字串轉回 `UUID`，並拒絕長度錯誤、非十六進位、版本不是 7、variant 不是 `10xx` 的輸入。
 

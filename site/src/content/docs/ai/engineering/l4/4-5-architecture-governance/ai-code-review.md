@@ -189,7 +189,7 @@ def valid_approvers(pr: PullRequest) -> set[str]:
 
 在範例的 `review_gate/policy.py` 加一個函式 `escalate(tier, recent_revert_rate, baseline, factor=1.5)`：當 `recent_revert_rate` 超過 `baseline * factor` 時，低風險改動要升成中風險；任何情況下都不能把層級往下調。
 
-起始程式碼在 `playground/python/ai/engineering/l4/4-5-architecture-governance/ai-code-review/`。在 `tests/test_breaker.py` 寫三個測試：平靜時維持原層級、revert 暴增時 LOW 升為 MEDIUM、HIGH 不會被降級。
+起始程式碼在 `playground/ai/engineering/l4/4-5-architecture-governance/ai-code-review/`。在 `tests/test_breaker.py` 寫三個測試：平靜時維持原層級、revert 暴增時 LOW 升為 MEDIUM、HIGH 不會被降級。
 
 驗證做對了：`uv run pytest` 全過；然後把 `max(tier, Tier.MEDIUM)` 改成直接回傳 `Tier.MEDIUM`，HIGH 的那個測試應該變紅。
 

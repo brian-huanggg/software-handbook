@@ -197,7 +197,7 @@ old path: abc
 
 ### 動手寫：找出該清理的旗標
 
-範例目錄：`playground/golang/backend/l2/2-7-containers/feature-flags/`。
+範例目錄：`playground/backend/l2/2-7-containers/feature-flags/`。
 
 先跑 `go test ./...`，確認分桶、放量與 kill switch 的測試通過。接著補完 `exercise/stale.go` 的 `Stale`：給定一個 `flags.Set` 與現在時間，回傳該清理的旗標名稱，依字母排序。到期日早於今天的旗標要列出，沒有 `expires` 的旗標也要列出。到期日剛好是今天的旗標不列。
 

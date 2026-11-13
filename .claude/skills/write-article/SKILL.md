@@ -7,7 +7,7 @@ description: 撰寫或改寫本書（計算機科學、後端、DevOps、資安�
 
 本書寫給自學的初級工程師，以 Go 為主要語言；`ai` 領域例外，主要語言是 Python。全書分成數個領域（field），每個領域一份目錄：`docs/contents/cs.md`、`docs/contents/backend.md`、`docs/contents/devops.md`、`docs/contents/cyber.md`、`docs/contents/testing.md`。網站是 `site/`（Astro Starlight），每個領域有自己的側欄。
 
-`ai` 領域分成三條軌道（track），每條軌道一份目錄：`docs/contents/ai/foundations.md`（理論基礎）、`docs/contents/ai/engineering.md`（應用工程）、`docs/contents/ai/ai-agents.md`（代理人）。三條軌道共用一個側欄 `site/src/sidebar/ai.ts`。下文寫 `<field>` 的地方，對 `ai` 領域一律讀作 `ai/<track>`：目錄是上述該軌道的目錄檔（代理人軌道的檔名是 `ai-agents.md`，避免被誤認為代理人的指示檔，但 `<track>` 仍是 `agents`），文章路徑是 `site/src/content/docs/ai/<track>/...`，範例路徑是 `playground/python/ai/<track>/...`。
+`ai` 領域分成三條軌道（track），每條軌道一份目錄：`docs/contents/ai/foundations.md`（理論基礎）、`docs/contents/ai/engineering.md`（應用工程）、`docs/contents/ai/ai-agents.md`（代理人）。三條軌道共用一個側欄 `site/src/sidebar/ai.ts`。下文寫 `<field>` 的地方，對 `ai` 領域一律讀作 `ai/<track>`：目錄是上述該軌道的目錄檔（代理人軌道的檔名是 `ai-agents.md`，避免被誤認為代理人的指示檔，但 `<track>` 仍是 `agents`），文章路徑是 `site/src/content/docs/ai/<track>/...`，範例路徑是 `playground/ai/<track>/...`。
 每篇文章都必須遵守本 skill，讓不同 agent 寫出來的章節讀起來像同一位作者。
 
 規則的優先順序：使用者這次的指示 > 本檔 > `references/fields/<field>.md` > `references/style-guide.md` > 你自己的習慣。
@@ -33,7 +33,7 @@ description: 撰寫或改寫本書（計算機科學、後端、DevOps、資安�
    - 該領域有 `references/fields/<field>.md` 時也要讀（`ai` 領域讀 `references/fields/ai.md`，不分軌道）。
 2. **寫大綱**：依 `assets/template.md` 的九個段落，每段一到兩句話說明要寫什麼。主題橫跨兩篇以上，或篇幅明顯超出範圍時，先把大綱給使用者確認。
 3. **寫正文**：複製 `assets/template.md`，照段落順序填寫。段落標題一字不改，不新增、不刪除、不調換順序。
-4. **寫程式範例**：Go 範例放在 `playground/golang/<field>/<level>/<section>/<slug>/`，是可獨立執行的 Go module；辨識題的程式碼放在該目錄的 `recognize/` 下；`ai` 領域的 Python 範例放在 `playground/python/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案（見 `references/style-guide.md` 的「程式碼」與 `references/fields/ai.md`）。
+4. **寫程式範例**：Go 範例放在 `playground/<field>/<level>/<section>/<slug>/`，是可獨立執行的 Go module；辨識題的程式碼放在該目錄的 `recognize/` 下；`ai` 領域的 Python 範例放在 `playground/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案（見 `references/style-guide.md` 的「程式碼」與 `references/fields/ai.md`）。
 5. **驗證**：逐項檢查 `references/checklist.md`。Go 範例在環境有 `go` 時執行 `go vet ./...` 與 `go test ./...`；Python 範例在環境有 `uv` 時執行 `uv run ruff check .` 與 `uv run pytest`。工具不存在、或範例需要 GPU、付費 API 而無法執行時，在回報中寫明「程式碼未經執行驗證」與原因。
 6. **收尾**
    - 新術語加進 `docs/glossary.md`。
@@ -44,8 +44,8 @@ description: 撰寫或改寫本書（計算機科學、後端、DevOps、資安�
 
 ```
 site/src/content/docs/<field>/<level>/<section>/<slug>.md
-playground/golang/<field>/<level>/<section>/<slug>/      # Go 範例
-playground/python/ai/<track>/<level>/<section>/<slug>/   # ai 領域的 Python 範例
+playground/<field>/<level>/<section>/<slug>/      # Go 範例
+playground/ai/<track>/<level>/<section>/<slug>/   # ai 領域的 Python 範例
 ```
 
 - `<field>`：`cs`、`backend`、`devops`、`cyber`、`testing`，或 `ai/foundations`、`ai/engineering`、`ai/agents`。

@@ -40,7 +40,7 @@ sidebar:
 以下所有攻擊只在你自己機器上的範例服務（`127.0.0.1`）進行。絕不要對第三方網站或你沒有書面授權的系統測試 CORS。
 :::
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/cors-misconfig/`。`-mode` 旗標切換伺服器用哪一種 origin 檢查，受害 API 在 `127.0.0.1:8080`，攻擊頁面在 `127.0.0.1:9666`。
+範例在 `playground/cyber/p2-web/2-3-cross-site/cors-misconfig/`。`-mode` 旗標切換伺服器用哪一種 origin 檢查，受害 API 在 `127.0.0.1:8080`，攻擊頁面在 `127.0.0.1:9666`。
 
 ### 攻擊的形狀：頁面什麼都沒做
 
@@ -104,7 +104,7 @@ func AllowNull(origins ...string) Check {
 
 要支援很多子網域時，有人用字串比對代替整串相等：
 
-```go title="playground/golang/cyber/p2-web/2-3-cross-site/cors-misconfig/policy/policy.go"
+```go title="playground/cyber/p2-web/2-3-cross-site/cors-misconfig/policy/policy.go"
 // Suffix trusts any origin ending in domain. Vulnerable: https://evilsho.rt
 // also ends in "sho.rt".
 func Suffix(domain string) Check {
@@ -118,7 +118,7 @@ func Suffix(domain string) Check {
 
 四種錯誤的共通修法只有一個：準備一份明確的 origin 清單，整串相等才放行。
 
-```go title="playground/golang/cyber/p2-web/2-3-cross-site/cors-misconfig/policy/policy.go"
+```go title="playground/cyber/p2-web/2-3-cross-site/cors-misconfig/policy/policy.go"
 // Allowlist trusts only origins that match an entry exactly. The fix.
 func Allowlist(origins ...string) Check {
 	set := make(map[string]bool, len(origins))
@@ -184,7 +184,7 @@ func Allowlist(origins ...string) Check {
 
 ## 小練習
 
-範例在 `playground/golang/cyber/p2-web/2-3-cross-site/cors-misconfig/`。先 `go test ./...` 確認全部通過。
+範例在 `playground/cyber/p2-web/2-3-cross-site/cors-misconfig/`。先 `go test ./...` 確認全部通過。
 
 **1. 預測每種模式對應的受害 origin。** 讀 `policy/policy.go` 的四個檢查，寫下每一種會把金鑰洩漏給哪一個 origin，再對照 `server_test.go` 的 `TestMisconfigsLeak`。為什麼 `suffix` 和 `prefix` 不會對 `http://127.0.0.1:9666` 生效？
 

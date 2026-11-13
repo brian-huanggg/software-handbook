@@ -38,7 +38,7 @@ PostgreSQL 源自 UC Berkeley 的 POSTGRES 研究專案，重視標準符合、�
 
 ## 怎麼運作
 
-範例放在 `playground/golang/backend/l2/2-2-database/postgres-vs-mysql/`，用 Docker Compose 起 PostgreSQL 18 與 MySQL 8.4，兩邊用同一份 DDL 與同一組 SQL。
+範例放在 `playground/backend/l2/2-2-database/postgres-vs-mysql/`，用 Docker Compose 起 PostgreSQL 18 與 MySQL 8.4，兩邊用同一份 DDL 與同一組 SQL。
 
 ```bash
 make up    # 起 Postgres（55433）與 MySQL（53307）
@@ -212,7 +212,7 @@ Uber 在 2016 年公開寫過把部分服務從 PostgreSQL 搬到 MySQL 的理�
 
 ### 動手寫：跨資料庫的 Hit
 
-範例目錄：`playground/golang/backend/l2/2-2-database/postgres-vs-mysql/`。
+範例目錄：`playground/backend/l2/2-2-database/postgres-vs-mysql/`。
 
 先跑 `make up` 與 `make demo`，看過三個實驗的輸出。接著補完 `exercise/hit.go` 的 `Hit`：記一次點擊，`code` 不存在就建立並回傳 1，存在就加 1，回傳加完之後的值。同一份函式要在兩個資料庫上都通過，並且 50 個 goroutine 同時呼叫時，每次回傳的值都不同。
 

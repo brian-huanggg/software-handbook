@@ -51,7 +51,7 @@ CMD ["sh"]
 以下實驗只在你自己機器上的 Docker 進行，只建立本機容器與映像。`docker.sock` 的實驗會讓容器掛載你的 Docker 主機的根目錄，請不要在共用機器或正式環境執行。不要拿這些技巧對你沒有書面授權的系統測試。
 :::
 
-範例在 `playground/golang/cyber/p4-advanced/4-3-cloud-container/container-image-attack-surface/`，以下指令都在該目錄執行。它是一個小工具 `containeraudit`，三個子命令對應三個位置：`image` 掃映像的 layer、`dockerfile` 檢查 Dockerfile、`run` 稽核 `docker inspect` 的輸出。每個子命令有發現就以 exit code 1 結束，可以直接接在 CI 上擋住建置。
+範例在 `playground/cyber/p4-advanced/4-3-cloud-container/container-image-attack-surface/`，以下指令都在該目錄執行。它是一個小工具 `containeraudit`，三個子命令對應三個位置：`image` 掃映像的 layer、`dockerfile` 檢查 Dockerfile、`run` 稽核 `docker inspect` 的輸出。每個子命令有發現就以 exit code 1 結束，可以直接接在 CI 上擋住建置。
 
 ### 攻擊面地圖
 
@@ -342,7 +342,7 @@ ip: RTNETLINK answers: Operation not permitted
 
 ## 小練習
 
-範例在 `playground/golang/cyber/p4-advanced/4-3-cloud-container/container-image-attack-surface/`。先 `go test ./...` 確認全部通過。
+範例在 `playground/cyber/p4-advanced/4-3-cloud-container/container-image-attack-surface/`。先 `go test ./...` 確認全部通過。
 
 **1. 證明 `:ro` 擋不住。** 在 `runaudit/runaudit_test.go` 加一個測試：一個 `docker.sock` 的 mount 帶 `"RW": false`，其餘設定都已加固（`CapDrop` 為 `ALL`、非 root、唯讀 rootfs、`no-new-privileges`），預期 `Audit` 仍然只回報 `docker-sock`。這個測試能通過，說明了什麼？
 

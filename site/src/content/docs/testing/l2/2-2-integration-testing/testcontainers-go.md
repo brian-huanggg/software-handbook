@@ -39,7 +39,7 @@ Testcontainers 把「起環境」變成測試程式碼的一部分：`go test` �
 
 ## 怎麼運作
 
-範例在 `playground/golang/testing/l2/2-2-integration-testing/testcontainers-go/`。受測的是短網址服務 v2 的一小塊：連結存在 PostgreSQL，熱門連結的查詢結果快取在 Redis。你不需要讀過後端 L2：只要知道「先查 Redis，沒有再查 PostgreSQL，並把結果寫回 Redis」這個流程就夠了。
+範例在 `playground/testing/l2/2-2-integration-testing/testcontainers-go/`。受測的是短網址服務 v2 的一小塊：連結存在 PostgreSQL，熱門連結的查詢結果快取在 Redis。你不需要讀過後端 L2：只要知道「先查 Redis，沒有再查 PostgreSQL，並把結果寫回 Redis」這個流程就夠了。
 
 ```text
 go test
@@ -241,7 +241,7 @@ func TestMain(m *testing.M) {
 
 在範例的 `Store` 加一個 `Delete(ctx, code)`：刪除資料庫的列，同時讓 Redis 裡的快取失效。
 
-起始程式碼在 `playground/golang/testing/l2/2-2-integration-testing/testcontainers-go/`，直接在 `store/store.go` 與 `store/store_test.go` 上加。目標：
+起始程式碼在 `playground/testing/l2/2-2-integration-testing/testcontainers-go/`，直接在 `store/store.go` 與 `store/store_test.go` 上加。目標：
 
 1. 寫一個 `TestDeleteInvalidatesCache`：建立連結、`Resolve` 一次讓快取暖起來、`Delete`，再 `Resolve` 應該得到 `ErrNotFound`。
 2. 驗證做對了：`go test ./...` 通過；然後把 `Delete` 裡清快取的那一行註解掉，測試應該紅燈。如果拿掉那行測試還是綠的，代表測試沒有真的測到快取。

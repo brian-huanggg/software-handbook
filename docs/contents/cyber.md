@@ -94,7 +94,7 @@
 
 ### 2.3 跨站與請求偽造
 
-- [ ] XSS：反射、儲存、DOM 型與對應修補
+- [x] XSS：反射、儲存、DOM 型與對應修補：三種 XSS 的成因、`HttpOnly` 擋不住借身分、輸出編碼／CSP nonce／安全出口三道防線與各自的盲點 → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/xss.md)
 - [x] CSRF：原理與 token／SameSite 修補：跨站 POST 與頂層 GET 兩種偽造、SameSite／token／Fetch Metadata 三道防線與各自的盲點 → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/csrf.md)
 - [x] CORS 錯誤設定：反射 Origin、`null` origin、搭配 credentials 讀取他人資料與修補（CORS 主線 3/3，承後端 1.4） → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/cors-misconfig.md)
 - [ ] SSRF：原理與出站控制修補

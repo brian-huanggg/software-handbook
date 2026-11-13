@@ -5,6 +5,7 @@
 | English | 本書用法 | 不要用 | 備註 |
 | --- | --- | --- | --- |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
+| ambient authority | 環境權限 | 環境授權 | 憑證由瀏覽器依目的地自動附上、而非請求自己帶著；CSRF 濫用的對象 |
 | asynchronous replication | 非同步複寫 | | 主節點寫完就回覆，副本稍後才追；MariaDB 標準版的預設複寫方式 |
 | attack surface | 攻擊面 | 攻擊表面 | 攻擊者可利用的入口與工具總和；映像裡多一個 shell 或套件管理器就多一份 |
 | bulkhead | 艙壁隔離 | 隔板 | |
@@ -17,9 +18,12 @@
 | cross-origin | 跨源 | 跨域 | 「域」會和網域混淆；跨源連 scheme 與 port 不同都算 |
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
 | CORS misconfiguration | CORS 錯誤設定 | CORS 配置錯誤 | 把 `Access-Control-Allow-Origin` 開給不該信任的 origin |
+| cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
 | distroless image | distroless 映像 | 無發行版映像 | 只含應用程式與執行期相依，無 shell 與套件管理器 |
+| double-submit cookie | double-submit cookie | 雙重提交 Cookie | 不翻譯；token 同時放 Cookie 與表單、比對兩者一致；未簽章、未綁 session 時可被繞過 |
 | failover | 故障轉移 | 容錯移轉、故障切換 | 主節點失效後改由另一個節點接手 |
+| Fetch Metadata | Fetch Metadata | 擷取中繼資料 | 不翻譯；瀏覽器附上的 `Sec-Fetch-*` header，如 `Sec-Fetch-Site` 標明請求是否跨站，網頁腳本無法偽造 |
 | flow control | flow control | 流量控制 | 不翻譯；Galera 節點套用太慢時，通知其他節點暫停寫入 |
 | Galera cluster | Galera 叢集 | Galera 集群 | MariaDB 的多主叢集，用 certification-based 複寫 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
@@ -31,6 +35,7 @@
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
 | load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
 | load shedding | 負載卸除 | 負載篡除 | |
+| login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
@@ -43,6 +48,7 @@
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | same-origin policy | 同源政策 | 同源策略 | |
 | same-site | 同站 | | 只看 scheme 與可註冊網域，不看子網域與 port |
+| SameSite | SameSite | 同站屬性 | 不翻譯；Cookie 屬性，限制跨站請求是否附上該 Cookie（`Strict`、`Lax`、`None`） |
 | secondary index | 次要索引 | 二級索引、輔助索引 | 非主鍵的索引；InnoDB 的葉節點存主鍵值，Postgres 存 ctid |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
 | session persistence | session 保持 | 會話黏滯、黏性會話 | 讓同一個使用者的請求固定到同一台後端；nginx 用 `ip_hash` 或 `hash` 實現 |
@@ -53,6 +59,7 @@
 | split-brain | split-brain | 腦裂 | 不翻譯；叢集分裂後兩邊都以為自己是主節點 |
 | state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |
+| synchronizer token | CSRF token | 同步令牌 | 伺服器發、綁 session 的不可猜測值，不安全方法的請求必須帶上並由伺服器驗證 |
 | tag | tag | 標籤 | 不翻譯；映像上可被改指的名稱，與 digest 相對 |
 | thread | 執行緒 | 線程 | |
 | timeout | 逾時 | 超時 | |

@@ -1,0 +1,3 @@
+{
+  "new-lookup-path": { "enabled": true, "percent": 10, "allow_users": ["alice"], "expires": "2026-12-31" }
+}

@@ -151,6 +151,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 - [ ] docker compose 建立本地環境
 - [ ] CI/CD：GitHub Actions 流水線
 - [ ] 部署策略：滾動、藍綠、金絲雀
+- [x] 功能旗標：部署與發布分離、漸進放量、kill switch → [文章](../../site/src/content/docs/backend/l2/2-7-containers/feature-flags.md)
 - [ ] 設定與環境分離（Twelve-Factor）
 
 ### 2.8 可觀測性基礎

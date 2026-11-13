@@ -24,6 +24,7 @@
 | CORS misconfiguration | CORS 錯誤設定 | CORS 配置錯誤 | 把 `Access-Control-Allow-Origin` 開給不該信任的 origin |
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
+| dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
 | distroless image | distroless 映像 | 無發行版映像 | 只含應用程式與執行期相依，無 shell 與套件管理器 |
 | DOM-based XSS | DOM 型 XSS | | 酬載由前端 JavaScript 從來源寫進出口（如 `innerHTML`）；`#` 之後的片段不送到伺服器，伺服器看不到 |
@@ -33,6 +34,7 @@
 | Fetch Metadata | Fetch Metadata | 擷取中繼資料 | 不翻譯；瀏覽器附上的 `Sec-Fetch-*` header，如 `Sec-Fetch-Site` 標明請求是否跨站，網頁腳本無法偽造 |
 | flow control | flow control | 流量控制 | 不翻譯；Galera 節點套用太慢時，通知其他節點暫停寫入 |
 | Galera cluster | Galera 叢集 | Galera 集群 | MariaDB 的多主叢集，用 certification-based 複寫 |
+| gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
@@ -41,6 +43,7 @@
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
+| isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
 | layered verification | 分層驗證 | | 把審查拆成多道各自攔截不同風險的檢查，再依風險加上人類核准 |
 | load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
@@ -50,6 +53,7 @@
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
+| MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
@@ -88,10 +92,13 @@
 | thread | 執行緒 | 線程 | |
 | timeout | 逾時 | 超時 | |
 | Trusted Types | Trusted Types | | 不翻譯；瀏覽器機制，強制 `innerHTML` 等出口只接受經指定函式處理的值，用來根治 DOM 型 XSS |
+| undo log | undo log | 回滾日誌 | 不翻譯；InnoDB 存放資料列舊版本的區域，供回滾與一致性讀取使用，由 purge 回收 |
 | upstream | upstream | 上游 | 不翻譯；nginx 中一組後端 server 的群組，用 `proxy_pass` 指向它 |
 | UUID | UUID | 通用唯一識別碼 | 128 bits；v4 全隨機、v7 前 48 bits 是毫秒時間戳（RFC 9562） |
+| VACUUM | VACUUM |  | 不翻譯；Postgres 回收 dead tuple 空間的作業，通常不會把檔案縮小還給作業系統 |
 | virtually synchronous | virtually synchronous | 虛擬同步 | 不翻譯；已 commit 的交易保證會被每個節點套用，但不保證同一時刻 |
 | wait strategy | 等待策略 | 等待機制 | 容器啟動後持續檢查某個條件（log、port、SQL 連線）、成立才算就緒；用來取代 `time.Sleep` |
 | weighted round robin | 加權輪詢 | 加權循環 | 依 weight 比例輪流分配請求；nginx upstream 的預設方式 |
 | whiteout | whiteout | 白除、刪除標記 | 不翻譯；後面 layer 以 `.wh.` 前綴檔標示「這個檔案已刪除」，舊 layer 內容不變 |
+| write-ahead log (WAL) | 預寫日誌（WAL） |  | 資料變更先寫進日誌再寫進資料檔；Postgres 的串流複寫就是傳送 WAL |
 | write-set | write-set | 寫入集 | 不翻譯；一筆交易要複寫給其他節點的變更內容 |

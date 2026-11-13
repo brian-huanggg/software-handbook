@@ -99,6 +99,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 - [ ] 交易與 ACID
 - [ ] 隔離級別與異常現象：dirty read、phantom read
 - [ ] 鎖：行鎖、樂觀鎖、悲觀鎖、deadlock
+- [x] [PostgreSQL vs MySQL：機制差異與選型](../../site/src/content/docs/backend/l2/2-2-database/postgres-vs-mysql.md)
 - [ ] 慢查詢診斷與優化
 - [ ] N+1 查詢問題
 - [ ] 連線池調校

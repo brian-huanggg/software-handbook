@@ -1,0 +1,30 @@
+# 刻意用非預設 port（55433、53307），避免和本機已在跑的資料庫，
+# 或同一節 primary-key-choice 範例的 55432、53306 衝突。
+# autovacuum 在範例程式裡針對單一資料表關掉，讓你親眼看到 dead tuple 累積。
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    ports:
+      - "55433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: demo
+      MYSQL_DATABASE: demo
+    command: ["--skip-log-bin"]
+    ports:
+      - "53307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pdemo"]
+      interval: 2s
+      timeout: 3s
+      retries: 60

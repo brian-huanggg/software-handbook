@@ -54,7 +54,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 ### 1.4 認證與基礎安全
 
 - [ ] 認證（authn）vs 授權（authz）
-- [ ] 密碼雜湊：bcrypt、argon2
+- [x] 密碼雜湊：bcrypt、argon2、salt 與 pepper → [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/password-hashing.md)
 - [ ] Session 與 Cookie
 - [ ] JWT 的基礎與限制
 - [ ] Session vs Token：有狀態與無狀態認證的取捨與選型

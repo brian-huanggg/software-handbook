@@ -6,8 +6,10 @@
 | --- | --- | --- | --- |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
 | ambient authority | 環境權限 | 環境授權 | 憑證由瀏覽器依目的地自動附上、而非請求自己帶著；CSRF 濫用的對象 |
+| argon2id | argon2id | | 不翻譯；密碼雜湊競賽優勝者 argon2 的混合版本（RFC 9106），新專案的預設選擇 |
 | asynchronous replication | 非同步複寫 | | 主節點寫完就回覆，副本稍後才追；MariaDB 標準版的預設複寫方式 |
 | attack surface | 攻擊面 | 攻擊表面 | 攻擊者可利用的入口與工具總和；映像裡多一個 shell 或套件管理器就多一份 |
+| bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
 | blast radius | 影響範圍 | 爆炸半徑 | 一次出錯會波及的使用者與系統範圍；功能旗標與分階段發布用來縮小它 |
 | bulkhead | 艙壁隔離 | 隔板 | |
 | cache stampede | 快取擊穿 | | 熱門 key 失效瞬間大量請求打到資料庫 |
@@ -19,9 +21,9 @@
 | consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
 | container | 容器 | 貨櫃 | 共用主機核心、靠 namespace 與 cgroup 隔離的行程 |
 | Content Security Policy (CSP) | 內容安全政策（CSP） | | 伺服器以標頭告訴瀏覽器哪些來源的腳本可以執行；nonce 型政策只放行帶本次回應 nonce 的腳本。第一次出現寫全名，之後只寫 CSP |
+| CORS misconfiguration | CORS 錯誤設定 | CORS 配置錯誤 | 把 `Access-Control-Allow-Origin` 開給不該信任的 origin |
 | cross-origin | 跨源 | 跨域 | 「域」會和網域混淆；跨源連 scheme 與 port 不同都算 |
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
-| CORS misconfiguration | CORS 錯誤設定 | CORS 配置錯誤 | 把 `Access-Control-Allow-Origin` 開給不該信任的 origin |
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
@@ -44,6 +46,7 @@
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
+| key stretching | 金鑰延展 | 密鑰拉伸 | 把雜湊重複很多輪讓單次計算變貴；密碼雜湊的核心做法 |
 | kill switch | kill switch | 緊急開關 | 不翻譯；營運用旗標，出事時一關就停用某個功能，不需重新部署 |
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
 | layered verification | 分層驗證 | | 把審查拆成多道各自攔截不同風險的檢查，再依風險加上人類核准 |
@@ -60,16 +63,20 @@
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
+| password hashing | 密碼雜湊 | 口令哈希 | 用刻意設計成慢且吃記憶體的函式處理密碼後再儲存；與 SHA-256 等通用雜湊不同類 |
 | payload | 酬載 | 載荷 | 攻擊者送進目標、要讓它執行的內容；在 XSS 中是那段注入的標記或腳本 |
+| pepper | pepper | 胡椒 | 不翻譯；全站共用、存在資料庫以外的祕密值，與 salt 搭配使用 |
 | preflight request | 預檢請求 | 預檢、OPTIONS 請求 | 瀏覽器在非簡單請求前自動發出的 `OPTIONS` |
 | primary / replica | primary／replica | master／slave、主庫／從庫 | 不翻譯；標題或總稱可寫「主從複寫」 |
 | quorum | quorum | 法定人數 | 不翻譯；超過一半節點互相連得上，只有這一邊能繼續寫入 |
+| rainbow table | 彩虹表 | | 預先算好的「密碼對雜湊」對照表；每人獨立的 salt 可使其失效 |
 | recovery point objective (RPO) | RPO | | 故障後最多可接受丟失的資料量；RPO = 0 表示不丟已確認的寫入；第一次出現寫全名 |
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
 | Ryuk | Ryuk | | 不翻譯；Testcontainers 啟動的小容器，測試程序結束（含被強制終止）後負責清掉這次啟動的容器 |
+| salt | salt | 鹽 | 不翻譯；每個使用者各自隨機產生、與雜湊存在一起的值，讓相同密碼得到不同雜湊 |
 | same-origin policy | 同源政策 | 同源策略 | |
 | same-site | 同站 | | 只看 scheme 與可註冊網域，不看子網域與 port |
 | SameSite | SameSite | 同站屬性 | 不翻譯；Cookie 屬性，限制跨站請求是否附上該 Cookie（`Strict`、`Lax`、`None`） |

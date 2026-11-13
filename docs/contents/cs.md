@@ -145,22 +145,42 @@
 
 ### T.1 Linux 命令列
 
-- [ ] 檔案、權限、擁有者
+- [ ] 檔案系統導覽：路徑、目錄結構（`/etc`、`/var`、`/usr`、`/home`）、常用檔案操作
 - [ ] pipe、重導向、grep、find、curl
 - [ ] process 與訊號、看 log
 
-### T.2 Shell 指令碼
+### T.2 使用者、群組與權限
+
+本節講「誰能對什麼做什麼」在 Linux 上怎麼被決定與管理。檔案系統與 file descriptor 的底層在 O.4；容器的隔離在 O.6；應用層的 RBAC 在後端 2.6 與 4.2，本節只講作業系統這一層。
+
+- [ ] 使用者與群組模型：UID/GID、`/etc/passwd`、`/etc/shadow`、`/etc/group`、root、系統帳號與一般帳號
+- [ ] 管理帳號：`useradd`、`usermod`、`userdel`、`groupadd`、`id`、`whoami`、主要群組與附加群組
+- [ ] 檔案權限矩陣：owner／group／other × read／write／execute、`ls -l` 讀法、`chmod`（符號與八進位）、`chown`、`chgrp`
+- [ ] 目錄權限的語意：目錄上的 `r` 與 `x` 差在哪、路徑逐層檢查、為什麼「刪檔」看的是父目錄
+- [ ] 預設權限：`umask` 如何決定新檔案與新目錄的權限
+- [ ] 特殊權限位：setuid、setgid、sticky bit（`/tmp`、`passwd` 為什麼能運作）與其安全風險
+- [ ] 提權：`su`、`sudo`、`/etc/sudoers` 與 `visudo`、最小授權寫法、`sudo` 的稽核紀錄
+- [ ] 細粒度授權：POSIX ACL（`getfacl`／`setfacl`）、什麼時候該用 ACL 而不是多開一個群組
+- [ ] Linux capabilities：把 root 的權力拆開、`CAP_NET_BIND_SERVICE` 等常見能力、`getcap`／`setcap`
+- [ ] 核心如何做權限檢查：process 的 real／effective／saved UID、`fork` 與 `exec` 時的身分繼承
+- [ ] 服務身分：用專屬的非 root 帳號跑服務、systemd `User=`、檔案與 socket 的擁有者、為什麼不該用 root 跑網路服務
+- [ ] 登入與認證：PAM 概觀、SSH 金鑰登入、`~/.ssh` 權限、`authorized_keys`、停用密碼登入
+- [ ] 權限問題排查：`Permission denied` 的檢查順序（`namei -l`、`id`、`ls -ld`、`getfacl`、`strace`）
+- [ ] 設計一份權限矩陣：用多人共用目錄的案例（開發者／維運／唯讀稽核）把群組、ACL、`sudo` 規則組合起來並驗證
+- [ ] 容器裡的使用者：容器內 UID 與主機 UID 的對應、non-root image、掛載目錄的擁有者問題（連到 O.6 與 DevOps 容器章節）
+
+### T.3 Shell 指令碼
 
 - [ ] 變數、條件、迴圈、函式
 - [ ] 寫一個可重複執行的小腳本
 
-### T.3 版本控制 Git
+### T.4 版本控制 Git
 
 - [ ] commit、branch、merge、rebase
 - [ ] 解 conflict、閱讀歷史
 - [ ] PR 流程與協作
 
-### T.4 除錯與建置
+### T.5 除錯與建置
 
 - [ ] 用 log 與除錯器定位問題
 - [ ] strace 與 tcpdump 入門

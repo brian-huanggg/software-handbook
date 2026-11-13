@@ -53,9 +53,10 @@ export const levels: Level[] = [
 		dir: 't-tools',
 		sections: [
 			{ label: 'Linux 命令列', dir: 't-1-linux-cli' },
-			{ label: 'Shell 指令碼', dir: 't-2-shell' },
-			{ label: '版本控制 Git', dir: 't-3-git' },
-			{ label: '除錯與建置', dir: 't-4-debug-build' },
+			{ label: '使用者、群組與權限', dir: 't-2-users-permissions' },
+			{ label: 'Shell 指令碼', dir: 't-3-shell' },
+			{ label: '版本控制 Git', dir: 't-4-git' },
+			{ label: '除錯與建置', dir: 't-5-debug-build' },
 		],
 	},
 	{

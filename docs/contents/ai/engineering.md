@@ -200,4 +200,4 @@ L4 的目標是做出模型與部署的架構決策：用 API 還是自架、要
 - [ ] 供應商鎖定與模型抽象層
 - [ ] 資料隱私、授權與合規
 - [ ] AI 產品的責任與透明度
-- [ ] 為團隊建立 AI 使用與審查規範
+- [x] AI 時代的程式碼審查：分層驗證與風險分級 → [文章](../../../site/src/content/docs/ai/engineering/l4/4-5-architecture-governance/ai-code-review.md)

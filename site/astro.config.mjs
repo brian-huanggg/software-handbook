@@ -9,6 +9,7 @@ import cs from './src/sidebar/cs.ts';
 import cyber from './src/sidebar/cyber.ts';
 import devops from './src/sidebar/devops.ts';
 import testing from './src/sidebar/testing.ts';
+import tools from './src/sidebar/tools.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -35,6 +36,7 @@ export default defineConfig({
 					{ label: '資安', link: '/cyber/', icon: 'warning', items: cyber },
 					{ label: '測試', link: '/testing/', icon: 'approve-check', items: testing },
 					{ label: 'AI', link: '/ai/', icon: 'puzzle', items: ai },
+					{ label: '工具', link: '/tools/', icon: 'setting', items: tools },
 				]),
 			],
 		}),

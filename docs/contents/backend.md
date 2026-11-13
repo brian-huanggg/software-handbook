@@ -57,6 +57,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 - [ ] 密碼雜湊：bcrypt、argon2
 - [ ] Session 與 Cookie
 - [ ] JWT 的基礎與限制
+- [ ] Session vs Token：有狀態與無狀態認證的取捨與選型
 - [ ] 常見漏洞入門：XSS、CSRF、敏感資料外洩
 - [x] CORS：原理、預檢請求與在 Go 中正確設定（CORS 主線 2/3，承 CS N.4，接資安 P2 2.3）→ [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/cors.md)
 

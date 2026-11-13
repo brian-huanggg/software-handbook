@@ -197,14 +197,24 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 依領域拆服務：DDD 基礎、bounded context
 - [ ] 服務間通訊：同步 vs 非同步
 - [ ] 服務探索與設定中心
-- [ ] API Gateway 與 BFF
-- [x] Nginx 負載平衡 1/3：選型與演算法 → [文章](../../site/src/content/docs/backend/l3/3-3-service-architecture/nginx-lb-selection.md)
-- [ ] Nginx 負載平衡 2/3 可靠性：被動 vs 主動健康檢查、`proxy_next_upstream` 重試風險、upstream keepalive、upstream DNS 解析陷阱、Nginx 本身的單點故障（keepalived／VRRP）
-- [ ] Nginx 負載平衡 3/3 營運與替代方案：`X-Forwarded-For` 與 `real_ip`、用 `stream` 平衡 TCP（如 MariaDB Galera）、何時改用 HAProxy、Envoy 或 Kubernetes Ingress
+- [ ] API Gateway 與 BFF（反向代理與 Nginx 見 3.4）
 - [ ] 事件驅動架構
 - [ ] 乾淨架構、六角架構與 Go 的實務專案分層
 
-### 3.4 韌性設計
+### 3.4 流量入口：反向代理與負載平衡
+
+- [ ] 反向代理基礎：正向 vs 反向代理、`proxy_pass`、`Host` 與 `X-Forwarded-*` 標頭、反向代理的常見用途
+- [x] Nginx 負載平衡 1/3：選型與演算法 → [文章](../../site/src/content/docs/backend/l3/3-4-traffic-entry/nginx-lb-selection.md)
+- [ ] Nginx 負載平衡 2/3 可靠性：被動 vs 主動健康檢查、`proxy_next_upstream` 重試風險、upstream keepalive、upstream DNS 解析陷阱、Nginx 本身的單點故障（keepalived／VRRP）
+- [ ] Nginx 負載平衡 3/3 營運與替代方案：`X-Forwarded-For` 與 `real_ip`、用 `stream` 平衡 TCP（如 MariaDB Galera）、何時改用 HAProxy、Envoy 或 Kubernetes Ingress
+- [ ] Nginx 路由：`location` 比對優先順序、依 host 分流、`rewrite` 與路徑前綴剝除、`proxy_pass` 結尾斜線陷阱
+- [ ] Nginx TLS 終結：憑證與自動更新、HTTP 轉 HTTPS、HTTP/2、HSTS、連到上游的 TLS
+- [ ] Nginx 快取（`proxy_cache`）：快取鍵、失效與清除、`stale` 回應、避免快取個人化內容（快取理論見 2.3）
+- [ ] Nginx 處理 WebSocket、SSE 與串流：`Upgrade` 標頭、關閉緩衝、長連線逾時
+- [ ] Nginx 限流與安全加固：`limit_req`、`limit_conn`、IP 白名單／黑名單、隱藏版本與標頭加固（演算法見 2.5、3.5）
+- [ ] Nginx 逾時、緩衝與調校，及 502／504 排錯：`proxy_*_timeout`、`proxy_buffering`、worker 與連線數、常見錯誤診斷
+
+### 3.5 韌性設計
 
 - [ ] 逾時、重試、指數退避與 jitter
 - [ ] 斷路器、艱壁隔離
@@ -212,7 +222,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 重試風暴與級聯故障
 - [ ] 故障注入與混沌工程入門
 
-### 3.5 效能調校
+### 3.6 效能調校
 
 - [ ] 效能的度量：延遲、吞吐、p99
 - [ ] 基準測試：`testing.B`、壓力測試
@@ -221,7 +231,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 資料庫層的調校：讀寫分離、分區表
 - [ ] 實作：將 Go 服務優化一個數量級
 
-### 3.6 資料底層原理
+### 3.7 資料底層原理
 
 - [ ] 儲存引擎：B+ 樹 vs LSM-tree
 - [ ] WAL 與崩潰恢復
@@ -230,7 +240,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 時序資料庫與列式儲存
 - [ ] 資料倉儲與串流處理概觀
 
-### 3.7 雲原生
+### 3.8 雲原生
 
 - [ ] Kubernetes 核心：Pod、Deployment、Service、Ingress
 - [ ] 設定、秘密與彈性伸縮
@@ -239,7 +249,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 - [ ] 雲端服務全貌：計算、儲存、網路、托管資料庫
 - [ ] Serverless 的適用與限制
 
-### 3.8 系統設計實戰
+### 3.9 系統設計實戰
 
 - [ ] 系統設計的思考框架：需求、估算、設計、取捨
 - [ ] 容量估算（back-of-the-envelope）

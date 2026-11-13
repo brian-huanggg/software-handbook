@@ -115,7 +115,7 @@
 ### 2.2 整合測試
 
 - [ ] 整合測試的範圍：要真的接什麼、要假的接什麼
-- [ ] Testcontainers for Go：在測試裡起真的 PostgreSQL 與 Redis
+- [x] Testcontainers for Go：真資料庫測試 → [文章](../../site/src/content/docs/testing/l2/2-2-integration-testing/testcontainers-go.md)
 - [ ] 測外部 HTTP 依賴：`httptest.Server` 與錄放
 - [ ] 測試訊息佇列與非同步流程
 - [ ] build tag 與 `testing.Short()`：分開快測試與慢測試

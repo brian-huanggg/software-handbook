@@ -2,7 +2,7 @@
 title: PostgreSQL vs MySQL：機制差異與選型
 description: 用同一張短網址資料表在兩個資料庫實測 MVCC、隔離級別與連線模型的差異，學會依工作負載選型，並避開換庫時最常踩的坑。
 sidebar:
-  order: 7
+  order: 15
 ---
 
 ## 先想想

@@ -12,7 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /** Outermost after the size limit, so every response, errors included, is uncacheable. */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class NoStoreFilter extends OncePerRequestFilter {
 
     @Override

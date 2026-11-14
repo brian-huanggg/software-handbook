@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * re-read the buffered copy, so memory per request stays bounded.
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class BodySizeLimitFilter extends OncePerRequestFilter {
 
     public static final int MAX_BODY_BYTES = 64 * 1024;

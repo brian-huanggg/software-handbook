@@ -4,7 +4,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
@@ -22,7 +22,7 @@ public record AuthenticatedPrincipal(UUID userId, List<String> roles) implements
         return userId.toString();
     }
 
-    public Authentication toAuthentication() {
+    public AbstractAuthenticationToken toAuthentication() {
         return UsernamePasswordAuthenticationToken.authenticated(this, null,
                 roles.stream().map(r -> new SimpleGrantedAuthority("ROLE_" + r)).toList());
     }

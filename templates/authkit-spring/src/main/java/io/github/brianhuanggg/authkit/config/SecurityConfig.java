@@ -2,6 +2,7 @@ package io.github.brianhuanggg.authkit.config;
 
 import io.github.brianhuanggg.authkit.session.SessionAuthenticationFilter;
 import io.github.brianhuanggg.authkit.session.SessionService;
+import io.github.brianhuanggg.authkit.token.JwtService;
 import io.github.brianhuanggg.authkit.web.CsrfHeaderFilter;
 import io.github.brianhuanggg.authkit.web.JsonAccessDeniedHandler;
 import io.github.brianhuanggg.authkit.web.JsonAuthenticationEntryPoint;
@@ -55,12 +56,19 @@ class SecurityConfig {
 
     @Bean
     @Order(2)
-    SecurityFilterChain tokenChain(HttpSecurity http, AuthkitProperties props) throws Exception {
+    SecurityFilterChain tokenChain(HttpSecurity http, AuthkitProperties props, JwtService jwt) throws Exception {
         base(http, props, BEARER_CHALLENGE)
                 .securityMatcher("/token/**")
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/token/me").authenticated()
-                        .anyRequest().permitAll());
+                        .anyRequest().permitAll())
+                // Every bearer failure, whatever the cause, is the same 401 as everywhere else.
+                .oauth2ResourceServer(o -> o
+                        .jwt(j -> j
+                                .decoder(jwt.decoder())
+                                .jwtAuthenticationConverter(JwtService::toAuthentication))
+                        .authenticationEntryPoint(new JsonAuthenticationEntryPoint(BEARER_CHALLENGE))
+                        .accessDeniedHandler(new JsonAccessDeniedHandler()));
         return http.build();
     }
 

@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: authkit-spring
+  main:
+    banner-mode: off
+  jackson:
+    deserialization:
+      # Boot turns this off by default. Reject unknown JSON fields, like the Go API.
+      fail-on-unknown-properties: true
+  flyway:
+    # The Go stack's migrate service may have created the schema already
+    # (golang-migrate, no flyway_schema_history). Treat that as version 2.
+    # On an empty database Flyway still runs V1 and V2.
+    baseline-on-migrate: true
+    baseline-version: "2"
+
+# Every setting comes from the same environment variables as the Go API.
+# An unset or empty variable means "use the default"; required ones are
+# checked in AuthkitProperties so the app never starts with an unsafe default.
+authkit:
+  addr: ${ADDR:}
+  database-url: ${DATABASE_URL:}
+  jwt-secret: ${JWT_SECRET:}
+  jwt-previous-secrets: ${JWT_PREVIOUS_SECRETS:}
+  jwt-issuer: ${JWT_ISSUER:}
+  password-pepper: ${PASSWORD_PEPPER:}
+  password-previous-peppers: ${PASSWORD_PREVIOUS_PEPPERS:}
+  cors-origins: ${CORS_ORIGINS:}
+  log-format: ${LOG_FORMAT:}
+  cookie-insecure: ${COOKIE_INSECURE:}
+  rate-limit-ip-burst: ${RATE_LIMIT_IP_BURST:}
+  rate-limit-email-burst: ${RATE_LIMIT_EMAIL_BURST:}

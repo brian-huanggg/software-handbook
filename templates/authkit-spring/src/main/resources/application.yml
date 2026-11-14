@@ -1,4 +1,13 @@
+server:
+  # Finish in-flight requests on SIGTERM, like the Go API's Shutdown(10s).
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 10s
+    keep-alive-timeout: 60s
+
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
   application:
     name: authkit-spring
   main:

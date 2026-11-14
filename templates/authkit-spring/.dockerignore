@@ -1,0 +1,8 @@
+target/
+.git/
+.idea/
+.vscode/
+.jwt_secret
+.env*
+TODO.md
+Makefile

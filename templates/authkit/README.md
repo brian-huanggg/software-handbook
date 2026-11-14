@@ -34,7 +34,7 @@ import (
 Package documentation:
 [pkg.go.dev](https://pkg.go.dev/github.com/brian-huanggg/software-handbook/templates/authkit).
 The module lives in a subdirectory of a larger repository, so its release tags
-are prefixed: `templates/authkit/v0.1.2`.
+are prefixed: `templates/authkit/v0.1.3`.
 
 ## Quick start
 

@@ -46,28 +46,28 @@ class ScaffoldTest {
 
     @Test
     void rejectsUnknownJsonFields() throws Exception {
-        mvc.perform(post("/test-echo").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/test-echo").header("X-Requested-With", "XMLHttpRequest").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"a\",\"extra\":1}"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void acceptsKnownJsonFields() throws Exception {
-        mvc.perform(post("/test-echo").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"a\"}"))
+        mvc.perform(post("/test-echo").header("X-Requested-With", "XMLHttpRequest").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"a\"}"))
                 .andExpect(status().isOk()).andExpect(content().string("a"));
     }
 
     @Test
     void bodyOfExactlyLimitPasses() throws Exception {
         String body = "{\"name\":\"" + "a".repeat(BodySizeLimitFilter.MAX_BODY_BYTES - 11) + "\"}";
-        mvc.perform(post("/test-echo").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/test-echo").header("X-Requested-With", "XMLHttpRequest").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk());
     }
 
     @Test
     void bodyOverLimitIs413() throws Exception {
         String body = "{\"name\":\"" + "a".repeat(BodySizeLimitFilter.MAX_BODY_BYTES - 10) + "\"}";
-        mvc.perform(post("/test-echo").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/test-echo").header("X-Requested-With", "XMLHttpRequest").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isPayloadTooLarge())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(content().json("{\"error\":\"request body too large\"}"));

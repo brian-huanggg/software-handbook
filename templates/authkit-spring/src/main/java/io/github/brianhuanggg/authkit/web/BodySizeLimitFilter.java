@@ -47,11 +47,7 @@ public class BodySizeLimitFilter extends OncePerRequestFilter {
     }
 
     private static void tooLarge(HttpServletResponse response) throws IOException {
-        response.setStatus(413);
-        response.setContentType("application/json");
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("X-Content-Type-Options", "nosniff");
-        response.getOutputStream().write("{\"error\":\"request body too large\"}\n".getBytes(StandardCharsets.UTF_8));
+        ApiErrors.write(response, 413, "request body too large");
     }
 
     /** The buffered body, readable again as a stream or a reader. */

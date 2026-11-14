@@ -3,10 +3,15 @@ spring:
     name: authkit-spring
   main:
     banner-mode: off
+  autoconfigure:
+    # No generated in-memory user: authentication is our own session and JWT filters.
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   jackson:
     deserialization:
       # Boot turns this off by default. Reject unknown JSON fields, like the Go API.
       fail-on-unknown-properties: true
+      # Exactly one JSON value, like the Go API: {...}{...} is rejected.
+      fail-on-trailing-tokens: true
   flyway:
     # The Go stack's migrate service may have created the schema already
     # (golang-migrate, no flyway_schema_history). Treat that as version 2.

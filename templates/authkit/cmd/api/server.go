@@ -39,7 +39,10 @@ type deps struct {
 	Refresh          *token.RefreshManager
 	RefreshCookieTTL time.Duration
 	InsecureCookies  bool
-	AllowedOrigins   []string // CORS + CSRF; empty means no browser origin may send unsafe requests
+	// Ready reports whether dependencies (the DB) are reachable, for /readyz.
+	// Nil means always ready (tests).
+	Ready          func(context.Context) error
+	AllowedOrigins []string // CORS + CSRF; empty means no browser origin may send unsafe requests
 
 	// Brute-force limits. Nil disables a limit (tests). AuthIPLimit applies
 	// per client IP to /register and both logins; LoginEmailLimit applies per
@@ -78,7 +81,11 @@ func newHandler(d deps) (http.Handler, error) {
 	s := &server{deps: d, dummyHash: dummy}
 
 	mux := http.NewServeMux()
+	// Liveness: the process is up. Never touches the DB, so a DB outage does
+	// not make an orchestrator restart a healthy process.
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok")) })
+	// Readiness: dependencies are reachable; route traffic only when 200.
+	mux.HandleFunc("GET /readyz", s.readyz)
 	// Every endpoint that runs a password hash is limited per client IP.
 	perIP := middleware.RateLimit(d.AuthIPLimit, middleware.ClientIP)
 	mux.Handle("POST /register", perIP(http.HandlerFunc(s.register)))
@@ -98,7 +105,23 @@ func newHandler(d deps) (http.Handler, error) {
 
 	// CORS is outside CSRF so preflights are answered before the CSRF check.
 	// NoStore is outermost so every response, errors included, is uncacheable.
-	return middleware.NoStore(middleware.CORS(d.AllowedOrigins)(middleware.CSRF(d.AllowedOrigins)(mux))), nil
+	// RequestID and AccessLog wrap everything so even rejected requests are
+	// logged with their ID.
+	h := middleware.NoStore(middleware.CORS(d.AllowedOrigins)(middleware.CSRF(d.AllowedOrigins)(mux)))
+	return middleware.RequestID(middleware.AccessLog(h, "/healthz", "/readyz")), nil
+}
+
+func (s *server) readyz(w http.ResponseWriter, r *http.Request) {
+	if s.Ready != nil {
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if err := s.Ready(ctx); err != nil {
+			slog.WarnContext(r.Context(), "not ready", "err", err)
+			writeError(w, http.StatusServiceUnavailable, "not ready")
+			return
+		}
+	}
+	_, _ = w.Write([]byte("ok"))
 }
 
 // ---- helpers -------------------------------------------------------------
@@ -348,7 +371,13 @@ func (s *server) tokenRefresh(w http.ResponseWriter, r *http.Request) {
 	newRaw, userID, err := s.Refresh.Rotate(r.Context(), c.Value)
 	switch {
 	case errors.Is(err, token.ErrReuseDetected):
-		slog.WarnContext(r.Context(), "refresh token reuse detected; family revoked")
+		var reuse *token.ReuseError
+		if errors.As(err, &reuse) {
+			slog.WarnContext(r.Context(), "refresh token reuse detected; family revoked",
+				"family_id", reuse.FamilyID, "user_id", reuse.UserID)
+		} else {
+			slog.WarnContext(r.Context(), "refresh token reuse detected; family revoked")
+		}
 		s.clearRefreshCookie(w)
 		writeError(w, http.StatusUnauthorized, "unauthenticated")
 		return

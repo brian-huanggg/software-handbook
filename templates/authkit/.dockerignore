@@ -3,3 +3,6 @@ web
 integration
 docker-compose.yml
 Makefile
+
+.env*
+.jwt_secret

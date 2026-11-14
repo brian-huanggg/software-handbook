@@ -74,3 +74,21 @@ func TestLoadConfig_FailsFast(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadConfig_LogFormat(t *testing.T) {
+	base := map[string]string{"DATABASE_URL": "postgres://x", "JWT_SECRET": strings.Repeat("k", 32)}
+	for format, want := range map[string]bool{"": false, "text": false, "json": true} {
+		m := map[string]string{"LOG_FORMAT": format}
+		for k, v := range base {
+			m[k] = v
+		}
+		cfg, err := loadConfig(getenv(m))
+		if err != nil || cfg.LogJSON != want {
+			t.Errorf("LOG_FORMAT=%q: LogJSON=%v err=%v, want %v", format, cfg.LogJSON, err, want)
+		}
+	}
+	base["LOG_FORMAT"] = "xml"
+	if _, err := loadConfig(getenv(base)); err == nil {
+		t.Error("LOG_FORMAT=xml: want error")
+	}
+}

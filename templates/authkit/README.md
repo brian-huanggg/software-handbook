@@ -63,7 +63,8 @@ JWT_SECRET=$(openssl rand -hex 32) make run
 ### Tests
 
 ```sh
-go test ./...        # Postgres-backed tests skip unless TEST_DATABASE_URL is set, e.g.
+make test            # = go test ./...; Postgres-backed tests skip when the DB is
+                     # unreachable, but FAIL when CI is set. Point them elsewhere with e.g.
                      # TEST_DATABASE_URL="postgres://authkit:authkit@localhost:5432/authkit?sslmode=disable"
 make integration     # starts the stack, then runs the end-to-end tests
 make docs            # Swagger UI for api/openapi.yaml at http://localhost:8081
@@ -83,6 +84,7 @@ the required ones are missing, so it never runs with an unsafe default.
 | `PASSWORD_PEPPER` | no | none | Secret mixed into new password hashes; keep it outside the database |
 | `PASSWORD_PREVIOUS_PEPPERS` | no | none | Comma-separated old peppers that still verify, for rotation |
 | `CORS_ORIGINS` | no | none | Comma-separated browser origins allowed to call the API. Each must be `scheme://host[:port]`, with no path and no `*`. Include the API's own origin if pages served from it call the API |
+| `LOG_FORMAT` | no | `text` | `json` for structured logs. Every request is logged (method, path, status, duration) with a `request_id`, also returned in `X-Request-Id`; probes are not logged. The compose stack uses `json` |
 | `COOKIE_INSECURE` | no | off | `1` or `true` drops the `Secure` cookie flag. Development only |
 | `ADDR` | no | `:8080` | Listen address |
 | `RATE_LIMIT_IP_BURST` | no | `20` | Burst of the per-IP limiter on `/register` and both logins. Positive integer; it cannot be turned off |
@@ -106,7 +108,8 @@ The full contract is in [api/openapi.yaml](api/openapi.yaml). Summary:
 
 | Method and path | Auth | Description |
 |---|---|---|
-| `GET /healthz` | none | Liveness check |
+| `GET /healthz` | none | Liveness check (never touches the DB) |
+| `GET /readyz` | none | Readiness check: `200` when the DB answers a ping, else `503` |
 | `POST /register` | none | Create an account (`email`, `password` of 8–128 bytes). Always `202`, also for an existing email |
 | `POST /session/login` | none | Verify credentials, set the `sid` cookie |
 | `POST /session/logout` | cookie | Delete the session, clear the cookie |

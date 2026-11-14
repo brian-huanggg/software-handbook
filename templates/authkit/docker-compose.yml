@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:16@sha256:63e83b5a3dc36a917dccb76fe1bd2ac51f1ec9c1deb47ff20d4f04233bf6eae9
     environment:
       POSTGRES_USER: authkit
       POSTGRES_PASSWORD: authkit
@@ -17,7 +17,7 @@ services:
 
   # One-shot: applies ./migrations, then exits. The API waits for it.
   migrate:
-    image: migrate/migrate
+    image: migrate/migrate:v4.19.0@sha256:d5c978181e3bfa55cc50e3bd8d7da3d87418a87693453250a8804b81ee6494db
     volumes:
       - ./migrations:/migrations:ro
     command:
@@ -40,6 +40,7 @@ services:
       # Empty when unset: the API then refuses to start with a clear error,
       # while `docker compose up db web` keeps working without it.
       JWT_SECRET: ${JWT_SECRET:-}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
       CORS_ORIGINS: http://localhost:3000
       # Brute-force limiter bursts; empty means the built-in defaults (20, 5).
       # `make integration` raises them: the suite logs in many times from one IP.

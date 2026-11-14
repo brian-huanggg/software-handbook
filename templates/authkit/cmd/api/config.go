@@ -30,6 +30,7 @@ const (
 type config struct {
 	Addr        string
 	DatabaseURL string
+	LogJSON     bool // LOG_FORMAT=json; default is text
 	JWTSecret   []byte
 	// JWTPreviousSecrets verify tokens signed before a key rotation; they
 	// never sign. Comma-separated in JWT_PREVIOUS_SECRETS.
@@ -70,6 +71,13 @@ func loadConfig(getenv func(string) string) (config, error) {
 		if p = strings.TrimSpace(p); p != "" {
 			c.PreviousPeppers = append(c.PreviousPeppers, []byte(p))
 		}
+	}
+	switch f := getenv("LOG_FORMAT"); f {
+	case "", "text":
+	case "json":
+		c.LogJSON = true
+	default:
+		return config{}, fmt.Errorf("LOG_FORMAT must be text or json (got %q)", f)
 	}
 	switch getenv("COOKIE_INSECURE") {
 	case "1", "true":

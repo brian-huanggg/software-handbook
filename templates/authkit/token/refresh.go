@@ -148,7 +148,7 @@ func (m *RefreshManager) Rotate(ctx context.Context, raw string) (string, string
 		return "", "", ErrInvalidRefresh
 	}
 	if cur.UsedAt != nil {
-		return "", "", m.revokeForReuse(ctx, cur.FamilyID)
+		return "", "", m.revokeForReuse(ctx, cur)
 	}
 	newRaw, next, err := m.next(cur.UserID, cur.FamilyID, cur.FamilyExpiresAt)
 	if err != nil {
@@ -159,16 +159,27 @@ func (m *RefreshManager) Rotate(ctx context.Context, raw string) (string, string
 		return "", "", fmt.Errorf("rotate refresh token: %w", err)
 	}
 	if !won {
-		return "", "", m.revokeForReuse(ctx, cur.FamilyID)
+		return "", "", m.revokeForReuse(ctx, cur)
 	}
 	return newRaw, cur.UserID, nil
 }
 
-func (m *RefreshManager) revokeForReuse(ctx context.Context, familyID string) error {
-	if err := m.store.DeleteFamily(ctx, familyID); err != nil {
+// ReuseError is the concrete error behind ErrReuseDetected. It names the
+// revoked family and its owner so the caller can log them; errors.Is still
+// matches ErrReuseDetected and ErrInvalidRefresh.
+type ReuseError struct {
+	FamilyID string
+	UserID   string
+}
+
+func (e *ReuseError) Error() string { return ErrReuseDetected.Error() }
+func (e *ReuseError) Unwrap() error { return ErrReuseDetected }
+
+func (m *RefreshManager) revokeForReuse(ctx context.Context, cur Refresh) error {
+	if err := m.store.DeleteFamily(ctx, cur.FamilyID); err != nil {
 		return fmt.Errorf("revoke family after reuse: %w", err)
 	}
-	return ErrReuseDetected
+	return &ReuseError{FamilyID: cur.FamilyID, UserID: cur.UserID}
 }
 
 // Revoke ends the family that raw belongs to (logout). Unknown tokens are a no-op.

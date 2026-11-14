@@ -4,18 +4,22 @@
 
 | English | 本書用法 | 不要用 | 備註 |
 | --- | --- | --- | --- |
+| access token | access token | 存取令牌 | 不翻譯；用來呼叫 API 的短效憑證（常是 JWT），效期通常 5 到 15 分鐘，過期後靠 refresh token 換新 |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
 | ambient authority | 環境權限 | 環境授權 | 憑證由瀏覽器依目的地自動附上、而非請求自己帶著；CSRF 濫用的對象 |
 | argon2id | argon2id | | 不翻譯；密碼雜湊競賽優勝者 argon2 的混合版本（RFC 9106），新專案的預設選擇 |
 | asynchronous replication | 非同步複寫 | | 主節點寫完就回覆，副本稍後才追；MariaDB 標準版的預設複寫方式 |
 | attack surface | 攻擊面 | 攻擊表面 | 攻擊者可利用的入口與工具總和；映像裡多一個 shell 或套件管理器就多一份 |
+| base64url | base64url | | 不翻譯；把位元組編碼成 URL 安全字元（`-`、`_`、無 `=` 填充）的方式，JWT 各段用它；是編碼不是加密 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
+| Bearer token | Bearer token | 持有者令牌 | 不翻譯；誰持有就能用的 token，放在 `Authorization: Bearer <token>`；被偷走就等於被冒用 |
 | blast radius | 影響範圍 | 爆炸半徑 | 一次出錯會波及的使用者與系統範圍；功能旗標與分階段發布用來縮小它 |
 | bulkhead | 艙壁隔離 | 隔板 | |
 | cache stampede | 快取擊穿 | | 熱門 key 失效瞬間大量請求打到資料庫 |
 | capabilities | capabilities | 權能、能力 | Linux 把 root 權力拆成的細項（如 `NET_ADMIN`）；不翻譯 |
 | certification | certification | 認證、驗證 | 不翻譯；Galera 各節點用同樣規則檢查 write-set 是否與已 commit 的交易衝突 |
 | circuit breaker | 斷路器 | 熔斷器 | 指標惡化時自動收緊規則；審查的斷路器例子是 revert 率暴增時把低風險升為中風險（本書的示意設計） |
+| claim | claim | 宣告 | JWT payload 裡的一個欄位，例如 `sub`、`exp`、`iss`；簽章驗過之前不可信 |
 | clustered index | 叢集索引 | 聚簇索引 | 表本身就是依主鍵排序的 B+ 樹，資料列在葉節點；InnoDB 的預設儲存方式 |
 | code review | 程式碼審查 | 代碼審查、程式碼評審 | 合併前由人或工具檢查改動；AI 時代拆成多層驗證，人只看高風險與方向 |
 | consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
@@ -40,6 +44,8 @@
 | gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
+| HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |
+| HS256 | HS256 | | 不翻譯；以 HMAC-SHA256 簽章的 JWT 演算法，對稱金鑰，驗證方也有簽發能力；非對稱的有 RS256、ES256 |
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
 | idempotency | 冪等 | 冒等、幂等 | |
 | image | 映像 | 鏡像、鏡像檔 | 唯讀 layer 加啟動設定；container 由它啟動 |
@@ -47,6 +53,7 @@
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
+| JSON Web Token (JWT) | JWT | | 不翻譯；`header.payload.signature` 三段 base64url 的自包含 token（RFC 7519），簽章防竄改、不加密；到期前難以撤銷 |
 | key stretching | 金鑰延展 | 密鑰拉伸 | 把雜湊重複很多輪讓單次計算變貴；密碼雜湊的核心做法 |
 | kill switch | kill switch | 緊急開關 | 不翻譯；營運用旗標，出事時一關就停用某個功能，不需重新部署 |
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
@@ -73,6 +80,7 @@
 | rainbow table | 彩虹表 | | 預先算好的「密碼對雜湊」對照表；每人獨立的 salt 可使其失效 |
 | recovery point objective (RPO) | RPO | | 故障後最多可接受丟失的資料量；RPO = 0 表示不丟已確認的寫入；第一次出現寫全名 |
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
+| refresh token | refresh token | 更新令牌 | 不翻譯；長效、只用來換新 access token 的憑證，伺服器要能撤銷，登出時撤銷它 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |

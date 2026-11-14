@@ -33,6 +33,14 @@ const (
 	keyLen    = 32
 )
 
+// Upper bounds on parameters read from a stored hash, so a corrupt or
+// tampered row cannot make Verify allocate gigabytes or spin for minutes.
+const (
+	maxMemoryKiB = 256 * 1024
+	maxTimeCost  = 10
+	maxThreads   = 16
+)
+
 type argon2id struct{ pepper []byte }
 
 // NewArgon2id returns a Hasher producing PHC strings:
@@ -73,7 +81,8 @@ func (a argon2id) Verify(password, encoded string) (bool, error) {
 	}
 	var m, t uint32
 	var p uint8
-	if _, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &m, &t, &p); err != nil || m == 0 || t == 0 || p == 0 {
+	if _, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &m, &t, &p); err != nil ||
+		m == 0 || m > maxMemoryKiB || t == 0 || t > maxTimeCost || p == 0 || p > maxThreads {
 		return false, ErrInvalidHash
 	}
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])

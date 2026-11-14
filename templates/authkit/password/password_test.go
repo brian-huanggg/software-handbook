@@ -61,6 +61,20 @@ func TestVerify_InvalidEncoded(t *testing.T) {
 	}
 }
 
+func TestVerify_RejectsExcessiveParams(t *testing.T) {
+	h := newHasher()
+	for _, enc := range []string{
+		"$argon2id$v=19$m=4194304,t=2,p=1$c2FsdA$aGFzaA", // 4 GiB memory
+		"$argon2id$v=19$m=19456,t=1000,p=1$c2FsdA$aGFzaA",
+		"$argon2id$v=19$m=19456,t=2,p=255$c2FsdA$aGFzaA",
+	} {
+		ok, err := h.Verify("x", enc)
+		if ok || !errors.Is(err, password.ErrInvalidHash) {
+			t.Errorf("Verify(%q) = %v, %v; want false, ErrInvalidHash", enc, ok, err)
+		}
+	}
+}
+
 func TestPepper(t *testing.T) {
 	withPepper := password.NewArgon2id([]byte("pepper"))
 	enc, _ := withPepper.Hash("pw")

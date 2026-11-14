@@ -28,6 +28,12 @@ spring:
     baseline-on-migrate: true
     baseline-version: "2"
 
+logging:
+  pattern:
+    # Boot's slot for correlation IDs: the text format shows the request ID on
+    # every line written while a request is handled. JSON logs get it as a field.
+    correlation: "[%X{request_id:--}] "
+
 # Every setting comes from the same environment variables as the Go API.
 # An unset or empty variable means "use the default"; required ones are
 # checked in AuthkitProperties so the app never starts with an unsafe default.

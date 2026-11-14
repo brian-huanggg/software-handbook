@@ -12,6 +12,7 @@ public class AuthkitApplication {
         if (args.length > 0 && args[0].equals("healthcheck")) {
             System.exit(Healthcheck.run(System.getenv("ADDR")));
         }
+        LogFormat.apply(System.getenv("LOG_FORMAT"));
         SpringApplication.run(AuthkitApplication.class, args);
     }
 }

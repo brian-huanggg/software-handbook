@@ -86,7 +86,7 @@ runs with an unsafe default.
 | `PASSWORD_PEPPER` | no | none | Secret mixed into new password hashes; keep it outside the database |
 | `PASSWORD_PREVIOUS_PEPPERS` | no | none | Comma-separated old peppers that still verify, for rotation |
 | `CORS_ORIGINS` | no | none | Comma-separated browser origins allowed to call the API. Each must be `scheme://host[:port]`, with no path and no `*` |
-| `LOG_FORMAT` | no | `text` | Accepted and validated (`text` or `json`), but **not applied yet**: see [Known limitations](#known-limitations) |
+| `LOG_FORMAT` | no | `text` | `json` for structured logs (one JSON object per line, Spring Boot's `logstash` format). Every request is logged (method, path, status, bytes, duration, client IP) with a `request_id`, also returned in `X-Request-Id`; probes are not logged. The compose stack uses `json` |
 | `COOKIE_INSECURE` | no | off | `1` or `true` drops the `Secure` cookie flag. Development only |
 | `ADDR` | no | `:8080` | Listen address, `[host]:port` |
 | `RATE_LIMIT_IP_BURST` | no | `20` | Burst of the per-IP limiter on `/register` and both logins. Positive integer; it cannot be turned off |
@@ -137,7 +137,7 @@ lives in Java.
 
 ```
 request
-  -> BodySizeLimitFilter, NoStoreFilter      servlet filters, ahead of Spring Security
+  -> RequestLogFilter, BodySizeLimitFilter, NoStoreFilter   servlet filters, ahead of Spring Security
   -> SecurityFilterChain (one of three)
        CorsFilter -> CsrfHeaderFilter -> RateLimitFilter -> authentication -> authorization
   -> controller
@@ -148,13 +148,14 @@ defines three chains, each with the same base: `/session/**`, `/token/**`, and
 everything else (public). The order matters and is the part most worth
 reading:
 
-1. **Body size limit** first (64 KiB, `413`), so no later filter buffers
+1. **Request log** (ID and access line), so every response is logged.
+2. **Body size limit** (64 KiB, `413`), so no later filter buffers
    unbounded input. It keeps the buffered body so the rate limiter can read
    the login email and the controller can still read it.
-2. **CORS** before CSRF, so a preflight is answered before the CSRF check.
-3. **CSRF** (`X-Requested-With` and the `Origin` allowlist).
-4. **Rate limit**, before any password hash runs.
-5. **Authentication**: the `sid` cookie filter on `/session/**`, the bearer
+3. **CORS** before CSRF, so a preflight is answered before the CSRF check.
+4. **CSRF** (`X-Requested-With` and the `Origin` allowlist).
+5. **Rate limit**, before any password hash runs.
+6. **Authentication**: the `sid` cookie filter on `/session/**`, the bearer
    token filter on `/token/**`.
 
 A missing or invalid credential gives `401`, a valid principal without the
@@ -221,6 +222,21 @@ a new and an existing email. Login goes through Spring's
 email, so timing and the message do not reveal which accounts exist.
 Passwords are limited to 8–128 bytes. Unknown JSON fields and trailing tokens
 are rejected with `400`.
+
+### Request logging
+
+[RequestLogFilter](src/main/java/io/github/brianhuanggg/authkit/web/RequestLogFilter.java)
+is the outermost filter, so requests refused by a later filter (`403`, `413`,
+`429`) are logged too. It gives each request an ID: the caller's
+`X-Request-Id` if it is at most 64 printable ASCII characters (so it cannot
+inject log lines), otherwise a random one. The ID is returned in the response
+and put in the logging MDC, so every log line written while handling the
+request carries it: as `[id]` after the level in text logs, as a `request_id`
+field in JSON logs. Only the path is logged, never the query string.
+
+`LOG_FORMAT=json` is applied in `main` before Spring Boot configures logging
+([LogFormat](src/main/java/io/github/brianhuanggg/authkit/LogFormat.java)). If
+you set `logging.structured.format.console` yourself, that value wins.
 
 ### Rate limiting
 
@@ -303,8 +319,12 @@ calls `/readyz` and exits 0 or 1. Shutdown is graceful (10 s).
 
 ### Behavior that differs from the Go API
 
-- **No request logging and no `X-Request-Id`.** Go logs every request.
-- **`LOG_FORMAT` has no effect.** It is validated only.
+- **Log field names differ.** JSON logs use Spring Boot's `logstash` layout
+  (`@timestamp`, `message`, `level`, `logger_name`, ...), so `duration_ms`
+  replaces Go's `duration` and the request fields are also repeated in the
+  message. A log pipeline needs a separate mapping for each stack.
+- **The access log counts bytes written through the response stream**, which is
+  how every response here is written.
 - **Startup is slower** and memory use is higher: a JVM, Flyway at boot, and
   the image is about 339 MB. After the integration suite the container used
   about 320 MiB.
@@ -336,8 +356,7 @@ These match the Go template, with the Java-specific items at the end.
   `hasRole(...)` to a chain to use it.
 - **HS256 with one shared secret.** Every service that verifies tokens can
   also mint them.
-- **No metrics or tracing**, and **no request logging**: `LOG_FORMAT` is read
-  but does not change the log output yet.
+- **No metrics or tracing.**
 - **Memory per hash.** Each Argon2id hash allocates 19 MiB on the Java heap,
   and up to `availableProcessors()` run at once. A burst of logins can need
   that many times 19 MiB of heap on top of the rest of the app, so size the
@@ -354,7 +373,7 @@ These match the Go template, with the Java-specific items at the end.
 
 ```
 src/main/java/io/github/brianhuanggg/authkit/
-  AuthkitApplication, Healthcheck   entry point and the `healthcheck` command
+  AuthkitApplication, Healthcheck, LogFormat   entry point, the `healthcheck` command, LOG_FORMAT
   config/        properties, security chains, data source, JWT and password beans
   auth/          login authentication, principal, user details
   password/      PepperedArgon2Encoder
@@ -362,7 +381,7 @@ src/main/java/io/github/brianhuanggg/authkit/
   token/         JwtService, RefreshTokenService, memory and Postgres stores
   ratelimit/     Limiter, RateLimitFilter, client IP, Janitor
   user/          user repository
-  web/           controllers, error handling, body size, CSRF and cache filters
+  web/           controllers, error handling, request log, body size, CSRF and cache filters
 src/main/resources/db/migration/    Flyway migrations
 src/test/                           JUnit 5, MockMvc, Testcontainers
 Dockerfile, Makefile                image, and `make integration` against the Go suite

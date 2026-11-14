@@ -4,12 +4,15 @@
 
 | English | 本書用法 | 不要用 | 備註 |
 | --- | --- | --- | --- |
+| access control | 權限控制 | 存取控制 | 授權決策與強制執行的總稱；OWASP Top 10:2021 的 A01 |
 | access token | access token | 存取令牌 | 不翻譯；用來呼叫 API 的短效憑證（常是 JWT），效期通常 5 到 15 分鐘，過期後靠 refresh token 換新 |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
 | ambient authority | 環境權限 | 環境授權 | 憑證由瀏覽器依目的地自動附上、而非請求自己帶著；CSRF 濫用的對象 |
 | argon2id | argon2id | | 不翻譯；密碼雜湊競賽優勝者 argon2 的混合版本（RFC 9106），新專案的預設選擇 |
 | asynchronous replication | 非同步複寫 | | 主節點寫完就回覆，副本稍後才追；MariaDB 標準版的預設複寫方式 |
 | attack surface | 攻擊面 | 攻擊表面 | 攻擊者可利用的入口與工具總和；映像裡多一個 shell 或套件管理器就多一份 |
+| authentication (authn) | 認證 | 驗證、鑑權 | 確認呼叫者是誰；失敗回 401；第一次出現寫「認證（authentication，簡稱 authn）」 |
+| authorization (authz) | 授權 | 鑑權 | 決定已知身分能對哪些資源做哪些事；失敗回 403；第一次出現寫「授權（authorization，簡稱 authz）」 |
 | base64url | base64url | | 不翻譯；把位元組編碼成 URL 安全字元（`-`、`_`、無 `=` 填充）的方式，JWT 各段用它；是編碼不是加密 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
 | Bearer token | Bearer token | 持有者令牌 | 不翻譯；誰持有就能用的 token，放在 `Authorization: Bearer <token>`；被偷走就等於被冒用 |
@@ -32,6 +35,7 @@
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
+| deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
 | distroless image | distroless 映像 | 無發行版映像 | 只含應用程式與執行期相依，無 shell 與套件管理器 |
 | DOM-based XSS | DOM 型 XSS | | 酬載由前端 JavaScript 從來源寫進出口（如 `innerHTML`）；`#` 之後的片段不送到伺服器，伺服器看不到 |
@@ -85,6 +89,7 @@
 | refresh token rotation | refresh token 輪替 | | 每次用 refresh token 換新時就作廢舊的，每個 refresh token 只能用一次 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
+| role-based access control (RBAC) | RBAC（角色型存取控制） | | 依使用者的角色授權；第一次出現寫全名，之後只寫 RBAC |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
 | Ryuk | Ryuk | | 不翻譯；Testcontainers 啟動的小容器，測試程序結束（含被強制終止）後負責清掉這次啟動的容器 |
 | salt | salt | 鹽 | 不翻譯；每個使用者各自隨機產生、與雜湊存在一起的值，讓相同密碼得到不同雜湊 |

@@ -53,7 +53,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 
 ### 1.4 認證與基礎安全
 
-- [ ] 認證（authn）vs 授權（authz）
+- [x] 認證（authn）vs 授權（authz） → [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/authn-vs-authz.md)
 - [x] 密碼雜湊：bcrypt、argon2、salt 與 pepper → [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/password-hashing.md)
 - [x] Session 與 Cookie → [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/session-cookie.md)
 - [x] JWT 的基礎與限制 → [文章](../../site/src/content/docs/backend/l1/1-4-auth-basics/jwt-basics.md)

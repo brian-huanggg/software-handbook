@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
+import mermaid from 'astro-mermaid';
 
 import ai from './src/sidebar/ai.ts';
 import backend from './src/sidebar/backend.ts';
@@ -14,6 +15,8 @@ import tools from './src/sidebar/tools.ts';
 // https://astro.build/config
 export default defineConfig({
 	integrations: [
+		// Must come before starlight() so ```mermaid fences are handled first.
+		mermaid(),
 		starlight({
 			title: '軟體工程手冊',
 			// Root locale only: content lives at the root, but UI strings

@@ -64,6 +64,8 @@ the required ones are missing, so it never runs with an unsafe default.
 | `CORS_ORIGINS` | no | none | Comma-separated browser origins allowed to call the API. Each must be `scheme://host[:port]`, with no path and no `*` |
 | `COOKIE_INSECURE` | no | off | `1` or `true` drops the `Secure` cookie flag. Development only |
 | `ADDR` | no | `:8080` | Listen address |
+| `RATE_LIMIT_IP_BURST` | no | `20` | Burst of the per-IP limiter on `/register` and both logins. Positive integer; it cannot be turned off |
+| `RATE_LIMIT_EMAIL_BURST` | no | `5` | Burst of the per-email limiter on both logins. Positive integer |
 
 Lifetimes are constants in [cmd/api/config.go](cmd/api/config.go): session 24 h,
 refresh cookie 7 days. Access token TTL (15 min) and refresh family TTL (30
@@ -79,7 +81,7 @@ The full contract is in [api/openapi.yaml](api/openapi.yaml). Summary:
 | Method and path | Auth | Description |
 |---|---|---|
 | `GET /healthz` | none | Liveness check |
-| `POST /register` | none | Create an account (`email`, `password` of 8–128 bytes) |
+| `POST /register` | none | Create an account (`email`, `password` of 8–128 bytes). Always `202`, also for an existing email |
 | `POST /session/login` | none | Verify credentials, set the `sid` cookie |
 | `POST /session/logout` | cookie | Delete the session, clear the cookie |
 | `GET /session/me` | cookie | Return `user_id` and `roles` |
@@ -177,7 +179,9 @@ that suite.
 - `Login` always issues a new ID and deletes any session the request already
   carried, which defeats session fixation.
 - Stores do not enforce expiry. `Manager.Authenticate` does, and deletes an
-  expired session when its cookie comes back.
+  expired session when its cookie comes back. A janitor goroutine in
+  `cmd/api` also calls `Purge` on sessions and refresh tokens every 10
+  minutes, so abandoned rows do not pile up.
 - Roles are looked up on every request through the `Roles` callback, so a role
   change or a deleted account takes effect immediately.
 - Cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`.
@@ -216,6 +220,25 @@ that suite.
   reveal which accounts exist.
 - Request bodies are limited to 64 KiB, strictly decoded (unknown fields are
   rejected), and passwords are limited to 8–128 bytes to bound hashing work.
+- At most `runtime.NumCPU()` hashes run at once (`password.NewLimited`), so a
+  burst of logins cannot exhaust memory at 19 MiB per hash.
+- `/register` answers `202` with the same body for a new and an existing
+  email, after the same hashing work, so it cannot be used to find accounts.
+  The existing account is left unchanged.
+
+### Rate limiting
+
+In-memory token buckets in [middleware/ratelimit.go](middleware/ratelimit.go):
+
+- Per client IP on `/register` and both logins: a burst of 20, then one
+  request every 3 s. IPv6 clients are keyed by their /64.
+- Per email on both logins: a burst of 5, then one attempt every 30 s,
+  whether or not the account exists, so the limit reveals nothing.
+- Over the limit the API answers `429` with `Retry-After`, before any password
+  hash runs.
+
+`make integration` raises both bursts, because the suite logs in many times
+from one IP.
 
 ### CSRF and CORS
 
@@ -262,11 +285,14 @@ Compose health check runs `/api healthcheck`.
 
 ## Known limitations
 
-- **No scheduled cleanup.** `session.Manager.Purge` and
-  `token.RefreshManager.Purge` exist but nothing calls them. Run them
-  periodically (a goroutine or a cron job), or expired rows will accumulate.
-- **No rate limiting or lockout** on login or register. Add it at a gateway or
-  as middleware.
+- **Rate limits are per process.** With several replicas the effective limit
+  is multiplied; move the buckets to a shared store (e.g. Redis) to scale out.
+- **Rate limits key on the TCP peer address.** Behind a reverse proxy every
+  client shares the proxy's IP. Derive the client IP from the proxy's header
+  there, and trust that header only when the proxy is the sole way in.
+- **The per-email limit can slow down a victim's logins.** An attacker who
+  knows an email can keep its bucket empty. This is the price of stopping
+  distributed guessing against one account.
 - **No email verification, password reset, MFA or account deletion endpoints.**
 - **Access tokens cannot be revoked** before they expire. Keep the TTL short.
 - **Roles in the demo** come from the `users.role` column and nothing in the
@@ -278,13 +304,13 @@ Compose health check runs `/api healthcheck`.
 ## Layout
 
 ```
-cmd/api/       server entry point, config, handlers, health check
+cmd/api/       server entry point, config, handlers, health check, janitor
 authn/         Principal and Authenticator
 authz/         role checks
-password/      Argon2id hasher
+password/      Argon2id hasher, concurrency limit
 session/       session manager, memory and Postgres stores, shared store tests
 token/         access JWT, bearer authenticator, refresh manager, stores
-middleware/    Require, CORS, CSRF
+middleware/    Require, CORS, CSRF, rate limiting
 store/         Postgres user store
 migrations/    SQL schema
 api/           OpenAPI spec

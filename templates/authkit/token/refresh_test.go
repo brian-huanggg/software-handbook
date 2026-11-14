@@ -210,3 +210,53 @@ func TestRefresh_FamilyCapAppliesToFirstToken(t *testing.T) {
 		t.Fatalf("first token ExpiresAt = %v, want capped at 24h", got.ExpiresAt)
 	}
 }
+
+// failingRotate fails the next Rotate call without touching the store, like
+// a database error inside the rotation transaction.
+type failingRotate struct {
+	token.RefreshStore
+	fail atomic.Bool
+}
+
+func (s *failingRotate) Rotate(ctx context.Context, old []byte, at time.Time, next token.Refresh) (bool, error) {
+	if s.fail.CompareAndSwap(true, false) {
+		return false, errors.New("db down")
+	}
+	return s.RefreshStore.Rotate(ctx, old, at, next)
+}
+
+func TestRefresh_FailedRotateCanBeRetried(t *testing.T) {
+	store := &failingRotate{RefreshStore: token.NewMemoryRefreshStore()}
+	m := token.NewRefreshManager(store, token.RefreshOptions{})
+	t0, _ := m.Start(ctx, "u1")
+
+	store.fail.Store(true)
+	if _, _, err := m.Rotate(ctx, t0); err == nil || errors.Is(err, token.ErrInvalidRefresh) {
+		t.Fatalf("Rotate during outage = %v; want an infra error", err)
+	}
+	if _, uid, err := m.Rotate(ctx, t0); err != nil || uid != "u1" {
+		t.Fatalf("retry after outage = %q, %v; want success, not reuse detection", uid, err)
+	}
+}
+
+func TestRefresh_Purge(t *testing.T) {
+	f := newRefresh(t)
+	old, _ := f.m.Start(ctx, "u1")
+	f.c.t = f.c.t.Add(25 * time.Hour) // past the 24h idle TTL
+	live, _ := f.m.Start(ctx, "u1")
+
+	if n, err := f.m.Purge(ctx); err != nil || n != 1 {
+		t.Fatalf("Purge = %d, %v; want 1", n, err)
+	}
+	if _, err := f.store.Get(ctx, hashOf(old)); !errors.Is(err, token.ErrNotFound) {
+		t.Fatalf("expired token survived Purge: %v", err)
+	}
+	if _, err := f.store.Get(ctx, hashOf(live)); err != nil {
+		t.Fatalf("live token was purged: %v", err)
+	}
+}
+
+func hashOf(raw string) []byte {
+	h := sha256.Sum256([]byte(raw))
+	return h[:]
+}

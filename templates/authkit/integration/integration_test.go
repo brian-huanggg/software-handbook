@@ -120,7 +120,7 @@ type creds map[string]string
 func newUser(t *testing.T) (email string) {
 	t.Helper()
 	email = fmt.Sprintf("it-%s@example.com", uuid.NewString())
-	newClient(t).mustStatus(201, "POST", "/register", creds{"email": email, "password": password})
+	newClient(t).mustStatus(202, "POST", "/register", creds{"email": email, "password": password})
 	return email
 }
 
@@ -410,8 +410,9 @@ func TestRegisterValidation(t *testing.T) {
 		body any
 		want int
 	}{
-		"duplicate":       {creds{"email": email, "password": password}, 409},
-		"duplicate, case": {creds{"email": strings.ToUpper(email), "password": password}, 409},
+		// Same answer as a new account, so /register cannot enumerate users.
+		"duplicate":       {creds{"email": email, "password": password}, 202},
+		"duplicate, case": {creds{"email": strings.ToUpper(email), "password": password}, 202},
 		"invalid email":   {creds{"email": "nope", "password": password}, 400},
 		"short password":  {creds{"email": "a-" + email, "password": "short"}, 400},
 		"unknown field":   {`{"email":"b-` + email + `","password":"` + password + `","role":"admin"}`, 400},

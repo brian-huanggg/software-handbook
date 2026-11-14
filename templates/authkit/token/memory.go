@@ -45,15 +45,19 @@ func (s *memoryRefreshStore) Get(_ context.Context, idHash []byte) (Refresh, err
 	return cloneRefresh(r), nil
 }
 
-func (s *memoryRefreshStore) MarkUsed(_ context.Context, idHash []byte, at time.Time) (bool, error) {
+func (s *memoryRefreshStore) Rotate(_ context.Context, oldHash []byte, usedAt time.Time, next Refresh) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	r, ok := s.m[string(idHash)]
-	if !ok || r.UsedAt != nil {
+	old, ok := s.m[string(oldHash)]
+	if !ok || old.UsedAt != nil {
 		return false, nil
 	}
-	r.UsedAt = &at
-	s.m[string(idHash)] = r
+	if _, dup := s.m[string(next.IDHash)]; dup {
+		return false, ErrDuplicate
+	}
+	old.UsedAt = &usedAt
+	s.m[string(oldHash)] = old
+	s.m[string(next.IDHash)] = cloneRefresh(next)
 	return true, nil
 }
 
@@ -66,4 +70,17 @@ func (s *memoryRefreshStore) DeleteFamily(_ context.Context, familyID string) er
 		}
 	}
 	return nil
+}
+
+func (s *memoryRefreshStore) DeleteExpired(_ context.Context, now time.Time) (int64, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var n int64
+	for k, r := range s.m {
+		if r.ExpiresAt.Before(now) {
+			delete(s.m, k)
+			n++
+		}
+	}
+	return n, nil
 }

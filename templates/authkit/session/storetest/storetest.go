@@ -84,6 +84,25 @@ func Run(t *testing.T, f Factory) {
 		}
 	})
 
+	t.Run("DeleteExpired", func(t *testing.T) {
+		s, newUser := f(t)
+		user := newUser()
+		live := session.Session{IDHash: hash(), UserID: user, ExpiresAt: time.Now().Add(time.Hour)}
+		dead := session.Session{IDHash: hash(), UserID: user, ExpiresAt: time.Now().Add(-time.Hour)}
+		_ = s.Create(ctx, live)
+		_ = s.Create(ctx, dead)
+		n, err := s.DeleteExpired(ctx, time.Now())
+		if err != nil || n < 1 {
+			t.Fatalf("DeleteExpired = %d, %v; want >= 1", n, err)
+		}
+		if _, err := s.Get(ctx, dead.IDHash); !errors.Is(err, session.ErrNotFound) {
+			t.Fatalf("expired session survived: %v", err)
+		}
+		if _, err := s.Get(ctx, live.IDHash); err != nil {
+			t.Fatalf("live session was deleted: %v", err)
+		}
+	})
+
 	t.Run("GetDoesNotAliasInput", func(t *testing.T) {
 		s, newUser := f(t)
 		sess := session.Session{IDHash: hash(), UserID: newUser(), ExpiresAt: time.Now().Add(time.Hour)}

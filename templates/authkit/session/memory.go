@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"sync"
+	"time"
 )
 
 type memoryStore struct {
@@ -44,4 +45,17 @@ func (s *memoryStore) Delete(_ context.Context, idHash []byte) error {
 	defer s.mu.Unlock()
 	delete(s.m, string(idHash))
 	return nil
+}
+
+func (s *memoryStore) DeleteExpired(_ context.Context, now time.Time) (int64, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var n int64
+	for k, sess := range s.m {
+		if sess.ExpiresAt.Before(now) {
+			delete(s.m, k)
+			n++
+		}
+	}
+	return n, nil
 }

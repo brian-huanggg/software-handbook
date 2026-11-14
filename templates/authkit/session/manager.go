@@ -121,6 +121,12 @@ func (m *Manager) Authenticate(r *http.Request) (authn.Principal, error) {
 	return p, nil
 }
 
+// Purge deletes expired sessions. Authenticate only removes an expired
+// session when its cookie comes back, so run this periodically.
+func (m *Manager) Purge(ctx context.Context) (int64, error) {
+	return m.store.DeleteExpired(ctx, m.opts.Now())
+}
+
 func (m *Manager) cookie(value string, maxAge int, exp time.Time) *http.Cookie {
 	return &http.Cookie{
 		Name:     m.opts.CookieName,

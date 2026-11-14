@@ -72,34 +72,61 @@ func Run(t *testing.T, f Factory) {
 		}
 	})
 
-	t.Run("MarkUsed", func(t *testing.T) {
+	t.Run("Rotate", func(t *testing.T) {
 		s, newUser := f(t)
-		r := fresh(newUser(), uuid.NewString())
-		_ = s.Create(ctx, r)
+		user, fam := newUser(), uuid.NewString()
+		old, next := fresh(user, fam), fresh(user, fam)
+		_ = s.Create(ctx, old)
 		at := time.Now().UTC().Truncate(time.Microsecond)
 
-		ok, err := s.MarkUsed(ctx, r.IDHash, at)
+		ok, err := s.Rotate(ctx, old.IDHash, at, next)
 		if err != nil || !ok {
-			t.Fatalf("first MarkUsed = %v, %v; want true", ok, err)
+			t.Fatalf("first Rotate = %v, %v; want true", ok, err)
 		}
-		ok, err = s.MarkUsed(ctx, r.IDHash, at)
-		if err != nil || ok {
-			t.Fatalf("second MarkUsed = %v, %v; want false", ok, err)
-		}
-		got, _ := s.Get(ctx, r.IDHash)
+		got, _ := s.Get(ctx, old.IDHash)
 		if got.UsedAt == nil || !got.UsedAt.Equal(at) {
-			t.Fatalf("UsedAt = %v, want %v", got.UsedAt, at)
+			t.Fatalf("old UsedAt = %v, want %v", got.UsedAt, at)
 		}
-		if ok, err := s.MarkUsed(ctx, hash(), at); err != nil || ok {
-			t.Fatalf("MarkUsed on missing = %v, %v; want false, nil", ok, err)
+		if got, err := s.Get(ctx, next.IDHash); err != nil || got.UsedAt != nil || got.FamilyID != fam {
+			t.Fatalf("next = %+v, %v; want stored and unused", got, err)
+		}
+
+		again := fresh(user, fam)
+		if ok, err := s.Rotate(ctx, old.IDHash, at, again); err != nil || ok {
+			t.Fatalf("second Rotate = %v, %v; want false", ok, err)
+		}
+		if _, err := s.Get(ctx, again.IDHash); !errors.Is(err, token.ErrNotFound) {
+			t.Fatalf("losing Rotate stored its token: %v", err)
+		}
+		if ok, err := s.Rotate(ctx, hash(), at, fresh(user, fam)); err != nil || ok {
+			t.Fatalf("Rotate on missing = %v, %v; want false, nil", ok, err)
+		}
+	})
+
+	// A failed insert must not consume the old token, so the client can retry.
+	t.Run("RotateIsAllOrNothing", func(t *testing.T) {
+		s, newUser := f(t)
+		user, fam := newUser(), uuid.NewString()
+		old, taken := fresh(user, fam), fresh(user, fam)
+		_ = s.Create(ctx, old)
+		_ = s.Create(ctx, taken)
+
+		next := fresh(user, fam)
+		next.IDHash = append([]byte(nil), taken.IDHash...) // collides
+		if ok, err := s.Rotate(ctx, old.IDHash, time.Now(), next); ok || !errors.Is(err, token.ErrDuplicate) {
+			t.Fatalf("Rotate onto existing hash = %v, %v; want false, ErrDuplicate", ok, err)
+		}
+		if got, _ := s.Get(ctx, old.IDHash); got.UsedAt != nil {
+			t.Fatal("old token was consumed although its replacement was not stored")
 		}
 	})
 
 	// Exactly one concurrent caller may win the rotation.
-	t.Run("MarkUsedIsAtomic", func(t *testing.T) {
+	t.Run("RotateIsAtomic", func(t *testing.T) {
 		s, newUser := f(t)
-		r := fresh(newUser(), uuid.NewString())
-		_ = s.Create(ctx, r)
+		user, fam := newUser(), uuid.NewString()
+		old := fresh(user, fam)
+		_ = s.Create(ctx, old)
 
 		var wins atomic.Int32
 		var wg sync.WaitGroup
@@ -107,7 +134,7 @@ func Run(t *testing.T, f Factory) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				if ok, err := s.MarkUsed(ctx, r.IDHash, time.Now()); err == nil && ok {
+				if ok, err := s.Rotate(ctx, old.IDHash, time.Now(), fresh(user, fam)); err == nil && ok {
 					wins.Add(1)
 				}
 			}()
@@ -115,6 +142,28 @@ func Run(t *testing.T, f Factory) {
 		wg.Wait()
 		if wins.Load() != 1 {
 			t.Fatalf("%d winners, want exactly 1", wins.Load())
+		}
+	})
+
+	t.Run("DeleteExpired", func(t *testing.T) {
+		s, newUser := f(t)
+		user := newUser()
+		live, dead := fresh(user, uuid.NewString()), fresh(user, uuid.NewString())
+		dead.ExpiresAt = time.Now().Add(-time.Hour).UTC().Truncate(time.Microsecond)
+		for _, r := range []token.Refresh{live, dead} {
+			if err := s.Create(ctx, r); err != nil {
+				t.Fatal(err)
+			}
+		}
+		n, err := s.DeleteExpired(ctx, time.Now())
+		if err != nil || n < 1 {
+			t.Fatalf("DeleteExpired = %d, %v; want >= 1", n, err)
+		}
+		if _, err := s.Get(ctx, dead.IDHash); !errors.Is(err, token.ErrNotFound) {
+			t.Fatalf("expired token survived: %v", err)
+		}
+		if _, err := s.Get(ctx, live.IDHash); err != nil {
+			t.Fatalf("live token was deleted: %v", err)
 		}
 	})
 

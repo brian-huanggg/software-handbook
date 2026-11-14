@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"authkit/middleware"
 	"authkit/password"
 	"authkit/session"
 	"authkit/store"
@@ -57,23 +59,32 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	sessions := session.NewManager(session.NewPostgresStore(pool), session.Options{
+		TTL:             sessionTTL,
+		InsecureCookies: cfg.InsecureCookies,
+		Roles:           rolesFromStore(users),
+	})
+	refresh := token.NewRefreshManager(token.NewPostgresRefreshStore(pool), token.RefreshOptions{TTL: refreshTTL})
 	handler, err := newHandler(deps{
-		Users:  users,
-		Hasher: password.NewArgon2id(cfg.Pepper),
-		Sessions: session.NewManager(session.NewPostgresStore(pool), session.Options{
-			TTL:             sessionTTL,
-			InsecureCookies: cfg.InsecureCookies,
-			Roles:           rolesFromStore(users),
-		}),
+		Users: users,
+		// Each Argon2id call holds ~19 MiB; cap how many run at once.
+		Hasher:           password.NewLimited(password.NewArgon2id(cfg.Pepper), runtime.NumCPU()),
+		Sessions:         sessions,
 		Access:           access,
-		Refresh:          token.NewRefreshManager(token.NewPostgresRefreshStore(pool), token.RefreshOptions{TTL: refreshTTL}),
+		Refresh:          refresh,
 		RefreshCookieTTL: refreshTTL,
 		InsecureCookies:  cfg.InsecureCookies,
 		AllowedOrigins:   cfg.AllowedOrigins,
+		AuthIPLimit:      middleware.NewLimiter(authIPEvery, cfg.AuthIPBurst),
+		LoginEmailLimit:  middleware.NewLimiter(loginEmailEvery, cfg.LoginEmailBurst),
 	})
 	if err != nil {
 		return err
 	}
+	go runJanitor(ctx, janitorInterval,
+		purger{"sessions", sessions.Purge},
+		purger{"refresh_tokens", refresh.Purge},
+	)
 
 	srv := &http.Server{
 		Addr:              cfg.Addr,

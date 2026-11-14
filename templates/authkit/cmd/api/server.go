@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,6 +38,12 @@ type deps struct {
 	RefreshCookieTTL time.Duration
 	InsecureCookies  bool
 	AllowedOrigins   []string // CORS + CSRF; empty means same-origin only
+
+	// Brute-force limits. Nil disables a limit (tests). AuthIPLimit applies
+	// per client IP to /register and both logins; LoginEmailLimit applies per
+	// email to both logins, wherever the attempts come from.
+	AuthIPLimit     *middleware.Limiter
+	LoginEmailLimit *middleware.Limiter
 }
 
 type server struct {
@@ -70,17 +77,19 @@ func newHandler(d deps) (http.Handler, error) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok")) })
-	mux.HandleFunc("POST /register", s.register)
+	// Every endpoint that runs a password hash is limited per client IP.
+	perIP := middleware.RateLimit(d.AuthIPLimit, middleware.ClientIP)
+	mux.Handle("POST /register", perIP(http.HandlerFunc(s.register)))
 
 	// Session mode: server-side state, cookie credential.
 	requireSession := middleware.Require(d.Sessions)
-	mux.HandleFunc("POST /session/login", s.sessionLogin)
+	mux.Handle("POST /session/login", perIP(http.HandlerFunc(s.sessionLogin)))
 	mux.HandleFunc("POST /session/logout", s.sessionLogout)
 	mux.Handle("GET /session/me", requireSession(http.HandlerFunc(s.me)))
 
 	// Token mode: stateless access JWT in a header, rotating refresh cookie.
 	requireBearer := middleware.Require(token.NewBearer(d.Access))
-	mux.HandleFunc("POST /token/login", s.tokenLogin)
+	mux.Handle("POST /token/login", perIP(http.HandlerFunc(s.tokenLogin)))
 	mux.HandleFunc("POST /token/refresh", s.tokenRefresh)
 	mux.HandleFunc("POST /token/logout", s.tokenLogout)
 	mux.Handle("GET /token/me", requireBearer(http.HandlerFunc(s.me)))
@@ -150,17 +159,27 @@ func (s *server) register(w http.ResponseWriter, r *http.Request) {
 		serverError(w, r, "hash password", err)
 		return
 	}
-	u, err := s.Users.Create(r.Context(), c.Email, hash)
+	_, err = s.Users.Create(r.Context(), c.Email, hash)
 	switch {
 	case errors.Is(err, store.ErrEmailTaken):
-		writeError(w, http.StatusConflict, "email already registered")
+		// Answer exactly like a new account, so /register cannot be used to
+		// find out who has one. Both paths hash once and hit the DB once.
+		// A real app emails the owner here ("someone tried to sign up").
+		slog.InfoContext(r.Context(), "register: email already taken")
+		writeRegistered(w)
 	case errors.Is(err, store.ErrInvalidEmail):
 		writeError(w, http.StatusBadRequest, "invalid email")
 	case err != nil:
 		serverError(w, r, "create user", err)
 	default:
-		writeJSON(w, http.StatusCreated, map[string]string{"id": u.ID, "email": u.Email})
+		writeRegistered(w)
 	}
+}
+
+// writeRegistered is the single response for both a new and an existing
+// account. It deliberately carries no user ID.
+func writeRegistered(w http.ResponseWriter) {
+	writeJSON(w, http.StatusAccepted, map[string]string{"status": "registration accepted"})
 }
 
 // ---- login (shared) ------------------------------------------------------
@@ -201,6 +220,13 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) (store.User, bool
 	}
 	if c.Email == "" || c.Password == "" {
 		writeError(w, http.StatusBadRequest, "email and password are required")
+		return store.User{}, false
+	}
+	// Per account, whether or not it exists, so the limit itself reveals
+	// nothing. The trade-off: an attacker can slow down one victim's logins.
+	if ok, wait := s.LoginEmailLimit.Allow(strings.ToLower(strings.TrimSpace(c.Email))); !ok {
+		middleware.RetryAfter(w, wait)
+		writeError(w, http.StatusTooManyRequests, "too many login attempts; try again later")
 		return store.User{}, false
 	}
 	u, err := s.checkCredentials(r.Context(), c.Email, c.Password)

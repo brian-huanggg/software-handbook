@@ -40,11 +40,17 @@ type RefreshStore interface {
 	Create(ctx context.Context, r Refresh) error
 	// Get returns ErrNotFound if there is no such token.
 	Get(ctx context.Context, idHash []byte) (Refresh, error)
-	// MarkUsed atomically sets used_at if it is still unset and reports whether
-	// this call did so. Rotation relies on exactly one concurrent caller winning.
-	MarkUsed(ctx context.Context, idHash []byte, at time.Time) (bool, error)
+	// Rotate atomically marks oldHash used (only if it exists and is still
+	// unused) and stores next, in one all-or-nothing step. It reports whether
+	// this call did so; on false or on error nothing is changed. Rotation
+	// relies on exactly one concurrent caller winning.
+	Rotate(ctx context.Context, oldHash []byte, usedAt time.Time, next Refresh) (bool, error)
 	// DeleteFamily removes every token of the family. Missing family is not an error.
 	DeleteFamily(ctx context.Context, familyID string) error
+	// DeleteExpired removes tokens whose ExpiresAt is before now (ExpiresAt
+	// never passes FamilyExpiresAt) and returns how many it removed. Expired tokens are rejected before reuse
+	// detection runs, so purging them loses nothing.
+	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }
 
 type RefreshOptions struct {
@@ -79,7 +85,7 @@ func hashToken(raw string) []byte {
 	return h[:]
 }
 
-func newRaw() (string, error) {
+func randomToken() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("read random: %w", err)
@@ -87,28 +93,33 @@ func newRaw() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func (m *RefreshManager) issue(ctx context.Context, userID, familyID string, familyExpires time.Time) (string, error) {
-	raw, err := newRaw()
+// next builds a fresh token record for the family. Its expiry never passes
+// familyExpires.
+func (m *RefreshManager) next(userID, familyID string, familyExpires time.Time) (raw string, r Refresh, err error) {
+	raw, err = randomToken()
 	if err != nil {
-		return "", err
+		return "", Refresh{}, err
 	}
 	exp := m.now().Add(m.ttl)
 	if exp.After(familyExpires) {
 		exp = familyExpires
 	}
-	err = m.store.Create(ctx, Refresh{
+	return raw, Refresh{
 		IDHash: hashToken(raw), UserID: userID, FamilyID: familyID,
 		ExpiresAt: exp, FamilyExpiresAt: familyExpires,
-	})
-	if err != nil {
-		return "", fmt.Errorf("store refresh token: %w", err)
-	}
-	return raw, nil
+	}, nil
 }
 
 // Start begins a new family (a login) and returns its first raw token.
 func (m *RefreshManager) Start(ctx context.Context, userID string) (string, error) {
-	return m.issue(ctx, userID, uuid.NewString(), m.now().Add(m.familyTTL))
+	raw, r, err := m.next(userID, uuid.NewString(), m.now().Add(m.familyTTL))
+	if err != nil {
+		return "", err
+	}
+	if err := m.store.Create(ctx, r); err != nil {
+		return "", fmt.Errorf("store refresh token: %w", err)
+	}
+	return raw, nil
 }
 
 // Rotate consumes raw and returns its replacement plus the owning user ID.
@@ -117,7 +128,11 @@ func (m *RefreshManager) Start(ctx context.Context, userID string) (string, erro
 // family is revoked and ErrReuseDetected is returned. A lost race between two
 // concurrent uses of the same token is handled the same way, so a legitimate
 // client that double-submits is logged out and must sign in again.
-func (m *RefreshManager) Rotate(ctx context.Context, raw string) (newRaw, userID string, err error) {
+//
+// Consuming the old token and storing its replacement is one atomic store
+// operation: a failure leaves the old token unused, so the client can retry
+// instead of tripping reuse detection.
+func (m *RefreshManager) Rotate(ctx context.Context, raw string) (string, string, error) {
 	if raw == "" {
 		return "", "", ErrInvalidRefresh
 	}
@@ -135,16 +150,16 @@ func (m *RefreshManager) Rotate(ctx context.Context, raw string) (newRaw, userID
 	if cur.UsedAt != nil {
 		return "", "", m.revokeForReuse(ctx, cur.FamilyID)
 	}
-	won, err := m.store.MarkUsed(ctx, h, m.now())
+	newRaw, next, err := m.next(cur.UserID, cur.FamilyID, cur.FamilyExpiresAt)
 	if err != nil {
-		return "", "", fmt.Errorf("mark refresh token used: %w", err)
+		return "", "", err
+	}
+	won, err := m.store.Rotate(ctx, h, m.now(), next)
+	if err != nil {
+		return "", "", fmt.Errorf("rotate refresh token: %w", err)
 	}
 	if !won {
 		return "", "", m.revokeForReuse(ctx, cur.FamilyID)
-	}
-	newRaw, err = m.issue(ctx, cur.UserID, cur.FamilyID, cur.FamilyExpiresAt)
-	if err != nil {
-		return "", "", err
 	}
 	return newRaw, cur.UserID, nil
 }
@@ -169,4 +184,9 @@ func (m *RefreshManager) Revoke(ctx context.Context, raw string) error {
 		return fmt.Errorf("get refresh token: %w", err)
 	}
 	return m.store.DeleteFamily(ctx, cur.FamilyID)
+}
+
+// Purge deletes expired tokens. Run it periodically; see DeleteExpired.
+func (m *RefreshManager) Purge(ctx context.Context) (int64, error) {
+	return m.store.DeleteExpired(ctx, m.now())
 }

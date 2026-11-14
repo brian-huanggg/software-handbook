@@ -21,6 +21,10 @@ stack-up:
 	docker compose up -d --build --wait db api web
 stack-down:
 	docker compose down
+# The suite logs in dozens of times from one IP; raise the limiter bursts so
+# it measures auth behaviour, not the rate limiter (unit-tested separately).
+integration: export RATE_LIMIT_IP_BURST = 1000
+integration: export RATE_LIMIT_EMAIL_BURST = 1000
 integration: stack-up
 	go test -tags integration -count=1 -v ./integration/
 

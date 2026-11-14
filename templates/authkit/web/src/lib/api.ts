@@ -94,7 +94,9 @@ export function refreshAccessToken(): Promise<string> {
 }
 
 export async function register(email: string, password: string) {
-  return parse<{ id: string; email: string }>(
+  // 202 for both a new and an already-registered email: the API does not
+  // reveal which accounts exist.
+  return parse<{ status: string }>(
     await send('/register', { method: 'POST', body: { email, password } }),
   )
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"authkit/middleware"
 	"authkit/password"
 	"authkit/session"
 	"authkit/store"
@@ -178,7 +180,7 @@ type creds map[string]string
 
 func (e *env) register(t *testing.T, email, pw string) {
 	t.Helper()
-	if w := e.call("POST", "/register", creds{"email": email, "password": pw}); w.Code != 201 {
+	if w := e.call("POST", "/register", creds{"email": email, "password": pw}); w.Code != 202 {
 		t.Fatalf("register: %d %s", w.Code, w.Body)
 	}
 }
@@ -195,7 +197,7 @@ func bigJSON() string {
 func TestRegister(t *testing.T) {
 	e := newEnv(t)
 	w := e.call("POST", "/register", creds{"email": "a@example.com", "password": pw})
-	if w.Code != 201 {
+	if w.Code != 202 {
 		t.Fatalf("code %d: %s", w.Code, w.Body)
 	}
 	if strings.Contains(w.Body.String(), pw) || strings.Contains(strings.ToLower(w.Body.String()), "hash") {
@@ -214,8 +216,6 @@ func TestRegister_Errors(t *testing.T) {
 		body any
 		want int
 	}{
-		"duplicate":         {creds{"email": "dup@example.com", "password": pw}, 409},
-		"duplicate, case":   {creds{"email": "DUP@example.com", "password": pw}, 409},
 		"invalid email":     {creds{"email": "nope", "password": pw}, 400},
 		"missing email":     {creds{"password": pw}, 400},
 		"short password":    {creds{"email": "b@example.com", "password": "short"}, 400},
@@ -227,6 +227,28 @@ func TestRegister_Errors(t *testing.T) {
 		if w := e.call("POST", "/register", c.body); w.Code != c.want {
 			t.Errorf("%s: code %d, want %d (%s)", name, w.Code, c.want, strings.TrimSpace(w.Body.String()))
 		}
+	}
+}
+
+// An existing account must be indistinguishable from a new one: same status,
+// same body, same amount of hashing work.
+func TestRegister_DoesNotRevealExistingAccounts(t *testing.T) {
+	e := newEnv(t)
+	e.hasher.hashes.Store(0)
+	fresh := e.call("POST", "/register", creds{"email": "new@example.com", "password": pw})
+	freshHashes := e.hasher.hashes.Swap(0)
+	for _, email := range []string{"new@example.com", "NEW@example.com"} {
+		dup := e.call("POST", "/register", creds{"email": email, "password": "another password"})
+		if dup.Code != fresh.Code || dup.Body.String() != fresh.Body.String() {
+			t.Errorf("%s: duplicate = %d %s, new = %d %s", email, dup.Code, dup.Body, fresh.Code, fresh.Body)
+		}
+		if got := e.hasher.hashes.Swap(0); got != freshHashes {
+			t.Errorf("%s: %d hashes for duplicate, %d for new", email, got, freshHashes)
+		}
+	}
+	// The original password still works: a duplicate never overwrites.
+	if w := e.call("POST", "/session/login", creds{"email": "new@example.com", "password": pw}); w.Code != 200 {
+		t.Fatalf("original login = %d", w.Code)
 	}
 }
 
@@ -602,5 +624,75 @@ func TestHealthz(t *testing.T) {
 	e := newEnv(t)
 	if w := e.call("GET", "/healthz", nil); w.Code != 200 {
 		t.Fatalf("code %d", w.Code)
+	}
+}
+
+// ---- brute-force limits --------------------------------------------------
+
+func newLimitedEnv(t *testing.T, ipBurst, emailBurst int) *env {
+	t.Helper()
+	e := newEnv(t)
+	access, _ := token.NewAccess(token.AccessOptions{Secret: []byte(testSecret), Issuer: "authkit"})
+	h, err := newHandler(deps{
+		Users: e.users, Hasher: e.hasher,
+		Sessions:         session.NewManager(session.NewMemoryStore(), session.Options{Roles: rolesFromStore(e.users)}),
+		Access:           access,
+		Refresh:          token.NewRefreshManager(token.NewMemoryRefreshStore(), token.RefreshOptions{}),
+		RefreshCookieTTL: refreshTTL,
+		AllowedOrigins:   []string{testOrigin},
+		AuthIPLimit:      middleware.NewLimiter(time.Hour, ipBurst),
+		LoginEmailLimit:  middleware.NewLimiter(time.Hour, emailBurst),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	e.h = h
+	return e
+}
+
+func fromIP(ip string) func(*http.Request) {
+	return func(r *http.Request) { r.RemoteAddr = ip + ":4242" }
+}
+
+func TestLogin_LimitedPerEmailAcrossIPs(t *testing.T) {
+	for _, path := range []string{"/session/login", "/token/login"} {
+		e := newLimitedEnv(t, 100, 3)
+		e.register(t, "victim@example.com", pw)
+		for i := 0; i < 3; i++ {
+			ip := fmt.Sprintf("198.51.100.%d", i)
+			if w := e.call("POST", path, creds{"email": "victim@example.com", "password": "guess"}, fromIP(ip)); w.Code != 401 {
+				t.Fatalf("%s attempt %d = %d, want 401", path, i+1, w.Code)
+			}
+		}
+		e.hasher.verifies.Store(0)
+		w := e.call("POST", path, creds{"email": "VICTIM@example.com", "password": pw}, fromIP("203.0.113.9"))
+		if w.Code != 429 || w.Header().Get("Retry-After") == "" {
+			t.Fatalf("%s over limit = %d (Retry-After %q), want 429", path, w.Code, w.Header().Get("Retry-After"))
+		}
+		if n := e.hasher.verifies.Load(); n != 0 {
+			t.Fatalf("%s: limited request still ran %d password verifications", path, n)
+		}
+		// Unknown accounts are limited the same way, so 429 reveals nothing.
+		for i := 0; i < 3; i++ {
+			e.call("POST", path, creds{"email": "ghost@example.com", "password": "guess"})
+		}
+		if w := e.call("POST", path, creds{"email": "ghost@example.com", "password": "guess"}); w.Code != 429 {
+			t.Fatalf("%s unknown account over limit = %d, want 429", path, w.Code)
+		}
+	}
+}
+
+func TestAuthEndpoints_LimitedPerIP(t *testing.T) {
+	e := newLimitedEnv(t, 2, 100)
+	attacker, other := fromIP("192.0.2.66"), fromIP("192.0.2.77")
+	e.call("POST", "/register", creds{"email": "a1@example.com", "password": pw}, attacker)
+	e.call("POST", "/session/login", creds{"email": "a2@example.com", "password": pw}, attacker)
+	for _, path := range []string{"/register", "/session/login", "/token/login"} {
+		if w := e.call("POST", path, creds{"email": "a3@example.com", "password": pw}, attacker); w.Code != 429 {
+			t.Errorf("%s from exhausted IP = %d, want 429", path, w.Code)
+		}
+	}
+	if w := e.call("POST", "/register", creds{"email": "b@example.com", "password": pw}, other); w.Code != 202 {
+		t.Fatalf("other IP = %d, want 202", w.Code)
 	}
 }

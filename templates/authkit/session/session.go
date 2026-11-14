@@ -30,4 +30,7 @@ type Store interface {
 	Get(ctx context.Context, idHash []byte) (Session, error)
 	// Delete is idempotent: deleting a missing session is not an error.
 	Delete(ctx context.Context, idHash []byte) error
+	// DeleteExpired removes sessions whose ExpiresAt is before now and returns
+	// how many it removed.
+	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }

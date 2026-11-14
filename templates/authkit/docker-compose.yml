@@ -41,6 +41,10 @@ services:
       # while `docker compose up db web` keeps working without it.
       JWT_SECRET: ${JWT_SECRET:-}
       CORS_ORIGINS: http://localhost:3000
+      # Brute-force limiter bursts; empty means the built-in defaults (20, 5).
+      # `make integration` raises them: the suite logs in many times from one IP.
+      RATE_LIMIT_IP_BURST: ${RATE_LIMIT_IP_BURST:-}
+      RATE_LIMIT_EMAIL_BURST: ${RATE_LIMIT_EMAIL_BURST:-}
     ports:
       - "8080:8080"
     healthcheck:

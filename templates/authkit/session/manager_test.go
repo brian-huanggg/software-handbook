@@ -196,3 +196,21 @@ func TestLogout_WithoutSessionIsOK(t *testing.T) {
 func TestManagerImplementsAuthenticator(t *testing.T) {
 	var _ authn.Authenticator = (*session.Manager)(nil)
 }
+
+func TestPurge(t *testing.T) {
+	f := newFixture(t, session.Options{})
+	old := f.login(t, "u1", nil)
+	f.now = f.now.Add(2 * time.Hour) // past the 1h TTL
+	live := f.login(t, "u2", nil)
+
+	if n, err := f.m.Purge(context.Background()); err != nil || n != 1 {
+		t.Fatalf("Purge = %d, %v; want 1", n, err)
+	}
+	if _, err := f.m.Authenticate(reqWith(live)); err != nil {
+		t.Fatalf("live session purged: %v", err)
+	}
+	f.now = f.now.Add(-2 * time.Hour) // even with the clock rewound, old is gone
+	if _, err := f.m.Authenticate(reqWith(old)); !errors.Is(err, authn.ErrUnauthenticated) {
+		t.Fatalf("purged session still authenticates: %v", err)
+	}
+}

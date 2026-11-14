@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -39,4 +40,9 @@ func (s *pgStore) Get(ctx context.Context, idHash []byte) (Session, error) {
 func (s *pgStore) Delete(ctx context.Context, idHash []byte) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM sessions WHERE id_hash = $1`, idHash)
 	return err
+}
+
+func (s *pgStore) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM sessions WHERE expires_at < $1`, now)
+	return tag.RowsAffected(), err
 }

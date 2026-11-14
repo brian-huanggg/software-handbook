@@ -16,6 +16,11 @@ info:
 
     **Error shapes:** handler errors are JSON `{"error": "..."}`. Errors from
     middleware (`401`, `403`) are plain text.
+
+    **Brute-force limits:** `/register` and both logins are limited per client
+    IP (burst 20, then 1 every 3 s); both logins are also limited per email
+    (burst 5, then 1 every 30 s), whether or not the account exists. Over the
+    limit the API answers `429` with `Retry-After` (seconds).
 servers:
   - url: http://localhost:8080
     description: Local (default ADDR)
@@ -36,12 +41,15 @@ paths:
       requestBody:
         $ref: "#/components/requestBodies/Credentials"
       responses:
-        "201":
-          description: Account created
+        "202":
+          description: |
+            Registration accepted. The same response is returned when the
+            email is already registered (the existing account is left
+            unchanged), so this endpoint cannot be used to discover accounts.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RegisteredUser"
+                $ref: "#/components/schemas/RegistrationAccepted"
         "400":
           description: Invalid JSON, missing/invalid email, or password length outside 8-128 bytes
           content:
@@ -50,14 +58,10 @@ paths:
                 $ref: "#/components/schemas/Error"
         "403":
           $ref: "#/components/responses/CSRFForbidden"
-        "409":
-          description: Email already registered
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         "413":
           $ref: "#/components/responses/TooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -99,6 +103,8 @@ paths:
           $ref: "#/components/responses/CSRFForbidden"
         "413":
           $ref: "#/components/responses/TooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -156,6 +162,8 @@ paths:
           $ref: "#/components/responses/CSRFForbidden"
         "413":
           $ref: "#/components/responses/TooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -276,16 +284,13 @@ components:
           minLength: 8
           maxLength: 128
           description: Length is measured in bytes (8-128) on register.
-    RegisteredUser:
+    RegistrationAccepted:
       type: object
-      required: [id, email]
+      required: [status]
       properties:
-        id:
+        status:
           type: string
-          format: uuid
-        email:
-          type: string
-          format: email
+          example: registration accepted
     AccessToken:
       type: object
       required: [access_token, token_type, expires_in]
@@ -358,6 +363,16 @@ components:
         text/plain:
           schema:
             type: string
+    TooManyRequests:
+      description: Rate limit exceeded; retry after `Retry-After` seconds
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     TooLarge:
       description: Request body over 64 KiB
       content:

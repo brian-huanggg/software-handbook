@@ -16,16 +16,19 @@ func TestLoadConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Addr != ":8080" || cfg.Issuer != "authkit" || cfg.InsecureCookies || cfg.Pepper != nil {
+	if cfg.Addr != ":8080" || cfg.Issuer != "authkit" || cfg.InsecureCookies || cfg.Pepper != nil ||
+		cfg.AuthIPBurst != defaultAuthIPBurst || cfg.LoginEmailBurst != defaultLoginEmailBurst {
 		t.Fatalf("defaults wrong: %+v", cfg)
 	}
 
-	over := map[string]string{"ADDR": ":9", "JWT_ISSUER": "me", "COOKIE_INSECURE": "1", "PASSWORD_PEPPER": "pp"}
+	over := map[string]string{"ADDR": ":9", "JWT_ISSUER": "me", "COOKIE_INSECURE": "1", "PASSWORD_PEPPER": "pp",
+		"RATE_LIMIT_IP_BURST": "100", "RATE_LIMIT_EMAIL_BURST": "50"}
 	for k, v := range good {
 		over[k] = v
 	}
 	cfg, err = loadConfig(getenv(over))
-	if err != nil || cfg.Addr != ":9" || cfg.Issuer != "me" || !cfg.InsecureCookies || string(cfg.Pepper) != "pp" {
+	if err != nil || cfg.Addr != ":9" || cfg.Issuer != "me" || !cfg.InsecureCookies || string(cfg.Pepper) != "pp" ||
+		cfg.AuthIPBurst != 100 || cfg.LoginEmailBurst != 50 {
 		t.Fatalf("overrides wrong: %+v, %v", cfg, err)
 	}
 }
@@ -58,6 +61,8 @@ func TestLoadConfig_FailsFast(t *testing.T) {
 		"no db":        {"JWT_SECRET": strings.Repeat("k", 32)},
 		"no secret":    {"DATABASE_URL": "x"},
 		"short secret": {"DATABASE_URL": "x", "JWT_SECRET": "short"},
+		"zero burst":   {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_IP_BURST": "0"},
+		"bad burst":    {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_EMAIL_BURST": "lots"},
 	} {
 		if _, err := loadConfig(getenv(m)); err == nil {
 			t.Errorf("%s: expected error", name)

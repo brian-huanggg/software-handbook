@@ -30,6 +30,29 @@ func TestLoadConfig(t *testing.T) {
 	}
 }
 
+func TestLoadConfig_CORSOrigins(t *testing.T) {
+	base := map[string]string{"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32)}
+	with := func(v string) map[string]string {
+		m := map[string]string{"CORS_ORIGINS": v}
+		for k, val := range base {
+			m[k] = val
+		}
+		return m
+	}
+	cfg, err := loadConfig(getenv(with(" http://localhost:3000 , https://app.example.com ,")))
+	if err != nil || len(cfg.AllowedOrigins) != 2 || cfg.AllowedOrigins[0] != "http://localhost:3000" || cfg.AllowedOrigins[1] != "https://app.example.com" {
+		t.Fatalf("got %+v, %v", cfg.AllowedOrigins, err)
+	}
+	if cfg, err := loadConfig(getenv(base)); err != nil || len(cfg.AllowedOrigins) != 0 {
+		t.Fatalf("unset should mean none: %+v, %v", cfg.AllowedOrigins, err)
+	}
+	for _, bad := range []string{"*", "http://localhost:3000/", "localhost:3000", "http://a,*"} {
+		if _, err := loadConfig(getenv(with(bad))); err == nil {
+			t.Errorf("CORS_ORIGINS=%q should be rejected", bad)
+		}
+	}
+}
+
 func TestLoadConfig_FailsFast(t *testing.T) {
 	for name, m := range map[string]map[string]string{
 		"no db":        {"JWT_SECRET": strings.Repeat("k", 32)},

@@ -3,7 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
+
+	"authkit/middleware"
 )
 
 const (
@@ -18,6 +21,9 @@ type config struct {
 	Issuer          string
 	Pepper          []byte // optional password pepper, kept out of the DB
 	InsecureCookies bool   // dev only: drop the Secure flag
+	// AllowedOrigins are the browser origins that may call the API with
+	// credentials (CORS) and submit state-changing requests (CSRF).
+	AllowedOrigins []string
 }
 
 // loadConfig reads settings from getenv and fails fast on missing secrets,
@@ -41,6 +47,15 @@ func loadConfig(getenv func(string) string) (config, error) {
 	switch getenv("COOKIE_INSECURE") {
 	case "1", "true":
 		c.InsecureCookies = true
+	}
+	for _, o := range strings.Split(getenv("CORS_ORIGINS"), ",") {
+		if o = strings.TrimSpace(o); o == "" {
+			continue
+		}
+		if err := middleware.ValidateOrigin(o); err != nil {
+			return config{}, fmt.Errorf("CORS_ORIGINS: %w", err)
+		}
+		c.AllowedOrigins = append(c.AllowedOrigins, o)
 	}
 	if c.DatabaseURL == "" {
 		return config{}, errors.New("DATABASE_URL is required")

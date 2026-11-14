@@ -9,5 +9,8 @@ migrate-down:
 # Needs JWT_SECRET (>= 32 bytes) in the environment, e.g.
 #   JWT_SECRET=$(openssl rand -hex 32) make run
 # Set COOKIE_INSECURE=1 to test cookies over plain HTTP with non-Chromium tools.
+# CORS_ORIGINS is the comma-separated list of browser origins allowed to call
+# the API; it defaults to the web container on :3000.
+CORS_ORIGINS ?= http://localhost:3000
 run:
-	DATABASE_URL="$(DB_URL)" go run ./cmd/api
+	DATABASE_URL="$(DB_URL)" CORS_ORIGINS="$(CORS_ORIGINS)" go run ./cmd/api

@@ -36,6 +36,7 @@ type deps struct {
 	Refresh          *token.RefreshManager
 	RefreshCookieTTL time.Duration
 	InsecureCookies  bool
+	AllowedOrigins   []string // CORS + CSRF; empty means same-origin only
 }
 
 type server struct {
@@ -82,7 +83,9 @@ func newHandler(d deps) (http.Handler, error) {
 	mux.HandleFunc("POST /token/refresh", s.tokenRefresh)
 	mux.HandleFunc("POST /token/logout", s.tokenLogout)
 	mux.Handle("GET /token/me", requireBearer(http.HandlerFunc(s.me)))
-	return mux, nil
+
+	// CORS is outermost so preflights are answered before the CSRF check.
+	return middleware.CORS(d.AllowedOrigins)(middleware.CSRF(d.AllowedOrigins)(mux)), nil
 }
 
 // ---- helpers -------------------------------------------------------------

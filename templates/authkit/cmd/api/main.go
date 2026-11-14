@@ -62,6 +62,7 @@ func run() error {
 		Refresh:          token.NewRefreshManager(token.NewPostgresRefreshStore(pool), token.RefreshOptions{TTL: refreshTTL}),
 		RefreshCookieTTL: refreshTTL,
 		InsecureCookies:  cfg.InsecureCookies,
+		AllowedOrigins:   cfg.AllowedOrigins,
 	})
 	if err != nil {
 		return err

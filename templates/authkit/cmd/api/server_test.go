@@ -102,7 +102,10 @@ type env struct {
 	hasher *fakeHasher
 }
 
-const testSecret = "0123456789abcdef0123456789abcdef"
+const (
+	testSecret = "0123456789abcdef0123456789abcdef"
+	testOrigin = "http://localhost:3000"
+)
 
 func newEnv(t *testing.T) *env {
 	t.Helper()
@@ -120,6 +123,7 @@ func newEnv(t *testing.T) *env {
 		Access:           access,
 		Refresh:          token.NewRefreshManager(token.NewMemoryRefreshStore(), token.RefreshOptions{TTL: refreshTTL}),
 		RefreshCookieTTL: refreshTTL,
+		AllowedOrigins:   []string{testOrigin},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -139,6 +143,9 @@ func (e *env) call(method, path string, body any, mods ...func(*http.Request)) *
 		rd = bytes.NewReader(raw)
 	}
 	r := httptest.NewRequest(method, path, rd)
+	if method != "GET" {
+		r.Header.Set("X-Requested-With", "XMLHttpRequest") // what the SPA sends
+	}
 	for _, m := range mods {
 		m(r)
 	}
@@ -525,5 +532,68 @@ func TestMethodNotAllowed(t *testing.T) {
 	e := newEnv(t)
 	if w := e.call("GET", "/session/login", nil); w.Code != 405 {
 		t.Fatalf("code %d, want 405", w.Code)
+	}
+}
+
+// ---- CORS and CSRF wiring ------------------------------------------------
+
+func TestCSRF_AppliesToEveryPost(t *testing.T) {
+	e := newEnv(t)
+	e.register(t, "c@example.com", pw)
+	noHeader := func(r *http.Request) { r.Header.Del("X-Requested-With") }
+	evil := func(r *http.Request) { r.Header.Set("Origin", "http://evil.example") }
+	good := creds{"email": "c@example.com", "password": pw}
+
+	for _, path := range []string{"/register", "/session/login", "/session/logout", "/token/login", "/token/refresh", "/token/logout"} {
+		if w := e.call("POST", path, good, noHeader); w.Code != 403 {
+			t.Errorf("POST %s without CSRF header: %d, want 403", path, w.Code)
+		}
+		if w := e.call("POST", path, good, evil); w.Code != 403 {
+			t.Errorf("POST %s from evil origin: %d, want 403", path, w.Code)
+		}
+	}
+}
+
+func TestCSRF_BlockedLoginSetsNoCookie(t *testing.T) {
+	e := newEnv(t)
+	e.register(t, "c@example.com", pw)
+	w := e.call("POST", "/session/login", creds{"email": "c@example.com", "password": pw},
+		func(r *http.Request) { r.Header.Del("X-Requested-With") })
+	if w.Code != 403 || len(w.Result().Cookies()) != 0 {
+		t.Fatalf("code=%d cookies=%v", w.Code, w.Result().Cookies())
+	}
+}
+
+func TestCSRF_AllowedOriginCanLogin(t *testing.T) {
+	e := newEnv(t)
+	e.register(t, "c@example.com", pw)
+	w := e.call("POST", "/session/login", creds{"email": "c@example.com", "password": pw},
+		func(r *http.Request) { r.Header.Set("Origin", testOrigin) })
+	if w.Code != 200 {
+		t.Fatalf("code %d: %s", w.Code, w.Body)
+	}
+	if w.Header().Get("Access-Control-Allow-Origin") != testOrigin || w.Header().Get("Access-Control-Allow-Credentials") != "true" {
+		t.Fatalf("CORS headers missing: %v", w.Header())
+	}
+}
+
+func TestCORS_Preflight(t *testing.T) {
+	e := newEnv(t)
+	for _, path := range []string{"/session/login", "/token/refresh", "/token/login"} {
+		w := e.call("OPTIONS", path, nil, func(r *http.Request) {
+			r.Header.Set("Origin", testOrigin)
+			r.Header.Set("Access-Control-Request-Method", "POST")
+			r.Header.Set("Access-Control-Request-Headers", "content-type,x-requested-with")
+		})
+		if w.Code != 204 || w.Header().Get("Access-Control-Allow-Origin") != testOrigin {
+			t.Errorf("%s: code=%d headers=%v", path, w.Code, w.Header())
+		}
+	}
+	w := e.call("OPTIONS", "/session/login", nil, func(r *http.Request) {
+		r.Header.Set("Origin", "http://evil.example")
+		r.Header.Set("Access-Control-Request-Method", "POST")
+	})
+	if w.Code != 403 || w.Header().Get("Access-Control-Allow-Origin") != "" {
+		t.Fatalf("evil preflight: code=%d headers=%v", w.Code, w.Header())
 	}
 }

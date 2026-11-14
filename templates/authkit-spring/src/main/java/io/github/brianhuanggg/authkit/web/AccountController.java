@@ -1,5 +1,6 @@
 package io.github.brianhuanggg.authkit.web;
 
+import io.github.brianhuanggg.authkit.auth.LoginAuthenticator;
 import io.github.brianhuanggg.authkit.user.EmailTakenException;
 import io.github.brianhuanggg.authkit.user.InvalidEmailException;
 import io.github.brianhuanggg.authkit.user.UserRepository;
@@ -20,10 +21,7 @@ class AccountController {
     private static final Logger log = LoggerFactory.getLogger(AccountController.class);
 
     static final int MIN_PASSWORD_BYTES = 8;
-    static final int MAX_PASSWORD_BYTES = 128; // bounds the work a single hash can be made to do
-
-    record Credentials(String email, String password) {
-    }
+    static final int MAX_PASSWORD_BYTES = LoginAuthenticator.MAX_PASSWORD_BYTES; // bounds the work a single hash can be made to do
 
     private final UserRepository users;
     private final PasswordEncoder encoder;

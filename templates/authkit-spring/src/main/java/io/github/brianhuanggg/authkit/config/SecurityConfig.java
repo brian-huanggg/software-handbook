@@ -1,5 +1,7 @@
 package io.github.brianhuanggg.authkit.config;
 
+import io.github.brianhuanggg.authkit.session.SessionAuthenticationFilter;
+import io.github.brianhuanggg.authkit.session.SessionService;
 import io.github.brianhuanggg.authkit.web.CsrfHeaderFilter;
 import io.github.brianhuanggg.authkit.web.JsonAccessDeniedHandler;
 import io.github.brianhuanggg.authkit.web.JsonAuthenticationEntryPoint;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,12 +42,14 @@ class SecurityConfig {
 
     @Bean
     @Order(1)
-    SecurityFilterChain sessionChain(HttpSecurity http, AuthkitProperties props) throws Exception {
+    SecurityFilterChain sessionChain(HttpSecurity http, AuthkitProperties props, SessionService sessions)
+            throws Exception {
         base(http, props, null)
                 .securityMatcher("/session/**")
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/session/me").authenticated()
-                        .anyRequest().permitAll());
+                        .anyRequest().permitAll())
+                .addFilterBefore(new SessionAuthenticationFilter(sessions), AuthorizationFilter.class);
         return http.build();
     }
 

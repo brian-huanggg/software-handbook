@@ -14,11 +14,13 @@
 | authentication (authn) | 認證 | 驗證、鑑權 | 確認呼叫者是誰；失敗回 401；第一次出現寫「認證（authentication，簡稱 authn）」 |
 | authorization (authz) | 授權 | 鑑權 | 決定已知身分能對哪些資源做哪些事；失敗回 403；第一次出現寫「授權（authorization，簡稱 authz）」 |
 | base64url | base64url | | 不翻譯；把位元組編碼成 URL 安全字元（`-`、`_`、無 `=` 填充）的方式，JWT 各段用它；是編碼不是加密 |
+| BCNF | BCNF（Boyce-Codd 正規化） | | 每條非平凡的函數相依，決定者都必須是超鍵；比 3NF 嚴，拆表後可能丟掉跨欄位約束 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
 | Bearer token | Bearer token | 持有者令牌 | 不翻譯；誰持有就能用的 token，放在 `Authorization: Bearer <token>`；被偷走就等於被冒用 |
 | blast radius | 影響範圍 | 爆炸半徑 | 一次出錯會波及的使用者與系統範圍；功能旗標與分階段發布用來縮小它 |
 | bulkhead | 艙壁隔離 | 隔板 | |
 | cache stampede | 快取擊穿 | | 熱門 key 失效瞬間大量請求打到資料庫 |
+| candidate key | 候選鍵 | 候補鍵 | 不能再縮小的超鍵；主鍵是從候選鍵挑出的一個 |
 | capabilities | capabilities | 權能、能力 | Linux 把 root 權力拆成的細項（如 `NET_ADMIN`）；不翻譯 |
 | certification | certification | 認證、驗證 | 不翻譯；Galera 各節點用同樣規則檢查 write-set 是否與已 commit 的交易衝突 |
 | circuit breaker | 斷路器 | 熔斷器 | 指標惡化時自動收緊規則；審查的斷路器例子是 revert 率暴增時把低風險升為中風險（本書的示意設計） |
@@ -35,6 +37,7 @@
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
+| denormalization | 反正規化 | 去正規化 | 量到瓶頸後，刻意把資料存在多處換取讀取效能；要有同步與重建機制 |
 | deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
 | distroless image | distroless 映像 | 無發行版映像 | 只含應用程式與執行期相依，無 shell 與套件管理器 |
@@ -44,6 +47,7 @@
 | feature flag | 功能旗標 | 特性開關 | 不重新部署就能開關新行為的設定；用來縮小影響範圍與快速回滾 |
 | Fetch Metadata | Fetch Metadata | 擷取中繼資料 | 不翻譯；瀏覽器附上的 `Sec-Fetch-*` header，如 `Sec-Fetch-Site` 標明請求是否跨站，網頁腳本無法偽造 |
 | flow control | flow control | 流量控制 | 不翻譯；Galera 節點套用太慢時，通知其他節點暫停寫入 |
+| functional dependency | 函數相依 | 功能相依 | `X → Y`：X 相同則 Y 一定相同；來自業務規則，資料只能推翻它、不能證明它 |
 | Galera cluster | Galera 叢集 | Galera 集群 | MariaDB 的多主叢集，用 certification-based 複寫 |
 | gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
@@ -74,6 +78,7 @@
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
 | MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
+| normalization | 正規化 | 標準化 | 依函數相依拆表，讓每個事實只存一處；1NF、2NF、3NF、BCNF 逐級加嚴 |
 | opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
@@ -121,6 +126,7 @@
 | stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
 | state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
+| superkey | 超鍵 | 超級鍵 | 能決定整列所有欄位的欄位組合 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |
 | synchronizer token | CSRF token | 同步令牌 | 伺服器發、綁 session 的不可猜測值，不安全方法的請求必須帶上並由伺服器驗證 |
 | tag | tag | 標籤 | 不翻譯；映像上可被改指的名稱，與 digest 相對 |
@@ -130,6 +136,7 @@
 | trunk-based development | 主幹式開發 | 主幹開發 | 所有人每天合併進同一條主幹，未完成的功能藏在關著的功能旗標後面 |
 | Trusted Types | Trusted Types | | 不翻譯；瀏覽器機制，強制 `innerHTML` 等出口只接受經指定函式處理的值，用來根治 DOM 型 XSS |
 | undo log | undo log | 回滾日誌 | 不翻譯；InnoDB 存放資料列舊版本的區域，供回滾與一致性讀取使用，由 purge 回收 |
+| update anomaly | 更新異常 | | 同一事實存多份，改一處漏改另一處而自相矛盾；另有新增異常、刪除異常 |
 | upstream | upstream | 上游 | 不翻譯；nginx 中一組後端 server 的群組，用 `proxy_pass` 指向它 |
 | UUID | UUID | 通用唯一識別碼 | 128 bits；v4 全隨機、v7 前 48 bits 是毫秒時間戳（RFC 9562） |
 | VACUUM | VACUUM |  | 不翻譯；Postgres 回收 dead tuple 空間的作業，通常不會把檔案縮小還給作業系統 |

@@ -2,7 +2,7 @@
 title: 主鍵選型：自增 BIGINT vs UUID vs UUIDv7／Snowflake
 description: 用 Postgres 與 MySQL 實測三種主鍵的插入、索引大小與分散式代價，學會挑主鍵，並把「對外 ID」與「內部主鍵」分開。
 sidebar:
-  order: 2
+  order: 10
 ---
 
 ## 先想想

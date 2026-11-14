@@ -94,6 +94,14 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 
 ### 2.2 資料庫深入
 
+- [x] [正規化：1NF 到 BCNF 與何時反正規化](../../site/src/content/docs/backend/l2/2-2-database/normalization.md)
+- [ ] 資料型別選擇：整數、`NUMERIC` 與金額、`timestamptz` 與時區、文字長度、布林
+- [ ] 約束：`NOT NULL`、`UNIQUE`、`CHECK`、外鍵與 `ON DELETE` 策略
+- [ ] `NULL` 的語意：三值邏輯、`NOT IN` 的陷阱、何時該用預設值
+- [ ] 關聯設計：一對多、多對多與關聯表、自我參照、多型關聯為什麼不好
+- [ ] 資料表設計反模式：EAV、逗號分隔欄位、JSON 濫用、過度索引
+- [ ] 命名慣例與通用欄位：`created_at`、`updated_at`、稽核欄位
+- [ ] Schema 演進：向後相容的 migration、expand-contract、零停機改欄位
 - [ ] 索引原理：B+ 樹、複合索引、覆蓋索引
 - [x] [主鍵選型：自增 BIGINT vs UUID vs UUIDv7／Snowflake](../../site/src/content/docs/backend/l2/2-2-database/primary-key-choice.md)
 - [ ] 讀懂執行計畫：`EXPLAIN`

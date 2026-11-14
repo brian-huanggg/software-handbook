@@ -34,7 +34,7 @@ import (
 Package documentation:
 [pkg.go.dev](https://pkg.go.dev/github.com/brian-huanggg/software-handbook/templates/authkit).
 The module lives in a subdirectory of a larger repository, so its release tags
-are prefixed: `templates/authkit/v0.1.0`.
+are prefixed: `templates/authkit/v0.1.2`.
 
 ## Quick start
 
@@ -77,10 +77,12 @@ the required ones are missing, so it never runs with an unsafe default.
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `DATABASE_URL` | yes | – | Postgres connection string |
-| `JWT_SECRET` | yes | – | HMAC key for access tokens, at least 32 bytes |
+| `JWT_SECRET` | yes | – | HMAC key that signs access tokens, at least 32 bytes |
+| `JWT_PREVIOUS_SECRETS` | no | none | Comma-separated old keys that still verify but never sign, for rotation. Each at least 32 bytes |
 | `JWT_ISSUER` | no | `authkit` | `iss` claim, checked on verify |
-| `PASSWORD_PEPPER` | no | none | Secret mixed into password hashes; keep it outside the database |
-| `CORS_ORIGINS` | no | none | Comma-separated browser origins allowed to call the API. Each must be `scheme://host[:port]`, with no path and no `*` |
+| `PASSWORD_PEPPER` | no | none | Secret mixed into new password hashes; keep it outside the database |
+| `PASSWORD_PREVIOUS_PEPPERS` | no | none | Comma-separated old peppers that still verify, for rotation |
+| `CORS_ORIGINS` | no | none | Comma-separated browser origins allowed to call the API. Each must be `scheme://host[:port]`, with no path and no `*`. Include the API's own origin if pages served from it call the API |
 | `COOKIE_INSECURE` | no | off | `1` or `true` drops the `Secure` cookie flag. Development only |
 | `ADDR` | no | `:8080` | Listen address |
 | `RATE_LIMIT_IP_BURST` | no | `20` | Burst of the per-IP limiter on `/register` and both logins. Positive integer; it cannot be turned off |
@@ -90,7 +92,12 @@ Lifetimes are constants in [cmd/api/config.go](cmd/api/config.go): session 24 h,
 refresh cookie 7 days. Access token TTL (15 min) and refresh family TTL (30
 days) are package defaults.
 
-Changing `PASSWORD_PEPPER` after users exist invalidates their stored hashes.
+To rotate the pepper, set the new one as `PASSWORD_PEPPER` and move the old
+one to `PASSWORD_PREVIOUS_PEPPERS`. Each user's hash moves to the new pepper
+on their next login. Remove the old pepper only once no hash uses it: users
+who have not logged in by then must reset their password. A hash without
+`k` is read as unpeppered, so hashes made with a pepper by a version before
+pepper ids existed no longer verify.
 Treat it as fixed once chosen.
 
 ## HTTP API
@@ -181,7 +188,10 @@ HTTP handler  ->  middleware.Require  ->  authn.Authenticator  ->  Store
 Authentication answers "who are you" and produces a `Principal`. Authorization
 answers "may you do this" and runs after it. A missing or invalid credential
 gives 401, a valid principal without the role gives 403, and an infrastructure
-failure gives 500 with a generic body. `RequireRole` fails closed with 401 if
+failure gives 500 with a generic body. Every error, from handlers and
+middleware alike, is JSON `{"error": "..."}` and every response carries
+`Cache-Control: no-store`. A 401 on a bearer route also carries
+`WWW-Authenticate: Bearer` (RFC 6750). `RequireRole` fails closed with 401 if
 no principal is in the context, and panics at startup if called with no
 roles.
 
@@ -208,6 +218,11 @@ that suite.
 ### Tokens
 
 - **Access token**: HS256 JWT with `sub`, `iss`, `iat`, `exp` and `roles`.
+  The header names the signing key in `kid` (derived from the key itself), so
+  several keys can verify at once. To rotate: set the new key as
+  `JWT_SECRET`, move the old one to `JWT_PREVIOUS_SECRETS`, and remove it
+  after one access token TTL. Tokens have no `aud` or `jti`: add `aud` when a
+  second service starts accepting them, and `jti` only if you add a denylist.
   The algorithm is pinned in the parser, which blocks `alg=none` and algorithm
   confusion. The issuer and expiry are required. Every verification failure
   returns the same `ErrUnauthenticated`, so the cause is not leaked.
@@ -230,10 +245,16 @@ that suite.
 
 - Argon2id with the OWASP minimum parameters (19 MiB, 2 iterations, 1 thread),
   encoded as a PHC string. Parameters are stored in each hash, so you can raise
-  them later and old hashes still verify.
+  them later and old hashes still verify. After a successful login, a hash
+  with outdated parameters or a previous pepper is replaced with a fresh one
+  (`Hasher.NeedsRehash`). The update only applies if the stored hash is
+  unchanged, so it cannot undo a concurrent password change.
 - `Verify` caps the parameters it will accept from a stored hash, so a
   corrupted or tampered row cannot trigger huge allocations.
-- An optional pepper is applied with HMAC-SHA256 before hashing.
+- An optional pepper is applied with HMAC-SHA256 before hashing. Each hash
+  names its pepper with a `k=<id>` parameter, a truncated SHA-256 of the
+  pepper (never the pepper itself), so several peppers can be configured at
+  once.
 - Login always performs exactly one hash verification. For an unknown email it
   verifies against a dummy hash, so response time and the error message do not
   reveal which accounts exist.
@@ -267,8 +288,10 @@ every unsafe method (anything except `GET`, `HEAD`, `OPTIONS`):
 1. The `X-Requested-With: XMLHttpRequest` header is required. Cross-site pages
    cannot add custom headers without a CORS preflight, and HTML forms cannot
    set it at all.
-2. If the request has an `Origin`, it must be in the allowlist or match the
-   API's own host.
+2. If the request has an `Origin`, it must be in the allowlist. Matching the
+   API's own host is not enough: behind a reverse proxy the `Host` the API
+   sees is often internal, and a host match ignores the scheme. A page served
+   from the API's own origin must be listed in `CORS_ORIGINS` too.
 
 CORS is an explicit allowlist with credentials. No wildcard and no echoing of
 arbitrary origins. Origins that are not listed receive no CORS headers. CORS
@@ -313,7 +336,18 @@ Compose health check runs `/api healthcheck`.
   knows an email can keep its bucket empty. This is the price of stopping
   distributed guessing against one account.
 - **No email verification, password reset, MFA or account deletion endpoints.**
+- **Front end and API must be same-site.** The session cookie is
+  `SameSite=Lax` and the refresh cookie `SameSite=Strict`, so browsers only
+  send them when the page and the API share a registrable domain
+  (`app.example.com` and `api.example.com` work; `example.com` and
+  `example-api.net` do not). The demo works because `localhost:3000` and
+  `localhost:8080` are the same site. For a cross-site front end, put a
+  backend-for-frontend on the front end's site instead of relaxing to
+  `SameSite=None`.
 - **Access tokens cannot be revoked** before they expire. Keep the TTL short.
+  After logout, a role change or account deletion, an access token already
+  issued stays valid, with its old roles, for up to its TTL (15 min). Session
+  mode does not have this gap: it reads roles on every request.
 - **Roles in the demo** come from the `users.role` column and nothing in the
   demo routes uses `authz.RequireRole`. It is there for you to apply.
 - **HS256 with one shared secret.** Every service that verifies tokens can

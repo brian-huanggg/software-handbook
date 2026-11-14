@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: authkit API
-  version: 0.1.0
+  version: 0.1.2
   description: |
     Auth template with two parallel modes:
 
@@ -11,11 +11,12 @@ info:
 
     **CSRF:** every non-GET/HEAD/OPTIONS request must send
     `X-Requested-With: XMLHttpRequest`, including `/register` and the login
-    endpoints. If an `Origin` header is sent, it must be an allowed origin or
-    the API's own host. Violations return `403` with a plain-text body.
+    endpoints. If an `Origin` header is sent, it must be an allowed origin. Violations return `403`.
 
-    **Error shapes:** handler errors are JSON `{"error": "..."}`. Errors from
-    middleware (`401`, `403`) are plain text.
+    **Error shapes:** every error the API itself returns is JSON
+    `{"error": "..."}`, from handlers and middleware alike. Only the router's
+    own `404` and `405` for unknown paths or methods are plain text. No
+    response may be cached (`Cache-Control: no-store`).
 
     **Brute-force limits:** `/register` and both logins are limited per client
     IP (burst 20, then 1 every 3 s); both logins are also limited per email
@@ -136,7 +137,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthenticated"
         "500":
-          $ref: "#/components/responses/InternalErrorText"
+          $ref: "#/components/responses/InternalError"
 
   /token/login:
     post:
@@ -231,9 +232,9 @@ paths:
         "200":
           $ref: "#/components/responses/Me"
         "401":
-          $ref: "#/components/responses/Unauthenticated"
+          $ref: "#/components/responses/BearerUnauthenticated"
         "500":
-          $ref: "#/components/responses/InternalErrorText"
+          $ref: "#/components/responses/InternalError"
 
 components:
   securitySchemes:
@@ -349,20 +350,35 @@ components:
           example:
             error: invalid email or password
     Unauthenticated:
-      description: Missing or invalid credential (plain text from middleware)
+      description: Missing or invalid credential
       content:
-        text/plain:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: unauthenticated
+    BearerUnauthenticated:
+      description: Missing or invalid access token
+      headers:
+        WWW-Authenticate:
+          description: RFC 6750 challenge
           schema:
             type: string
-            example: unauthenticated
+            example: Bearer realm="authkit"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: unauthenticated
     CSRFForbidden:
       description: |
-        CSRF check failed (plain text): `forbidden origin` or
+        CSRF check failed: `forbidden origin` or
         `missing X-Requested-With header`.
       content:
-        text/plain:
+        application/json:
           schema:
-            type: string
+            $ref: "#/components/schemas/Error"
     TooManyRequests:
       description: Rate limit exceeded; retry after `Retry-After` seconds
       headers:
@@ -387,10 +403,3 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             error: internal server error
-    InternalErrorText:
-      description: Infrastructure error in auth middleware (plain text)
-      content:
-        text/plain:
-          schema:
-            type: string
-            example: internal server error

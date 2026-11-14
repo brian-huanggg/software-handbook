@@ -28,12 +28,18 @@ const (
 )
 
 type config struct {
-	Addr            string
-	DatabaseURL     string
-	JWTSecret       []byte
-	Issuer          string
-	Pepper          []byte // optional password pepper, kept out of the DB
-	InsecureCookies bool   // dev only: drop the Secure flag
+	Addr        string
+	DatabaseURL string
+	JWTSecret   []byte
+	// JWTPreviousSecrets verify tokens signed before a key rotation; they
+	// never sign. Comma-separated in JWT_PREVIOUS_SECRETS.
+	JWTPreviousSecrets [][]byte
+	Issuer             string
+	Pepper             []byte // optional password pepper, kept out of the DB
+	// PreviousPeppers still verify old hashes, which are re-hashed with
+	// Pepper on the next login. Comma-separated in PASSWORD_PREVIOUS_PEPPERS.
+	PreviousPeppers [][]byte
+	InsecureCookies bool // dev only: drop the Secure flag
 	// AllowedOrigins are the browser origins that may call the API with
 	// credentials (CORS) and submit state-changing requests (CSRF).
 	AllowedOrigins []string
@@ -60,6 +66,11 @@ func loadConfig(getenv func(string) string) (config, error) {
 	if p := getenv("PASSWORD_PEPPER"); p != "" {
 		c.Pepper = []byte(p)
 	}
+	for _, p := range strings.Split(getenv("PASSWORD_PREVIOUS_PEPPERS"), ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			c.PreviousPeppers = append(c.PreviousPeppers, []byte(p))
+		}
+	}
 	switch getenv("COOKIE_INSECURE") {
 	case "1", "true":
 		c.InsecureCookies = true
@@ -85,6 +96,15 @@ func loadConfig(getenv func(string) string) (config, error) {
 	}
 	if len(c.JWTSecret) < 32 {
 		return config{}, fmt.Errorf("JWT_SECRET is required and must be at least 32 bytes (got %d)", len(c.JWTSecret))
+	}
+	for _, k := range strings.Split(getenv("JWT_PREVIOUS_SECRETS"), ",") {
+		if k = strings.TrimSpace(k); k == "" {
+			continue
+		}
+		if len(k) < 32 {
+			return config{}, fmt.Errorf("JWT_PREVIOUS_SECRETS: each secret must be at least 32 bytes (got %d)", len(k))
+		}
+		c.JWTPreviousSecrets = append(c.JWTPreviousSecrets, []byte(k))
 	}
 	return c, nil
 }

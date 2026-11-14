@@ -114,3 +114,21 @@ func TestCreate_InvalidEmail(t *testing.T) {
 		t.Fatalf("got %v, want ErrInvalidEmail", err)
 	}
 }
+
+func TestReplacePasswordHash(t *testing.T) {
+	s := store.NewUserStore(testPool(t))
+	ctx := context.Background()
+	u, err := s.Create(ctx, uniqueEmail(), "old")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok, err := s.ReplacePasswordHash(ctx, u.ID, "stale", "new"); err != nil || ok {
+		t.Fatalf("stale old hash: ok=%v err=%v, want false, nil", ok, err)
+	}
+	if ok, err := s.ReplacePasswordHash(ctx, u.ID, "old", "new"); err != nil || !ok {
+		t.Fatalf("matching old hash: ok=%v err=%v", ok, err)
+	}
+	if got, _ := s.ByID(ctx, u.ID); got.PasswordHash != "new" {
+		t.Fatalf("hash = %q, want new", got.PasswordHash)
+	}
+}

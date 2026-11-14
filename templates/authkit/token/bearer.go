@@ -14,6 +14,9 @@ var _ authn.Authenticator = (*Bearer)(nil)
 
 func NewBearer(a *Access) *Bearer { return &Bearer{access: a} }
 
+// Challenge is the WWW-Authenticate value sent with a 401 (RFC 6750).
+func (b *Bearer) Challenge() string { return `Bearer realm="authkit"` }
+
 func (b *Bearer) Authenticate(r *http.Request) (authn.Principal, error) {
 	scheme, tok, ok := strings.Cut(r.Header.Get("Authorization"), " ")
 	if !ok || !strings.EqualFold(scheme, "Bearer") || tok == "" || strings.ContainsAny(tok, " \t") {

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/brian-huanggg/software-handbook/templates/authkit/respond"
 )
 
 // ValidateOrigin checks that o is a bare origin: scheme://host[:port], no
@@ -42,17 +44,20 @@ func CORS(origins []string) func(http.Handler) http.Handler {
 			return next
 		}
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Always vary, even without Origin: the response differs by
+			// origin, so a cache must not reuse a no-Origin response for a
+			// cross-origin request or vice versa.
+			w.Header().Add("Vary", "Origin")
 			origin := r.Header.Get("Origin")
 			if origin == "" {
 				next.ServeHTTP(w, r)
 				return
 			}
-			w.Header().Add("Vary", "Origin")
 			preflight := r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != ""
 
 			if !allowed[origin] {
 				if preflight {
-					http.Error(w, "origin not allowed", http.StatusForbidden)
+					respond.Error(w, http.StatusForbidden, "origin not allowed")
 					return
 				}
 				next.ServeHTTP(w, r) // served, but the browser will not expose it

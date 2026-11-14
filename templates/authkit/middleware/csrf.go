@@ -2,7 +2,8 @@ package middleware
 
 import (
 	"net/http"
-	"net/url"
+
+	"github.com/brian-huanggg/software-handbook/templates/authkit/respond"
 )
 
 const (
@@ -18,8 +19,10 @@ const (
 //  1. A custom header is required. A cross-site page cannot add one without
 //     a CORS preflight, and CORS only approves the listed origins. HTML forms
 //     cannot set it at all.
-//  2. If the browser sent an Origin, it must be an allowed origin or the
-//     API's own host.
+//  2. If the browser sent an Origin, it must be an allowed origin. There is
+//     no "same host as the API" fallback: behind a proxy r.Host is often the
+//     internal host, and it ignores the scheme. A page served from the API's
+//     own origin must be listed like any other.
 //
 // Safe methods must never change state, since they are not checked.
 func CSRF(allowedOrigins []string) func(http.Handler) http.Handler {
@@ -31,20 +34,15 @@ func CSRF(allowedOrigins []string) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			if origin := r.Header.Get("Origin"); origin != "" && !allowed[origin] && !sameHost(origin, r.Host) {
-				http.Error(w, "forbidden origin", http.StatusForbidden)
+			if origin := r.Header.Get("Origin"); origin != "" && !allowed[origin] {
+				respond.Error(w, http.StatusForbidden, "forbidden origin")
 				return
 			}
 			if r.Header.Get(CSRFHeader) != CSRFValue {
-				http.Error(w, "missing "+CSRFHeader+" header", http.StatusForbidden)
+				respond.Error(w, http.StatusForbidden, "missing "+CSRFHeader+" header")
 				return
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func sameHost(origin, host string) bool {
-	u, err := url.Parse(origin)
-	return err == nil && u.Host != "" && u.Host == host
 }

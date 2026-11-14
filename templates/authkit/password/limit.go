@@ -27,3 +27,6 @@ func (l *limited) Verify(password, encoded string) (bool, error) {
 	defer func() { <-l.slots }()
 	return l.h.Verify(password, encoded)
 }
+
+// NeedsRehash only parses a string, so it does not take a slot.
+func (l *limited) NeedsRehash(encoded string) bool { return l.h.NeedsRehash(encoded) }

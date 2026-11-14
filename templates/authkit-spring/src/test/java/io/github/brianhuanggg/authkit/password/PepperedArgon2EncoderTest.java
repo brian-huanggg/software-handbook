@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -143,5 +144,51 @@ class PepperedArgon2EncoderTest {
     void rejectsNonPositiveConcurrency() {
         assertThatThrownBy(() -> new PepperedArgon2Encoder(null, List.of(), 0))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // ---- admission control ----
+
+    @Test
+    void slotsAreWeightedByMemory() {
+        int m = PepperedArgon2Encoder.MEMORY_KIB;
+        assertThat(PepperedArgon2Encoder.slotsFor(1, 8)).isEqualTo(1);
+        assertThat(PepperedArgon2Encoder.slotsFor(m, 8)).isEqualTo(1);
+        assertThat(PepperedArgon2Encoder.slotsFor(m + 1, 8)).isEqualTo(2);
+        // 256 MiB / 19 MiB, rounded up, is 14 slots ...
+        assertThat(PepperedArgon2Encoder.slotsFor(PepperedArgon2Encoder.MAX_MEMORY_KIB, 32)).isEqualTo(14);
+        // ... but never more than exist, or the hash could never run.
+        assertThat(PepperedArgon2Encoder.slotsFor(PepperedArgon2Encoder.MAX_MEMORY_KIB, 8)).isEqualTo(8);
+    }
+
+    @Test
+    void busyWhenNoSlotFreesWithinTheWait() {
+        var e = new PepperedArgon2Encoder(null, List.of(), 1, Duration.ofMillis(50));
+        String hash = e.encode("pw");
+        e.slots.acquireUninterruptibly();
+        try {
+            assertThatThrownBy(() -> e.encode("pw")).isInstanceOf(PasswordHashingBusyException.class);
+            assertThatThrownBy(() -> e.matches("pw", hash)).isInstanceOf(PasswordHashingBusyException.class);
+        } finally {
+            e.slots.release();
+        }
+        assertThat(e.matches("pw", hash)).as("works again once a slot is free").isTrue();
+        assertThat(e.slots.availablePermits()).as("every slot given back").isEqualTo(1);
+    }
+
+    @Test
+    void heavierStoredHashNeedsMoreSlots() {
+        var e = new PepperedArgon2Encoder(null, List.of(), 2, Duration.ofMillis(50));
+        String normal = e.encode("pw");
+        // Same string with twice the memory cost: it needs both slots.
+        String heavy = normal.replace("m=" + PepperedArgon2Encoder.MEMORY_KIB,
+                "m=" + 2 * PepperedArgon2Encoder.MEMORY_KIB);
+        e.slots.acquireUninterruptibly();
+        try {
+            assertThat(e.matches("pw", normal)).as("one slot is enough").isTrue();
+            assertThatThrownBy(() -> e.matches("pw", heavy)).isInstanceOf(PasswordHashingBusyException.class);
+        } finally {
+            e.slots.release();
+        }
+        assertThat(e.slots.availablePermits()).isEqualTo(2);
     }
 }

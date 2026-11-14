@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.brianhuanggg.authkit.PostgresTestBase;
+import io.github.brianhuanggg.authkit.crypto.OpaqueIds;
 import io.github.brianhuanggg.authkit.user.UserRepository;
 import jakarta.servlet.http.Cookie;
 import java.time.Instant;
@@ -96,7 +97,7 @@ class SessionFlowTest extends PostgresTestBase {
     @Test
     void storesOnlyTheHashOfTheId() throws Exception {
         String raw = sid(login(newUser()));
-        assertThat(store.find(SessionService.hashId(raw))).isPresent();
+        assertThat(store.find(OpaqueIds.hash(raw))).isPresent();
         assertThat(jdbc.sql("SELECT count(*) FROM sessions WHERE id_hash = convert_to(:raw, 'UTF8')")
                 .param("raw", raw).query(Integer.class).single()).isZero();
     }
@@ -136,7 +137,7 @@ class SessionFlowTest extends PostgresTestBase {
         MvcResult out = mvc.perform(json(post("/session/logout"), "").cookie(new Cookie("sid", raw)))
                 .andExpect(status().isNoContent()).andReturn();
         assertThat(out.getResponse().getHeader(HttpHeaders.SET_COOKIE)).startsWith("sid=;").contains("Max-Age=0");
-        assertThat(store.find(SessionService.hashId(raw))).isEmpty();
+        assertThat(store.find(OpaqueIds.hash(raw))).isEmpty();
         mvc.perform(get("/session/me").cookie(new Cookie("sid", raw))).andExpect(status().isUnauthorized());
     }
 
@@ -154,7 +155,7 @@ class SessionFlowTest extends PostgresTestBase {
         String fresh = sid(second);
 
         assertThat(fresh).isNotEqualTo(planted);
-        assertThat(store.find(SessionService.hashId(planted))).as("old ID revoked").isEmpty();
+        assertThat(store.find(OpaqueIds.hash(planted))).as("old ID revoked").isEmpty();
         mvc.perform(get("/session/me").cookie(new Cookie("sid", planted))).andExpect(status().isUnauthorized());
         mvc.perform(get("/session/me").cookie(new Cookie("sid", fresh))).andExpect(status().isOk());
     }
@@ -175,10 +176,10 @@ class SessionFlowTest extends PostgresTestBase {
     void expiredSessionIs401AndTheRowIsDeleted() throws Exception {
         UUID user = users.findByEmail(newUser()).orElseThrow().id();
         String raw = "expired-" + UUID.randomUUID();
-        store.create(new Session(SessionService.hashId(raw), user, Instant.now().minus(1, ChronoUnit.SECONDS)));
+        store.create(new Session(OpaqueIds.hash(raw), user, Instant.now().minus(1, ChronoUnit.SECONDS)));
 
         mvc.perform(get("/session/me").cookie(new Cookie("sid", raw))).andExpect(status().isUnauthorized());
-        assertThat(store.find(SessionService.hashId(raw))).isEmpty();
+        assertThat(store.find(OpaqueIds.hash(raw))).isEmpty();
     }
 
     @Test

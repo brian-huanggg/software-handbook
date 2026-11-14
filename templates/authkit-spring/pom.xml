@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
+      <!-- Compile scope: UserRepository reads the violated constraint from PSQLException. -->
     </dependency>
 
     <dependency>

@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Mac;
@@ -33,6 +35,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * <p>{@link #matches} returns false for a malformed hash and throws
  * {@link UnknownPepperException} when the hash names a pepper that is not
  * configured: a configuration error, not a wrong password.
+ *
+ * <p>Hashing is admission-controlled. Each call takes slots from a fair
+ * semaphore in proportion to the memory it needs, one slot per
+ * {@link #MEMORY_KIB} (so a tampered row with a 256 MiB cost takes many slots,
+ * not one), and gives up with {@link PasswordHashingBusyException} when it
+ * cannot get them within the configured wait. Request threads therefore never
+ * queue behind hashing without bound, and hashing memory stays near
+ * {@code maxConcurrent * 19 MiB} (at most {@link #MAX_MEMORY_KIB}, whichever is larger).
  */
 public final class PepperedArgon2Encoder implements PasswordEncoder {
 
@@ -46,6 +56,8 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
 
     // Upper bounds on parameters read from a stored hash, so a corrupt or
     // tampered row cannot make matches() allocate gigabytes or spin for minutes.
+    // Same caps as the Go API, so both accept the same hashes. What bounds the
+    // total memory is the slot weighting in argon2id(), not these caps.
     static final int MAX_MEMORY_KIB = 256 * 1024;
     static final int MAX_TIME_COST = 10;
     static final int MAX_PARALLELISM = 16;
@@ -61,7 +73,12 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
 
     private final String pepperId; // null = no pepper
     private final Map<String, byte[]> peppers; // id -> pepper, current one included
-    private final Semaphore slots;
+    /** How long a hash waits for slots before {@link PasswordHashingBusyException}. */
+    public static final Duration DEFAULT_MAX_WAIT = Duration.ofSeconds(5);
+
+    final Semaphore slots; // package-private for tests
+    private final int totalSlots;
+    private final long maxWaitNanos;
 
     /**
      * @param pepper   signs new hashes; null or empty means none. Keep it outside the DB.
@@ -73,10 +90,23 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
      *                 logins can exhaust memory. Pick about the CPU count.
      */
     public PepperedArgon2Encoder(byte[] pepper, List<byte[]> previous, int maxConcurrent) {
+        this(pepper, previous, maxConcurrent, DEFAULT_MAX_WAIT);
+    }
+
+    /**
+     * @param maxWait  how long a call waits for slots before it fails with
+     *                 {@link PasswordHashingBusyException} (answered as 503)
+     */
+    public PepperedArgon2Encoder(byte[] pepper, List<byte[]> previous, int maxConcurrent, Duration maxWait) {
         if (maxConcurrent <= 0) {
             throw new IllegalArgumentException("maxConcurrent must be > 0");
         }
+        if (maxWait.isNegative()) {
+            throw new IllegalArgumentException("maxWait must not be negative");
+        }
         this.slots = new Semaphore(maxConcurrent, true);
+        this.totalSlots = maxConcurrent;
+        this.maxWaitNanos = maxWait.toNanos();
         Map<String, byte[]> all = new HashMap<>();
         String current = null;
         if (pepper != null && pepper.length > 0) {
@@ -119,8 +149,25 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
         }
     }
 
+    /**
+     * Slots a hash with {@code memoryKiB} takes: one per {@link #MEMORY_KIB},
+     * rounded up, never more than exist (or it could never run).
+     */
+    static int slotsFor(int memoryKiB, int totalSlots) {
+        int weight = (int) Math.max(1, Math.ceilDiv((long) memoryKiB, MEMORY_KIB));
+        return Math.min(totalSlots, weight);
+    }
+
     private byte[] argon2id(byte[] secret, byte[] salt, int t, int m, int p, int keyLen) {
-        slots.acquireUninterruptibly();
+        int permits = slotsFor(m, totalSlots);
+        try {
+            if (!slots.tryAcquire(permits, maxWaitNanos, TimeUnit.NANOSECONDS)) {
+                throw new PasswordHashingBusyException();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new PasswordHashingBusyException();
+        }
         try {
             Argon2Parameters params = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
                     .withVersion(Argon2Parameters.ARGON2_VERSION_13)
@@ -135,7 +182,7 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
             gen.generateBytes(secret, out);
             return out;
         } finally {
-            slots.release();
+            slots.release(permits);
         }
     }
 

@@ -1,8 +1,11 @@
 package io.github.brianhuanggg.authkit.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -14,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.github.brianhuanggg.authkit.password.PasswordHashingBusyException;
 import io.github.brianhuanggg.authkit.user.InMemoryUserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -181,6 +185,27 @@ class SecurityTest {
                             .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error").value("invalid email or password"));
+        }
+    }
+
+    @Test
+    void hashingBusyIs503WithRetryAfter() throws Exception {
+        doThrow(new PasswordHashingBusyException()).when(encoder).encode(any(CharSequence.class));
+        doThrow(new PasswordHashingBusyException()).when(encoder).matches(any(CharSequence.class), anyString());
+        try {
+            mvc.perform(register(creds(newEmail(), "password-123")))
+                    .andExpect(status().isServiceUnavailable())
+                    .andExpect(header().string("Retry-After", "1"))
+                    .andExpect(jsonPath("$.error").value("server busy; try again"));
+            // An unknown email still verifies against the dummy hash, so it is busy too:
+            // the 503 does not reveal whether the account exists.
+            mvc.perform(post("/session/login").contentType(MediaType.APPLICATION_JSON)
+                            .content(creds(newEmail(), "password-123"))
+                            .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
+                    .andExpect(status().isServiceUnavailable())
+                    .andExpect(header().string("Retry-After", "1"));
+        } finally {
+            reset(encoder);
         }
     }
 

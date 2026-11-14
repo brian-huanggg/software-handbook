@@ -1,5 +1,6 @@
 package io.github.brianhuanggg.authkit.web;
 
+import io.github.brianhuanggg.authkit.password.PasswordHashingBusyException;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,16 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ApiException.class)
     ResponseEntity<Object> api(ApiException ex) {
         return json(ex.status(), ex.getMessage());
+    }
+
+    /** Overload, not a fault: the client may retry shortly. Login and register both end here. */
+    @ExceptionHandler(PasswordHashingBusyException.class)
+    ResponseEntity<Object> busy(PasswordHashingBusyException ex) {
+        log.warn("password hashing busy; answered 503");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("error", "server busy; try again"));
     }
 
     @ExceptionHandler(Exception.class)

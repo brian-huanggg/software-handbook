@@ -9,13 +9,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration(proxyBeanMethods = false)
 class PasswordConfig {
 
-    /** One slot per CPU: more only adds memory pressure (19 MiB per hash), not throughput. */
+    /**
+     * One slot per CPU: more only adds memory pressure (19 MiB per hash), not
+     * throughput. A hash that cannot get its slots within the wait answers 503,
+     * so request threads never pile up behind hashing.
+     */
     @Bean
     PasswordEncoder passwordEncoder(AuthkitProperties props) {
         byte[] pepper = props.passwordPepper() == null
                 ? null : props.passwordPepper().getBytes(StandardCharsets.UTF_8);
         var previous = props.passwordPreviousPeppers().stream()
                 .map(p -> p.getBytes(StandardCharsets.UTF_8)).toList();
-        return new PepperedArgon2Encoder(pepper, previous, Runtime.getRuntime().availableProcessors());
+        return new PepperedArgon2Encoder(pepper, previous, Runtime.getRuntime().availableProcessors(),
+                PepperedArgon2Encoder.DEFAULT_MAX_WAIT);
     }
 }

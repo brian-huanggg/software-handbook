@@ -1,11 +1,9 @@
 package io.github.brianhuanggg.authkit.token;
 
-import io.github.brianhuanggg.authkit.session.SessionService;
-import java.security.SecureRandom;
+import io.github.brianhuanggg.authkit.crypto.OpaqueIds;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -21,8 +19,6 @@ public class RefreshTokenService {
     public static final Duration TTL = Duration.ofDays(7);
     /** Absolute lifetime of a login chain. */
     public static final Duration FAMILY_TTL = Duration.ofDays(30);
-
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final RefreshStore store;
     private final Clock clock;
@@ -40,14 +36,12 @@ public class RefreshTokenService {
     }
 
     private Fresh next(UUID userId, UUID familyId, Instant familyExpires) {
-        byte[] random = new byte[32];
-        RANDOM.nextBytes(random);
-        String raw = Base64.getUrlEncoder().withoutPadding().encodeToString(random);
+        String raw = OpaqueIds.generate();
         Instant exp = clock.instant().plus(TTL);
         if (exp.isAfter(familyExpires)) {
             exp = familyExpires;
         }
-        return new Fresh(raw, new Refresh(SessionService.hashId(raw), userId, familyId, null, exp, familyExpires));
+        return new Fresh(raw, new Refresh(OpaqueIds.hash(raw), userId, familyId, null, exp, familyExpires));
     }
 
     /** Begins a new family (a login) and returns its first raw token. */
@@ -76,7 +70,7 @@ public class RefreshTokenService {
         if (raw == null || raw.isEmpty()) {
             throw new InvalidRefreshException();
         }
-        byte[] hash = SessionService.hashId(raw);
+        byte[] hash = OpaqueIds.hash(raw);
         Refresh cur = store.find(hash).orElseThrow(InvalidRefreshException::new);
         Instant now = clock.instant();
         if (!now.isBefore(cur.expiresAt()) || !now.isBefore(cur.familyExpiresAt())) {
@@ -102,7 +96,7 @@ public class RefreshTokenService {
         if (raw == null || raw.isEmpty()) {
             return;
         }
-        Optional<Refresh> cur = store.find(SessionService.hashId(raw));
+        Optional<Refresh> cur = store.find(OpaqueIds.hash(raw));
         cur.ifPresent(t -> store.deleteFamily(t.familyId()));
     }
 

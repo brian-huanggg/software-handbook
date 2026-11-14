@@ -1,5 +1,7 @@
 package io.github.brianhuanggg.authkit.config;
 
+import io.github.brianhuanggg.authkit.ratelimit.RateLimitFilter;
+import io.github.brianhuanggg.authkit.ratelimit.RateLimits;
 import io.github.brianhuanggg.authkit.session.SessionAuthenticationFilter;
 import io.github.brianhuanggg.authkit.session.SessionService;
 import io.github.brianhuanggg.authkit.token.JwtService;
@@ -31,13 +33,19 @@ import org.springframework.web.filter.CorsFilter;
  * ahead of Spring Security, so nothing buffers unbounded input);</li>
  * <li>CORS, so preflights are answered before the CSRF check;</li>
  * <li>{@code CsrfHeaderFilter};</li>
- * <li>the rate limiter (stage 6), then the authentication filters.</li>
+ * <li>{@code RateLimitFilter} (429 before any hashing), then the authentication filters.</li>
  * </ol>
  * Spring's own CSRF, form login, HTTP Basic, logout and HttpSession are off.
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 class SecurityConfig {
+
+    private final RateLimits rateLimits;
+
+    SecurityConfig(RateLimits rateLimits) {
+        this.rateLimits = rateLimits;
+    }
 
     static final String BEARER_CHALLENGE = "Bearer realm=\"authkit\"";
 
@@ -94,7 +102,9 @@ class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new JsonAuthenticationEntryPoint(challenge))
                         .accessDeniedHandler(new JsonAccessDeniedHandler()))
-                .addFilterAfter(new CsrfHeaderFilter(props.corsOrigins()), CorsFilter.class);
+                .addFilterAfter(new CsrfHeaderFilter(props.corsOrigins()), CorsFilter.class)
+                // After CSRF, before any authentication or password work.
+                .addFilterAfter(new RateLimitFilter(rateLimits), CsrfHeaderFilter.class);
         // An empty list disables CORS.
         if (!props.corsOrigins().isEmpty()) {
             CorsFilter cors = new CorsFilter(corsSource(props.corsOrigins()));

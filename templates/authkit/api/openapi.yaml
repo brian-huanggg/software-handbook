@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  title: authkit API
+  version: 0.1.0
+  description: |
+    Auth template with two parallel modes:
+
+    - **Session mode** (`/session/*`): server-side state, `sid` cookie.
+    - **Token mode** (`/token/*`): short-lived access JWT in `Authorization`
+      header, rotating refresh token in an HttpOnly cookie scoped to `/token`.
+
+    **CSRF:** every non-GET/HEAD/OPTIONS request must send
+    `X-Requested-With: XMLHttpRequest`, including `/register` and the login
+    endpoints. If an `Origin` header is sent, it must be an allowed origin or
+    the API's own host. Violations return `403` with a plain-text body.
+
+    **Error shapes:** handler errors are JSON `{"error": "..."}`. Errors from
+    middleware (`401`, `403`) are plain text.
+servers:
+  - url: http://localhost:8080
+    description: Local (default ADDR)
+
+tags:
+  - name: Account
+  - name: Session mode
+  - name: Token mode
+
+paths:
+  /register:
+    post:
+      tags: [Account]
+      summary: Create an account
+      operationId: register
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      requestBody:
+        $ref: "#/components/requestBodies/Credentials"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisteredUser"
+        "400":
+          description: Invalid JSON, missing/invalid email, or password length outside 8-128 bytes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /session/login:
+    post:
+      tags: [Session mode]
+      summary: Log in and start a server-side session
+      operationId: sessionLogin
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      requestBody:
+        $ref: "#/components/requestBodies/Credentials"
+      responses:
+        "200":
+          description: Session started. `sid` cookie is set.
+          headers:
+            Set-Cookie:
+              description: "`sid` session cookie (HttpOnly)"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_id]
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+        "400":
+          description: Invalid JSON, or email/password missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/InvalidCredentials"
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /session/logout:
+    post:
+      tags: [Session mode]
+      summary: End the current session
+      operationId: sessionLogout
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      responses:
+        "204":
+          description: Session ended and `sid` cookie cleared
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /session/me:
+    get:
+      tags: [Session mode]
+      summary: Current principal (session)
+      operationId: sessionMe
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Me"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/InternalErrorText"
+
+  /token/login:
+    post:
+      tags: [Token mode]
+      summary: Log in and get an access token plus refresh cookie
+      operationId: tokenLogin
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      requestBody:
+        $ref: "#/components/requestBodies/Credentials"
+      responses:
+        "200":
+          $ref: "#/components/responses/AccessToken"
+        "400":
+          description: Invalid JSON, or email/password missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/InvalidCredentials"
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "413":
+          $ref: "#/components/responses/TooLarge"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /token/refresh:
+    post:
+      tags: [Token mode]
+      summary: Rotate the refresh token and get a new access token
+      description: |
+        Requires the `refresh_token` cookie (sent only to `/token/*`).
+        Reusing an already-rotated token revokes the whole token family; the
+        cookie is cleared and `401` is returned.
+      operationId: tokenRefresh
+      security:
+        - refreshCookie: []
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      responses:
+        "200":
+          $ref: "#/components/responses/AccessToken"
+        "401":
+          description: Missing, invalid, expired, or reused refresh token. Cookie is cleared (except when missing).
+          headers:
+            Set-Cookie:
+              description: Clears `refresh_token` (`Max-Age=-1`)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /token/logout:
+    post:
+      tags: [Token mode]
+      summary: Revoke the refresh token family
+      description: Idempotent. Returns `204` even if no refresh cookie is present.
+      operationId: tokenLogout
+      parameters:
+        - $ref: "#/components/parameters/CSRFHeader"
+      responses:
+        "204":
+          description: Family revoked and `refresh_token` cookie cleared
+          headers:
+            Set-Cookie:
+              description: Clears `refresh_token` (`Max-Age=-1`)
+              schema:
+                type: string
+        "403":
+          $ref: "#/components/responses/CSRFForbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /token/me:
+    get:
+      tags: [Token mode]
+      summary: Current principal (bearer token)
+      operationId: tokenMe
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Me"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "500":
+          $ref: "#/components/responses/InternalErrorText"
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sid
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CSRFHeader:
+      name: X-Requested-With
+      in: header
+      required: true
+      description: Must equal `XMLHttpRequest` (CSRF guard).
+      schema:
+        type: string
+        enum: [XMLHttpRequest]
+
+  requestBodies:
+    Credentials:
+      required: true
+      description: Strict JSON, max 64 KiB, unknown fields rejected.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Credentials"
+
+  schemas:
+    Credentials:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Length is measured in bytes (8-128) on register.
+    RegisteredUser:
+      type: object
+      required: [id, email]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+    AccessToken:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+          description: Signed JWT
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          description: Seconds until expiry
+    Me:
+      type: object
+      required: [user_id, roles]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            type: string
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+  responses:
+    AccessToken:
+      description: Access token issued. `refresh_token` cookie is set or rotated.
+      headers:
+        Set-Cookie:
+          description: "`refresh_token` (HttpOnly, SameSite=Strict, Path=/token, Secure unless COOKIE_INSECURE)"
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AccessToken"
+    Me:
+      description: Authenticated principal
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Me"
+    InvalidCredentials:
+      description: Unknown account or wrong password (same message for both)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: invalid email or password
+    Unauthenticated:
+      description: Missing or invalid credential (plain text from middleware)
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: unauthenticated
+    CSRFForbidden:
+      description: |
+        CSRF check failed (plain text): `forbidden origin` or
+        `missing X-Requested-With header`.
+      content:
+        text/plain:
+          schema:
+            type: string
+    TooLarge:
+      description: Request body over 64 KiB
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: internal server error
+    InternalErrorText:
+      description: Infrastructure error in auth middleware (plain text)
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: internal server error

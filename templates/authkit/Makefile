@@ -14,3 +14,10 @@ migrate-down:
 CORS_ORIGINS ?= http://localhost:3000
 run:
 	DATABASE_URL="$(DB_URL)" CORS_ORIGINS="$(CORS_ORIGINS)" go run ./cmd/api
+
+# Swagger UI for api/openapi.yaml at http://localhost:8081. "Try it out" from
+# this origin needs it in CORS_ORIGINS, e.g.
+#   CORS_ORIGINS=http://localhost:8081 make run
+docs:
+	docker run --rm -p 8081:8080 -e SWAGGER_JSON=/spec/openapi.yaml \
+		-v "$(CURDIR)/api:/spec" swaggerapi/swagger-ui

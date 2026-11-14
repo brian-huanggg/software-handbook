@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -38,11 +39,25 @@ public class UserRepository {
         } catch (DuplicateKeyException e) {
             throw new EmailTakenException();
         } catch (DataIntegrityViolationException e) {
-            if (e.getMessage() != null && e.getMessage().contains(EMAIL_FORMAT_CHECK)) {
+            if (EMAIL_FORMAT_CHECK.equals(violatedConstraint(e))) {
                 throw new InvalidEmailException();
             }
             throw e;
         }
+    }
+
+    /**
+     * The constraint Postgres reports as violated, or null. Read from the
+     * server's error fields, not the message text, which can change between
+     * versions and locales.
+     */
+    static String violatedConstraint(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof PSQLException p && p.getServerErrorMessage() != null) {
+                return p.getServerErrorMessage().getConstraint();
+            }
+        }
+        return null;
     }
 
     public Optional<User> findByEmail(String email) {

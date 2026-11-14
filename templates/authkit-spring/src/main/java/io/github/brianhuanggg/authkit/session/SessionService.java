@@ -2,17 +2,13 @@ package io.github.brianhuanggg.authkit.session;
 
 import io.github.brianhuanggg.authkit.auth.AuthenticatedPrincipal;
 import io.github.brianhuanggg.authkit.config.AuthkitProperties;
+import io.github.brianhuanggg.authkit.crypto.OpaqueIds;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,9 +27,6 @@ public class SessionService {
     public static final String COOKIE_NAME = "sid";
     public static final Duration TTL = Duration.ofHours(24);
 
-    private static final int ID_BYTES = 32;
-    private static final SecureRandom RANDOM = new SecureRandom();
-
     private final SessionStore store;
     private final Clock clock;
     private final boolean secure;
@@ -44,12 +37,8 @@ public class SessionService {
         this.secure = !props.insecureCookies();
     }
 
-    public static byte[] hashId(String rawId) {
-        try {
-            return MessageDigest.getInstance("SHA-256").digest(rawId.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+    private static byte[] hashId(String rawId) {
+        return OpaqueIds.hash(rawId);
     }
 
     /**
@@ -59,9 +48,7 @@ public class SessionService {
      */
     public void login(HttpServletRequest request, HttpServletResponse response, UUID userId) {
         cookieValue(request).ifPresent(old -> store.delete(hashId(old)));
-        byte[] random = new byte[ID_BYTES];
-        RANDOM.nextBytes(random);
-        String id = Base64.getUrlEncoder().withoutPadding().encodeToString(random);
+        String id = OpaqueIds.generate();
         Instant expires = clock.instant().plus(TTL);
         store.create(new Session(hashId(id), userId, expires));
         response.addHeader(HttpHeaders.SET_COOKIE, cookie(id, TTL).toString());

@@ -2,16 +2,22 @@ package io.github.brianhuanggg.authkit.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import io.github.brianhuanggg.authkit.PostgresTestBase;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 class UserRepositoryTest extends PostgresTestBase {
 
     @Autowired
     UserRepository users;
+
+    @Autowired
+    JdbcClient jdbc;
 
     private static String uniqueEmail() {
         return "u-" + UUID.randomUUID() + "@example.com";
@@ -56,6 +62,16 @@ class UserRepositoryTest extends PostgresTestBase {
     @Test
     void invalidEmail() {
         assertThatThrownBy(() -> users.create("not-an-email", "h")).isInstanceOf(InvalidEmailException.class);
+    }
+
+    @Test
+    void violatedConstraintComesFromTheServerNotTheMessage() {
+        DataIntegrityViolationException e = catchThrowableOfType(DataIntegrityViolationException.class,
+                () -> jdbc.sql("INSERT INTO users (email, password_hash, role) VALUES (:e, 'h', 'root')")
+                        .param("e", uniqueEmail()).update());
+        assertThat(UserRepository.violatedConstraint(e)).isEqualTo("users_role_check");
+        assertThat(UserRepository.violatedConstraint(new DataIntegrityViolationException("users_email_format")))
+                .as("a message that merely mentions the name is not a violation").isNull();
     }
 
     @Test

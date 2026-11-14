@@ -3,7 +3,7 @@ package io.github.brianhuanggg.authkit.token;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.github.brianhuanggg.authkit.session.SessionService;
+import io.github.brianhuanggg.authkit.crypto.OpaqueIds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -18,7 +18,7 @@ class RefreshTokenServiceTest {
     final RefreshTokenService service = new RefreshTokenService(store, clock);
 
     private Refresh stored(String raw) {
-        return store.find(SessionService.hashId(raw)).orElseThrow();
+        return store.find(OpaqueIds.hash(raw)).orElseThrow();
     }
 
     @Test
@@ -35,7 +35,7 @@ class RefreshTokenServiceTest {
     void storesOnlyTheHash() {
         String raw = service.start(USER);
         assertThat(store.find(raw.getBytes())).isEmpty();
-        assertThat(store.find(SessionService.hashId(raw))).isPresent();
+        assertThat(store.find(OpaqueIds.hash(raw))).isPresent();
     }
 
     @Test
@@ -44,7 +44,7 @@ class RefreshTokenServiceTest {
         String second = service.rotate(first).raw();
 
         assertThatThrownBy(() -> service.rotate(first)).isInstanceOf(RefreshReuseException.class);
-        assertThat(store.find(SessionService.hashId(second))).as("legitimate child").isEmpty();
+        assertThat(store.find(OpaqueIds.hash(second))).as("legitimate child").isEmpty();
         assertThatThrownBy(() -> service.rotate(second)).isInstanceOf(InvalidRefreshException.class)
                 .isNotInstanceOf(RefreshReuseException.class);
     }
@@ -108,8 +108,8 @@ class RefreshTokenServiceTest {
         String first = service.start(USER);
         String second = service.rotate(first).raw();
         service.revoke(second);
-        assertThat(store.find(SessionService.hashId(first))).isEmpty();
-        assertThat(store.find(SessionService.hashId(second))).isEmpty();
+        assertThat(store.find(OpaqueIds.hash(first))).isEmpty();
+        assertThat(store.find(OpaqueIds.hash(second))).isEmpty();
         service.revoke("unknown"); // no-op
         service.revoke("");
         service.revoke(null);
@@ -121,7 +121,7 @@ class RefreshTokenServiceTest {
         assertThat(service.purge()).isZero();
         clock.now = clock.now.plus(RefreshTokenService.TTL).plusSeconds(1);
         assertThat(service.purge()).isEqualTo(1);
-        assertThat(store.find(SessionService.hashId(raw))).isEmpty();
+        assertThat(store.find(OpaqueIds.hash(raw))).isEmpty();
     }
 
     /** A store failure while rotating must leave the old token usable for a retry. */

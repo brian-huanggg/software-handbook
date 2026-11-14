@@ -217,7 +217,12 @@ is a Spring `PasswordEncoder`:
   (`WHERE password_hash = :old`), so it cannot undo a password change.
 - Parameters read from a stored hash are capped, so a tampered row cannot
   force a huge allocation.
-- At most `availableProcessors()` hashes run at once (a fair `Semaphore`).
+- Hashing has `availableProcessors()` slots (a fair `Semaphore`). Each hash
+  takes one slot per 19 MiB of its memory cost, so a stored hash with a
+  higher cost takes more slots, not one. A hash that cannot get its slots
+  within 5 s fails, and the request gets `503` with `Retry-After: 1`. Request
+  threads never queue behind hashing without limit. Go waits instead, which is
+  cheap for goroutines but not for servlet threads.
 - There is no `DelegatingPasswordEncoder` and so no `{argon2}` prefix: the
   stored format must stay the same as Go's.
 
@@ -367,10 +372,15 @@ These match the Go template, with the Java-specific items at the end.
 - **HS256 with one shared secret.** Every service that verifies tokens can
   also mint them.
 - **No metrics or tracing.**
-- **Memory per hash.** Each Argon2id hash allocates 19 MiB on the Java heap,
-  and up to `availableProcessors()` run at once. A burst of logins can need
-  that many times 19 MiB of heap on top of the rest of the app, so size the
-  container for it. The image sets `-XX:MaxRAMPercentage=70`; lower the CPU
+- **Memory per hash.** Each Argon2id hash allocates 19 MiB on the Java heap.
+  Slot weighting keeps all hashing together near `availableProcessors()`
+  times 19 MiB. One tampered row can still use up to the 256 MiB cap, the same
+  cap as Go. Size the container for the larger of the two, on top of the rest
+  of the app.
+- **Overload answers `503`.** When hashing stays saturated for 5 s, register
+  and login answer `503` instead of waiting. A login whose password was
+  correct can also get `503` if the hash upgrade, which runs after the check,
+  cannot get a slot. The image sets `-XX:MaxRAMPercentage=70`; lower the CPU
   count of the container, or the semaphore size in
   [PasswordConfig](src/main/java/io/github/brianhuanggg/authkit/config/PasswordConfig.java),
   if memory is tight.
@@ -386,6 +396,7 @@ src/main/java/io/github/brianhuanggg/authkit/
   AuthkitApplication, Healthcheck, LogFormat   entry point, the `healthcheck` command, LOG_FORMAT
   config/        properties, security chains, data source, JWT and password beans
   auth/          login authentication, principal, user details
+  crypto/        OpaqueIds: random session IDs and refresh tokens, and their SHA-256
   password/      PepperedArgon2Encoder
   session/       session service, filter, memory and Postgres stores
   token/         JwtService, RefreshTokenService, memory and Postgres stores

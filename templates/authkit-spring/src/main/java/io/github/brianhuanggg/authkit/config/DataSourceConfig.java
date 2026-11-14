@@ -18,6 +18,8 @@ class DataSourceConfig {
         ds.setJdbcUrl(db.jdbcUrl());
         ds.setUsername(db.username());
         ds.setPassword(db.password());
+        // A request fails after 5 s instead of the default 30 s when the database is gone.
+        ds.setConnectionTimeout(5_000);
         return ds;
     }
 }

@@ -54,15 +54,44 @@ services:
       timeout: 3s
       retries: 20
 
+  # The same API as a Spring Boot app (../authkit-spring). Opt-in:
+  #   docker compose --profile java up -d --build api-java
+  # It shares the database and the schema with `api`, and listens on host port
+  # 8082 so both can run side by side. To point the web front end at it, run
+  # `WEB_API_URL=http://localhost:8082 docker compose --profile java up -d --build api-java web`.
+  api-java:
+    profiles: ["java"]
+    build: ../authkit-spring
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://authkit:authkit@db:5432/authkit?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      CORS_ORIGINS: http://localhost:3000
+      RATE_LIMIT_IP_BURST: ${RATE_LIMIT_IP_BURST:-}
+      RATE_LIMIT_EMAIL_BURST: ${RATE_LIMIT_EMAIL_BURST:-}
+    ports:
+      - "${API_JAVA_PORT:-8082}:8080"
+    healthcheck:
+      test: ["CMD", "java", "-jar", "/app/app.jar", "healthcheck"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 20
+
   # Static front end on its own origin (http://localhost:3000), so the demo
   # exercises real CORS and cross-origin cookie rules against the API.
   web:
     build:
       context: ./web
       args:
-        VITE_API_URL: http://localhost:8080
+        VITE_API_URL: ${WEB_API_URL:-http://localhost:8080}
     environment:
-      API_ORIGIN: http://localhost:8080
+      API_ORIGIN: ${WEB_API_URL:-http://localhost:8080}
     ports:
       - "3000:80"
 

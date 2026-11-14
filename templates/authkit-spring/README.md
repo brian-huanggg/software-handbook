@@ -63,6 +63,7 @@ No separate migration step: Flyway applies the schema when the app starts.
 
 ```sh
 make test            # = ./mvnw test: unit tests plus MockMvc and Postgres tests (Testcontainers, postgres:16)
+                     # The security-chain tests (SecurityTest) need no Docker: users are in memory
 make integration     # starts the stack, then runs the Go end-to-end suite against :8082
 ```
 
@@ -166,7 +167,8 @@ All three come from JSON handlers, so the error shape never changes.
 
 Same design as Go: 32 random bytes, stored as SHA-256, 24 h expiry checked on
 read, login deletes any session the request already carried (fixation), roles
-read from `users` on every request. The cookie is `sid`, `HttpOnly`, `Secure`,
+read from `users` on every request (one query that joins `sessions` and
+`users`). The cookie is `sid`, `HttpOnly`, `Secure`,
 `SameSite=Lax`, `Path=/`.
 [SessionAuthenticationFilter](src/main/java/io/github/brianhuanggg/authkit/session/SessionAuthenticationFilter.java)
 puts an `AuthenticatedPrincipal` in the security context. Spring never creates
@@ -184,6 +186,9 @@ an `HttpSession`.
   non-UUID `sub`, an `iat` in the future, a `roles` claim that is not a list
   of strings, or when `exp` has been reached. There is no clock skew.
   Every failure is the same `401` with `WWW-Authenticate: Bearer realm="authkit"`.
+  As in Go, the `Authorization` header is read only on `GET /token/me`. Login,
+  refresh and logout ignore it, so a client that sends an expired access token
+  with `/token/refresh` can still refresh.
 - **Refresh token**: 32 random bytes stored as SHA-256, in the
   `refresh_token` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`,
   `Path=/token`).
@@ -264,9 +269,14 @@ credentials, never a wildcard. `GET` handlers must never change state.
 
 Flyway applies [V1 and V2](src/main/resources/db/migration), copies of the Go
 migrations, using `JdbcClient` and no JPA. The tables are the same:
-`users`, `sessions`, `refresh_tokens`. `baseline-on-migrate` at version 2 lets
-Flyway adopt a schema that golang-migrate already created, which is what the
-Compose stack does.
+`users`, `sessions`, `refresh_tokens`.
+[FlywayConfig](src/main/java/io/github/brianhuanggg/authkit/config/FlywayConfig.java)
+lets Flyway adopt a schema that golang-migrate already created, which is what
+the Compose stack does. It records a baseline at version 2 only when
+golang-migrate's `schema_migrations` table is clean at version 2. It refuses to
+start on a dirty Go schema, on a Go schema at another version, or on any other
+non-empty schema without a Flyway history. Plain `baseline-on-migrate` is not
+used, because it would also adopt a schema that holds none of these tables.
 
 ### Deployment image
 

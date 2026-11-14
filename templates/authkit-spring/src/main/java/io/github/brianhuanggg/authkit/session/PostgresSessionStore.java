@@ -43,6 +43,26 @@ public class PostgresSessionStore implements SessionStore {
                 .optional();
     }
 
+    /**
+     * One round trip for every authenticated request. The foreign key cascades
+     * on user deletion, so the inner join loses no live session.
+     */
+    @Override
+    public Optional<SessionUser> findWithRole(byte[] idHash) {
+        return jdbc.sql("""
+                SELECT s.id_hash, s.user_id, s.expires_at, u.role
+                FROM sessions s JOIN users u ON u.id = s.user_id
+                WHERE s.id_hash = :hash""")
+                .param("hash", idHash)
+                .query((rs, row) -> new SessionUser(
+                        new Session(
+                                rs.getBytes("id_hash"),
+                                rs.getObject("user_id", UUID.class),
+                                rs.getObject("expires_at", OffsetDateTime.class).toInstant()),
+                        rs.getString("role")))
+                .optional();
+    }
+
     @Override
     public void delete(byte[] idHash) {
         jdbc.sql("DELETE FROM sessions WHERE id_hash = :hash").param("hash", idHash).update();

@@ -14,14 +14,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.github.brianhuanggg.authkit.PostgresTestBase;
+import io.github.brianhuanggg.authkit.user.InMemoryUserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,10 +37,23 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * The security chains, error bodies, CORS, CSRF and /register, without Docker:
+ * users live in an {@link InMemoryUserRepository} and Flyway is off. The
+ * database URL is never connected to, so nothing here may touch the session
+ * or refresh token tables (the Postgres-backed flow tests cover those).
+ */
+@SpringBootTest(properties = {
+        "authkit.database-url=postgres://u:p@localhost:5432/authkit",
+        "authkit.jwt-secret=kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+        "spring.flyway.enabled=false"})
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "authkit.cors-origins=http://localhost:3000")
+@TestPropertySource(properties = {
+        "authkit.cors-origins=http://localhost:3000",
+        "authkit.rate-limit-ip-burst=100000",
+        "authkit.rate-limit-email-burst=100000"})
 @Import(SecurityTest.TestEndpoints.class)
-class SecurityTest extends PostgresTestBase {
+class SecurityTest {
 
     static final String ORIGIN = "http://localhost:3000";
     static final String EVIL = "http://evil.example";
@@ -54,6 +69,12 @@ class SecurityTest extends PostgresTestBase {
     @TestConfiguration(proxyBeanMethods = false)
     @Import(Boom.class)
     static class TestEndpoints {
+        @Bean
+        @Primary
+        InMemoryUserRepository inMemoryUsers() {
+            return new InMemoryUserRepository();
+        }
+
         /** A chain with a role rule, wired with the production 401/403 handlers. */
         @Bean
         @Order(0)
@@ -72,6 +93,9 @@ class SecurityTest extends PostgresTestBase {
 
     @MockitoSpyBean
     PasswordEncoder encoder;
+
+    @Autowired
+    InMemoryUserRepository users;
 
     private static MockHttpServletRequestBuilder register(String json) {
         return register(json, ORIGIN);
@@ -107,6 +131,57 @@ class SecurityTest extends PostgresTestBase {
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string("WWW-Authenticate", "Bearer realm=\"authkit\""))
                 .andExpect(jsonPath("$.error").value("unauthenticated"));
+    }
+
+    @Test
+    void badBearerOnTokenMeIs401WithChallenge() throws Exception {
+        mvc.perform(get("/token/me").header("Authorization", "Bearer nope"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Bearer realm=\"authkit\""))
+                .andExpect(jsonPath("$.error").value("unauthenticated"));
+    }
+
+    /**
+     * Like Go, only /token/me reads the Authorization header. A client that
+     * sends its expired access token along must still be able to refresh and
+     * log out: the resource server must not answer those requests itself.
+     */
+    @Test
+    void bearerHeaderIsIgnoredOutsideTokenMe() throws Exception {
+        String stale = "Bearer not-a-valid-jwt";
+        // No refresh cookie: the controller's own 401, which carries no Bearer challenge.
+        mvc.perform(post("/token/refresh").header("Authorization", stale)
+                        .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("WWW-Authenticate"))
+                .andExpect(jsonPath("$.error").value("unauthenticated"));
+        mvc.perform(post("/token/logout").header("Authorization", stale)
+                        .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
+                .andExpect(status().isNoContent());
+    }
+
+    // ---- login when the user lookup fails ----
+
+    @Test
+    void loginWhileDatabaseIsDownIs500NotBadCredentials() throws Exception {
+        for (String path : new String[] {"/session/login", "/token/login"}) {
+            users.down(true);
+            try {
+                mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON)
+                                .content(creds(newEmail(), "password-123"))
+                                .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.error").value("internal server error"));
+            } finally {
+                users.down(false);
+            }
+            // Same request with the database up: an unknown account is a plain 401.
+            mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON)
+                            .content(creds(newEmail(), "password-123"))
+                            .header("X-Requested-With", "XMLHttpRequest").header("Origin", ORIGIN))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error").value("invalid email or password"));
+        }
     }
 
     @Test

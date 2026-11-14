@@ -14,6 +14,12 @@ public interface SessionStore {
 
     Optional<Session> find(byte[] idHash);
 
+    /**
+     * Like {@link #find}, plus the user's current role, in one lookup. Empty
+     * when the session or its user is missing. Expired rows are returned.
+     */
+    Optional<SessionUser> findWithRole(byte[] idHash);
+
     /** Idempotent: deleting a missing session is not an error. */
     void delete(byte[] idHash);
 

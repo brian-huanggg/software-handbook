@@ -43,6 +43,25 @@ interface SessionStoreContract {
     @Test
     default void getMissing() {
         assertThat(store().find(hash())).isEmpty();
+        assertThat(store().findWithRole(hash())).isEmpty();
+    }
+
+    @Test
+    default void findWithRole() {
+        Session want = new Session(hash(), newUser(), in(1));
+        store().create(want);
+        SessionUser got = store().findWithRole(want.idHash()).orElseThrow();
+        assertThat(got.session().idHash()).isEqualTo(want.idHash());
+        assertThat(got.session().userId()).isEqualTo(want.userId());
+        assertThat(got.session().expiresAt()).isEqualTo(want.expiresAt());
+        assertThat(got.role()).as("newUser() has the default role").isEqualTo("user");
+    }
+
+    @Test
+    default void findWithRoleReturnsExpiredRows() {
+        Session s = new Session(hash(), newUser(), in(-1));
+        store().create(s);
+        assertThat(store().findWithRole(s.idHash())).as("store leaves expiry to SessionService").isPresent();
     }
 
     @Test

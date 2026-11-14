@@ -2,7 +2,6 @@ package io.github.brianhuanggg.authkit.session;
 
 import io.github.brianhuanggg.authkit.auth.AuthenticatedPrincipal;
 import io.github.brianhuanggg.authkit.config.AuthkitProperties;
-import io.github.brianhuanggg.authkit.user.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,13 +35,11 @@ public class SessionService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final SessionStore store;
-    private final UserRepository users;
     private final Clock clock;
     private final boolean secure;
 
-    SessionService(SessionStore store, UserRepository users, Clock clock, AuthkitProperties props) {
+    SessionService(SessionStore store, Clock clock, AuthkitProperties props) {
         this.store = store;
-        this.users = users;
         this.clock = clock;
         this.secure = !props.insecureCookies();
     }
@@ -86,18 +83,17 @@ public class SessionService {
         if (id.isEmpty()) {
             return Optional.empty();
         }
-        Optional<Session> found = store.find(hashId(id.get()));
+        // Session and role in one lookup; a deleted user means no session.
+        Optional<SessionUser> found = store.findWithRole(hashId(id.get()));
         if (found.isEmpty()) {
             return Optional.empty();
         }
-        Session session = found.get();
+        Session session = found.get().session();
         if (!clock.instant().isBefore(session.expiresAt())) {
             store.delete(session.idHash());
             return Optional.empty();
         }
-        // A deleted user means the session is no longer valid.
-        return users.findById(session.userId())
-                .map(u -> new AuthenticatedPrincipal(u.id(), List.of(u.role())));
+        return Optional.of(new AuthenticatedPrincipal(session.userId(), List.of(found.get().role())));
     }
 
     private static Optional<String> cookieValue(HttpServletRequest request) {

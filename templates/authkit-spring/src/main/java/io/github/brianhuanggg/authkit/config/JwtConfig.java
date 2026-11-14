@@ -14,7 +14,10 @@ class JwtConfig {
         return new JwtService(props.jwtSecret(), props.jwtPreviousSecrets(), props.jwtIssuer(), clock);
     }
 
-    /** Defined here so Boot does not build its own decoder from properties. */
+    /**
+     * The one decoder: the token chain injects this bean. Defined here so Boot
+     * does not build its own decoder from properties.
+     */
     @Bean
     JwtDecoder jwtDecoder(JwtService jwt) {
         return jwt.decoder();

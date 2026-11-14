@@ -5,6 +5,7 @@ import io.github.brianhuanggg.authkit.web.Credentials;
 import java.nio.charset.StandardCharsets;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,8 @@ public class LoginAuthenticator {
 
     /**
      * @throws ApiException 400 for missing fields, 401 for any bad credentials
-     *         (one message for an unknown account and a wrong password)
+     *         (one message for an unknown account and a wrong password).
+     *         A failing user lookup is rethrown as is, so it answers 500.
      */
     public AccountUserDetails authenticate(Credentials c) {
         if (c.email() == null || c.email().isEmpty() || c.password() == null || c.password().isEmpty()) {
@@ -38,6 +40,11 @@ public class LoginAuthenticator {
             var result = manager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(
                     c.email(), c.password()));
             return (AccountUserDetails) result.getPrincipal();
+        } catch (InternalAuthenticationServiceException e) {
+            // Not a credential problem: the user lookup itself failed (for example
+            // the database is down). DaoAuthenticationProvider wraps that in an
+            // AuthenticationException; unwrap it so it becomes a 500, as in Go.
+            throw e.getCause() instanceof RuntimeException cause ? cause : e;
         } catch (AuthenticationException e) {
             throw invalid();
         }

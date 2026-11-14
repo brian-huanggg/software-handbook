@@ -18,6 +18,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -48,6 +51,23 @@ class SecurityConfig {
     }
 
     static final String BEARER_CHALLENGE = "Bearer realm=\"authkit\"";
+    static final String TOKEN_ME = "/token/me";
+
+    /**
+     * Reads the bearer token only on {@code path}, like Go, which applies
+     * {@code requireBearer} to {@code GET /token/me} alone. Without this the
+     * resource server would verify any {@code Authorization} header on every
+     * {@code /token/**} request and answer 401 on a bad one, even on
+     * {@code permitAll} endpoints: a client that sends its expired access
+     * token along with {@code /token/refresh} could then never refresh.
+     */
+    static BearerTokenResolver bearerOnlyOn(String path) {
+        DefaultBearerTokenResolver header = new DefaultBearerTokenResolver();
+        // The firewall in front of the chain has already rejected encoded or ambiguous paths.
+        return request -> path.equals(request.getRequestURI().substring(request.getContextPath().length()))
+                ? header.resolve(request)
+                : null;
+    }
 
     @Bean
     @Order(1)
@@ -64,16 +84,17 @@ class SecurityConfig {
 
     @Bean
     @Order(2)
-    SecurityFilterChain tokenChain(HttpSecurity http, AuthkitProperties props, JwtService jwt) throws Exception {
+    SecurityFilterChain tokenChain(HttpSecurity http, AuthkitProperties props, JwtDecoder decoder) throws Exception {
         base(http, props, BEARER_CHALLENGE)
                 .securityMatcher("/token/**")
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/token/me").authenticated()
+                        .requestMatchers(TOKEN_ME).authenticated()
                         .anyRequest().permitAll())
                 // Every bearer failure, whatever the cause, is the same 401 as everywhere else.
                 .oauth2ResourceServer(o -> o
+                        .bearerTokenResolver(bearerOnlyOn(TOKEN_ME))
                         .jwt(j -> j
-                                .decoder(jwt.decoder())
+                                .decoder(decoder)
                                 .jwtAuthenticationConverter(JwtService::toAuthentication))
                         .authenticationEntryPoint(new JsonAuthenticationEntryPoint(BEARER_CHALLENGE))
                         .accessDeniedHandler(new JsonAccessDeniedHandler()));

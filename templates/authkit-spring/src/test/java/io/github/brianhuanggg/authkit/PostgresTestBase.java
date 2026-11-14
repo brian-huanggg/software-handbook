@@ -19,7 +19,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "authkit.rate-limit-email-burst=100000"})
 public abstract class PostgresTestBase {
 
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16");
+    public static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:16");
 
     static {
         POSTGRES.start();

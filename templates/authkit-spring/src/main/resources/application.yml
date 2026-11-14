@@ -23,9 +23,11 @@ spring:
       fail-on-trailing-tokens: true
   flyway:
     # The Go stack's migrate service may have created the schema already
-    # (golang-migrate, no flyway_schema_history). Treat that as version 2.
-    # On an empty database Flyway still runs V1 and V2.
-    baseline-on-migrate: true
+    # (golang-migrate, no flyway_schema_history). FlywayConfig baselines at
+    # this version only when golang-migrate's schema_migrations is clean at
+    # the same version; any other non-empty schema without a history fails.
+    # On an empty database Flyway runs V1 and V2. Do not turn on
+    # baseline-on-migrate: it would also adopt a schema without our tables.
     baseline-version: "2"
 
 logging:

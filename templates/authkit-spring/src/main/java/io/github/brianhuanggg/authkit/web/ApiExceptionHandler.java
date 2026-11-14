@@ -24,6 +24,11 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
+    @ExceptionHandler(ApiException.class)
+    ResponseEntity<Object> api(ApiException ex) {
+        return json(ex.status(), ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<Object> internal(Exception ex) {
         log.error("unhandled error", ex);

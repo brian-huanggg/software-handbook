@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Locale;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
@@ -28,7 +30,7 @@ import tools.jackson.databind.json.JsonMapper;
 public final class RateLimitFilter extends OncePerRequestFilter {
 
     // Same rules as the controllers: unknown fields and trailing tokens are errors.
-    // A body they would reject with 400 does not spend the email limit.
+    // A body they would reject with 400 (or 415, see isJson) does not spend the email limit.
     private static final JsonMapper JSON = JsonMapper.builder()
             .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
@@ -69,8 +71,11 @@ public final class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** The normalized email, or null when the controller will answer 400 anyway. */
+    /** The normalized email, or null when the controller will answer 400 or 415 anyway. */
     private static String loginEmail(HttpServletRequest request) throws IOException {
+        if (!isJson(request.getContentType())) {
+            return null; // the JSON converter will not read it: 415, no hashing
+        }
         Credentials c;
         try {
             c = JSON.readValue(request.getInputStream().readAllBytes(), Credentials.class);
@@ -81,6 +86,24 @@ public final class RateLimitFilter extends OncePerRequestFilter {
             return null;
         }
         return c.email().strip().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * The media types Spring's JSON converter reads: {@code application/json}
+     * and {@code application/*+json}, any parameters. Anything else is a 415.
+     */
+    static boolean isJson(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        MediaType type;
+        try {
+            type = MediaType.parseMediaType(contentType);
+        } catch (InvalidMediaTypeException e) {
+            return false;
+        }
+        return type.equalsTypeAndSubtype(MediaType.APPLICATION_JSON)
+                || ("application".equals(type.getType()) && "json".equals(type.getSubtypeSuffix()));
     }
 
     private static void reject(HttpServletResponse response, Limiter.Decision d, String message) throws IOException {

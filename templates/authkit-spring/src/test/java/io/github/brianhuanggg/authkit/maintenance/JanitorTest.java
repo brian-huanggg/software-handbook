@@ -1,4 +1,4 @@
-package io.github.brianhuanggg.authkit.ratelimit;
+package io.github.brianhuanggg.authkit.maintenance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

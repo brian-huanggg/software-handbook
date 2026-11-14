@@ -28,8 +28,11 @@ public class RefreshTokenService {
         this.clock = clock;
     }
 
-    /** A new token and the user it belongs to. */
-    public record Rotated(String raw, UUID userId) {
+    /**
+     * A new token, the user it belongs to and that user's current role, read
+     * in the rotation itself so nothing can fail after it has committed.
+     */
+    public record Rotated(String raw, UUID userId, String role) {
     }
 
     private record Fresh(String raw, Refresh token) {
@@ -63,6 +66,11 @@ public class RefreshTokenService {
      * store step: a failure leaves the old token unused, so the client can
      * retry without tripping reuse detection.
      *
+     * <p>When the store step does not win, the token is read again to say
+     * why. Used by someone else: reuse, as above. Gone (a concurrent logout
+     * deleted the family, or the user was deleted): only invalid, so no false
+     * reuse alarm is raised.
+     *
      * @throws InvalidRefreshException unknown, expired or revoked
      * @throws RefreshReuseException reuse detected, family revoked
      */
@@ -80,10 +88,15 @@ public class RefreshTokenService {
             throw revokeForReuse(cur);
         }
         Fresh next = next(cur.userId(), cur.familyId(), cur.familyExpiresAt());
-        if (!store.rotate(hash, now, next.token())) {
-            throw revokeForReuse(cur);
+        Optional<String> role = store.rotate(hash, now, next.token());
+        if (role.isEmpty()) {
+            Optional<Refresh> after = store.find(hash);
+            if (after.isPresent() && after.get().usedAt() != null) {
+                throw revokeForReuse(cur); // lost the race to another use of the same token
+            }
+            throw new InvalidRefreshException(); // revoked or its user deleted meanwhile
         }
-        return new Rotated(next.raw(), cur.userId());
+        return new Rotated(next.raw(), cur.userId(), role.get());
     }
 
     private RefreshReuseException revokeForReuse(Refresh cur) {

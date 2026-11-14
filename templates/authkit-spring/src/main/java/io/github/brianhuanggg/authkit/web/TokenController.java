@@ -8,13 +8,10 @@ import io.github.brianhuanggg.authkit.token.InvalidRefreshException;
 import io.github.brianhuanggg.authkit.token.JwtService;
 import io.github.brianhuanggg.authkit.token.RefreshReuseException;
 import io.github.brianhuanggg.authkit.token.RefreshTokenService;
-import io.github.brianhuanggg.authkit.user.User;
-import io.github.brianhuanggg.authkit.user.UserRepository;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -40,15 +37,12 @@ class TokenController {
     private final LoginAuthenticator logins;
     private final RefreshTokenService refresh;
     private final JwtService jwt;
-    private final UserRepository users;
     private final boolean secure;
 
-    TokenController(LoginAuthenticator logins, RefreshTokenService refresh, JwtService jwt, UserRepository users,
-            AuthkitProperties props) {
+    TokenController(LoginAuthenticator logins, RefreshTokenService refresh, JwtService jwt, AuthkitProperties props) {
         this.logins = logins;
         this.refresh = refresh;
         this.jwt = jwt;
-        this.users = users;
         this.secure = !props.insecureCookies();
     }
 
@@ -74,13 +68,11 @@ class TokenController {
         } catch (InvalidRefreshException e) {
             return unauthenticated(true);
         }
-        // Roles come from users, so a role change applies at the next refresh.
-        Optional<User> user = users.findById(rotated.userId());
-        if (user.isEmpty()) { // account deleted since login
-            refresh.revoke(rotated.raw());
-            return unauthenticated(true);
-        }
-        return access(rotated.raw(), user.get().id(), user.get().role());
+        // The role was read from users inside the rotation, so a role change
+        // applies at the next refresh, and no query can fail after the old
+        // token has been consumed (which would lose the new one and turn the
+        // client's retry into a reuse). A deleted user cannot rotate at all.
+        return access(rotated.raw(), rotated.userId(), rotated.role());
     }
 
     @PostMapping("/token/logout")

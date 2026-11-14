@@ -69,25 +69,33 @@ public class PostgresRefreshStore implements RefreshStore {
 
     /**
      * The conditional UPDATE and the INSERT share one transaction. Concurrent
-     * callers queue on the row lock, so only one sees an update count of 1; if
-     * the INSERT fails, the UPDATE is rolled back with it.
+     * callers queue on the row lock, and Postgres re-checks {@code used_at IS
+     * NULL} after the wait, so only one gets a row back. The UPDATE joins
+     * {@code users} and returns the role, so the caller has it without a
+     * second query after commit. If the INSERT fails, the UPDATE is rolled
+     * back with it.
      */
     @Override
     @Transactional
-    public boolean rotate(byte[] oldHash, Instant usedAt, Refresh next) {
-        int updated = jdbc.sql("UPDATE refresh_tokens SET used_at = :used WHERE id_hash = :hash AND used_at IS NULL")
+    public Optional<String> rotate(byte[] oldHash, Instant usedAt, Refresh next) {
+        Optional<String> role = jdbc.sql("""
+                UPDATE refresh_tokens r SET used_at = :used
+                FROM users u
+                WHERE r.id_hash = :hash AND r.used_at IS NULL AND u.id = r.user_id
+                RETURNING u.role""")
                 .param("used", utc(usedAt))
                 .param("hash", oldHash)
-                .update();
-        if (updated != 1) {
-            return false;
+                .query(String.class)
+                .optional();
+        if (role.isEmpty()) {
+            return role;
         }
         try {
             insert(next);
         } catch (DuplicateKeyException e) {
             throw new DuplicateRefreshException(); // unchecked: rolls the UPDATE back
         }
-        return true;
+        return role;
     }
 
     @Override

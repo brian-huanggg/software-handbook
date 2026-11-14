@@ -69,6 +69,7 @@ func newHandler(d deps) (http.Handler, error) {
 	s := &server{deps: d, dummyHash: dummy}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok")) })
 	mux.HandleFunc("POST /register", s.register)
 
 	// Session mode: server-side state, cookie credential.

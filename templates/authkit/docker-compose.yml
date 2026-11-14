@@ -9,6 +9,46 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authkit -d authkit"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  # One-shot: applies ./migrations, then exits. The API waits for it.
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations:ro
+    command:
+      - "-path=/migrations"
+      - "-database=postgres://authkit:authkit@db:5432/authkit?sslmode=disable"
+      - "up"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://authkit:authkit@db:5432/authkit?sslmode=disable
+      # Empty when unset: the API then refuses to start with a clear error,
+      # while `docker compose up db web` keeps working without it.
+      JWT_SECRET: ${JWT_SECRET:-}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "/api", "healthcheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
   # Static front end on its own origin (http://localhost:3000), so the demo
   # exercises real CORS and cross-origin cookie rules against the API.
   web:
@@ -20,5 +60,6 @@ services:
       API_ORIGIN: http://localhost:8080
     ports:
       - "3000:80"
+
 volumes:
   pgdata:

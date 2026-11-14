@@ -597,3 +597,10 @@ func TestCORS_Preflight(t *testing.T) {
 		t.Fatalf("evil preflight: code=%d headers=%v", w.Code, w.Header())
 	}
 }
+
+func TestHealthz(t *testing.T) {
+	e := newEnv(t)
+	if w := e.call("GET", "/healthz", nil); w.Code != 200 {
+		t.Fatalf("code %d", w.Code)
+	}
+}

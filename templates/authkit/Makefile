@@ -12,6 +12,18 @@ migrate-down:
 # CORS_ORIGINS is the comma-separated list of browser origins allowed to call
 # the API; it defaults to the web container on :3000.
 CORS_ORIGINS ?= http://localhost:3000
+
+# Full stack in containers (db, migrations, api, web) and the end-to-end test.
+# JWT_SECRET is generated per run unless you export your own.
+JWT_SECRET ?= $(shell openssl rand -hex 32)
+export JWT_SECRET
+stack-up:
+	docker compose up -d --build --wait db api web
+stack-down:
+	docker compose down
+integration: stack-up
+	go test -tags integration -count=1 -v ./integration/
+
 run:
 	DATABASE_URL="$(DB_URL)" CORS_ORIGINS="$(CORS_ORIGINS)" go run ./cmd/api
 

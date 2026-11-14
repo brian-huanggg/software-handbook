@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Demo</title>
+</head>
+<body>
+    <form id="login">
+        <input name="username" placeholder="username" value="alice">
+        <input name="password" type="password" placeholder="password">
+    <button>Login</button>
+    </form>
+
+    <button id="me">GET /api/me</button>
+    <button id="logout">Logout</button>
+    <pre id="out"></pre>
+
+
+   <script>
+    const out = document.getElementById("out");
+    const show = async (res) => {
+    out.textContent = `${res.status} ${await res.text()}`;
+    };
+    document.getElementById("login").onsubmit = async (e) => {
+    e.preventDefault();
+    show(await fetch("/login", { method: "POST", body: new URLSearchParams(new FormData(e.target)) }));
+    };
+    document.getElementById("me").onclick = async () => show(await fetch("/api/me"));
+    document.getElementById("logout").onclick = async () => show(await fetch("/logout", { method: "POST" }));
+    </script>
+</body>
+</html>

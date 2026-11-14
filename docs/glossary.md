@@ -21,6 +21,7 @@
 | consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
 | container | 容器 | 貨櫃 | 共用主機核心、靠 namespace 與 cgroup 隔離的行程 |
 | Content Security Policy (CSP) | 內容安全政策（CSP） | | 伺服器以標頭告訴瀏覽器哪些來源的腳本可以執行；nonce 型政策只放行帶本次回應 nonce 的腳本。第一次出現寫全名，之後只寫 CSP |
+| cookie | Cookie | 餅乾 | 不翻譯、首字大寫；瀏覽器保存並在之後請求自動附上的一小段文字，登入時只放 session ID |
 | CORS misconfiguration | CORS 錯誤設定 | CORS 配置錯誤 | 把 `Access-Control-Allow-Origin` 開給不該信任的 origin |
 | cross-origin | 跨源 | 跨域 | 「域」會和網域混淆；跨源連 scheme 與 port 不同都算 |
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
@@ -83,6 +84,9 @@
 | sanitizer | sanitizer | 清洗器 | 不翻譯；把使用者貼的 HTML 去掉危險部分、保留安全標籤的函式庫（如 DOMPurify、bluemonday）；不要自己寫 |
 | secondary index | 次要索引 | 二級索引、輔助索引 | 非主鍵的索引；InnoDB 的葉節點存主鍵值，Postgres 存 ctid |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
+| session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |
+| session fixation | session fixation | 會話固定 | 不翻譯；攻擊者先讓受害者使用自己已知的 session ID，登入沿用該 ID 就被接管；對策是登入時換發新 ID |
+| session ID | session ID | 會話識別碼 | 不翻譯；不可猜測的隨機值（至少 128 位元、用 `crypto/rand`），放在 Cookie 裡當查表的鑰匙 |
 | session persistence | session 保持 | 會話黏滯、黏性會話 | 讓同一個使用者的請求固定到同一台後端；nginx 用 `ip_hash` 或 `hash` 實現 |
 | simple request | 簡單請求 | | 不需預檢的跨源請求，條件見後端 1.4 CORS |
 | sink | 出口 | 匯 | 前端程式中會把字串當成程式或標記處理的位置（如 `innerHTML`、`eval`）；DOM 型 XSS 從來源流到這裡 |

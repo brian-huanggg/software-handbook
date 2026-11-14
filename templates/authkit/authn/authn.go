@@ -1,3 +1,5 @@
+// Package authn defines the Principal type, the Authenticator interface and
+// helpers to carry a Principal in a context.Context.
 package authn
 
 import (

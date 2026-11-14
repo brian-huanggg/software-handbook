@@ -17,6 +17,25 @@ checked by a small authorization layer.
 > This is a learning and starting-point template, not a hosted product. Read
 > [Known limitations](#known-limitations) before using it in production.
 
+## Install
+
+```sh
+go get github.com/brian-huanggg/software-handbook/templates/authkit@latest
+```
+
+```go
+import (
+    "github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+    "github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
+    "github.com/brian-huanggg/software-handbook/templates/authkit/session"
+)
+```
+
+Package documentation:
+[pkg.go.dev](https://pkg.go.dev/github.com/brian-huanggg/software-handbook/templates/authkit).
+The module lives in a subdirectory of a larger repository, so its release tags
+are prefixed: `templates/authkit/v0.1.0`.
+
 ## Quick start
 
 Requirements: Go 1.26+, Docker, `openssl`, and

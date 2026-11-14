@@ -67,6 +67,7 @@
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
 | MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
+| opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
@@ -81,6 +82,7 @@
 | recovery point objective (RPO) | RPO | | 故障後最多可接受丟失的資料量；RPO = 0 表示不丟已確認的寫入；第一次出現寫全名 |
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
 | refresh token | refresh token | 更新令牌 | 不翻譯；長效、只用來換新 access token 的憑證，伺服器要能撤銷，登出時撤銷它 |
+| refresh token rotation | refresh token 輪替 | | 每次用 refresh token 換新時就作廢舊的，每個 refresh token 只能用一次 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
@@ -92,6 +94,7 @@
 | sanitizer | sanitizer | 清洗器 | 不翻譯；把使用者貼的 HTML 去掉危險部分、保留安全標籤的函式庫（如 DOMPurify、bluemonday）；不要自己寫 |
 | secondary index | 次要索引 | 二級索引、輔助索引 | 非主鍵的索引；InnoDB 的葉節點存主鍵值，Postgres 存 ctid |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
+| sensitive data exposure | 敏感資料外洩 | 敏感資料暴露 | 不該被看到的資料經由回應欄位、錯誤訊息、日誌等路徑離開伺服器；對外回應用只列允許欄位的型別（白名單）預防 |
 | session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |
 | session fixation | session fixation | 會話固定 | 不翻譯；攻擊者先讓受害者使用自己已知的 session ID，登入沿用該 ID 就被接管；對策是登入時換發新 ID |
 | session ID | session ID | 會話識別碼 | 不翻譯；不可猜測的隨機值（至少 128 位元、用 `crypto/rand`），放在 Cookie 裡當查表的鑰匙 |
@@ -103,6 +106,8 @@
 | software bill of materials (SBOM) | 軟體物料清單（SBOM） | 軟體材料清單 | 列出映像內所有元件與版本；第一次出現寫全名，之後只寫 SBOM |
 | source | 來源 | | 前端程式中攻擊者可控制的輸入位置（如 `location.hash`、`postMessage`）；與 sink 相對 |
 | split-brain | split-brain | 腦裂 | 不翻譯；叢集分裂後兩邊都以為自己是主節點 |
+| stateful authentication | 有狀態認證 | | 伺服器保存每次登入的紀錄，每個請求靠查表驗證；可立即撤銷，代價是每個請求一次儲存往返 |
+| stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
 | state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |

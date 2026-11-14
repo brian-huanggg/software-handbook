@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/respond"
 )
 
 // HasRole reports whether p holds role (exact, case-sensitive match).
@@ -29,7 +30,7 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			p, ok := authn.FromContext(r.Context())
 			if !ok {
-				http.Error(w, "unauthenticated", http.StatusUnauthorized)
+				respond.Error(w, http.StatusUnauthorized, "unauthenticated")
 				return
 			}
 			for _, role := range roles {
@@ -38,7 +39,7 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 					return
 				}
 			}
-			http.Error(w, "forbidden", http.StatusForbidden)
+			respond.Error(w, http.StatusForbidden, "forbidden")
 		})
 	}
 }

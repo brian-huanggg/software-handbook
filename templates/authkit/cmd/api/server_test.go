@@ -67,6 +67,18 @@ func (f *fakeUsers) ByID(_ context.Context, id string) (store.User, error) {
 	return store.User{}, store.ErrNotFound
 }
 
+func (f *fakeUsers) ReplacePasswordHash(_ context.Context, id, oldHash, newHash string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	u, ok := f.byID[id]
+	if !ok || u.PasswordHash != oldHash {
+		return false, nil
+	}
+	u.PasswordHash = newHash
+	f.byID[id] = u
+	return true, nil
+}
+
 func (f *fakeUsers) remove(id string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -84,12 +96,18 @@ func (f *fakeUsers) setRole(id, role string) {
 }
 
 // fakeHasher is fast and counts Verify calls, to prove login does the same
-// amount of hashing work whether or not the account exists.
+// amount of hashing work whether or not the account exists. Hashes are
+// "fake$<pw>"; legacy "old$<pw>" hashes verify too but need a rehash.
 type fakeHasher struct{ verifies, hashes atomic.Int32 }
+
+func (h *fakeHasher) NeedsRehash(enc string) bool { return !strings.HasPrefix(enc, "fake$") }
 
 func (h *fakeHasher) Hash(pw string) (string, error) { h.hashes.Add(1); return "fake$" + pw, nil }
 func (h *fakeHasher) Verify(pw, enc string) (bool, error) {
 	h.verifies.Add(1)
+	if old, ok := strings.CutPrefix(enc, "old$"); ok {
+		return old == pw, nil
+	}
 	if !strings.HasPrefix(enc, "fake$") {
 		return false, password.ErrInvalidHash
 	}
@@ -312,6 +330,106 @@ func TestLogin_BadInput(t *testing.T) {
 				t.Errorf("%s %s: code %d, want 400/413", path, name, w.Code)
 			}
 		}
+	}
+}
+
+func TestLogin_OverlongPasswordSkipsHash(t *testing.T) {
+	e := newEnv(t)
+	long := strings.Repeat("x", maxPasswordBytes+1)
+	for _, path := range []string{"/session/login", "/token/login"} {
+		e.hasher.verifies.Store(0)
+		w := e.call("POST", path, creds{"email": "a@example.com", "password": long})
+		if w.Code != 401 {
+			t.Errorf("%s: code %d, want 401", path, w.Code)
+		}
+		if got := e.hasher.verifies.Load(); got != 0 {
+			t.Errorf("%s: %d Verify calls, want 0", path, got)
+		}
+	}
+}
+
+func TestJSONBody_RejectsTrailingData(t *testing.T) {
+	e := newEnv(t)
+	one := `{"email":"t@example.com","password":"` + pw + `"}`
+	for name, body := range map[string]string{
+		"two objects": one + one,
+		"garbage":     one + "x",
+	} {
+		for _, path := range []string{"/register", "/session/login", "/token/login"} {
+			if w := e.call("POST", path, body); w.Code != 400 {
+				t.Errorf("%s %s: code %d, want 400", path, name, w.Code)
+			}
+		}
+	}
+	if w := e.call("POST", "/register", one+"\n"); w.Code != 202 {
+		t.Errorf("trailing newline: code %d, want 202", w.Code)
+	}
+}
+
+func TestEveryResponseIsNoStore(t *testing.T) {
+	e := newEnv(t)
+	for _, w := range []*httptest.ResponseRecorder{
+		e.call("GET", "/healthz", nil),
+		e.call("GET", "/session/me", nil), // 401 from middleware
+		e.call("POST", "/session/logout", nil, func(r *http.Request) { r.Header.Del("X-Requested-With") }), // 403 from CSRF
+		e.call("GET", "/nope", nil), // 404 from mux
+	} {
+		if got := w.Header().Get("Cache-Control"); got != "no-store" {
+			t.Errorf("code %d: Cache-Control = %q", w.Code, got)
+		}
+	}
+}
+
+func TestErrorsAreJSON(t *testing.T) {
+	e := newEnv(t)
+	noCSRF := func(r *http.Request) { r.Header.Del("X-Requested-With") }
+	badOrigin := func(r *http.Request) { r.Header.Set("Origin", "http://evil.example") }
+	for name, w := range map[string]*httptest.ResponseRecorder{
+		"session 401": e.call("GET", "/session/me", nil),
+		"bearer 401":  e.call("GET", "/token/me", nil, withBearer("nope")),
+		"csrf header": e.call("POST", "/session/logout", nil, noCSRF),
+		"csrf origin": e.call("POST", "/session/logout", nil, badOrigin),
+		"handler 400": e.call("POST", "/register", "{"),
+		"refresh 401": e.call("POST", "/token/refresh", nil),
+	} {
+		var body struct{ Error string }
+		if ct := w.Header().Get("Content-Type"); ct != "application/json" {
+			t.Errorf("%s: Content-Type %q", name, ct)
+		} else if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil || body.Error == "" {
+			t.Errorf("%s: body %q", name, w.Body)
+		}
+	}
+}
+
+func TestBearer401HasChallenge(t *testing.T) {
+	e := newEnv(t)
+	if got := e.call("GET", "/token/me", nil).Header().Get("WWW-Authenticate"); !strings.HasPrefix(got, "Bearer") {
+		t.Errorf("token route WWW-Authenticate = %q", got)
+	}
+	if got := e.call("GET", "/session/me", nil).Header().Get("WWW-Authenticate"); got != "" {
+		t.Errorf("session route WWW-Authenticate = %q, want none", got)
+	}
+}
+
+func TestLogin_UpgradesOutdatedHash(t *testing.T) {
+	e := newEnv(t)
+	e.register(t, "up@example.com", pw)
+	id := e.users.index["up@example.com"]
+	u := e.users.byID[id]
+	u.PasswordHash = "old$" + pw
+	e.users.byID[id] = u
+
+	if w := e.call("POST", "/session/login", creds{"email": "up@example.com", "password": pw}); w.Code != 200 {
+		t.Fatalf("login: %d %s", w.Code, w.Body)
+	}
+	if got := e.users.byID[id].PasswordHash; got != "fake$"+pw {
+		t.Fatalf("hash not upgraded: %q", got)
+	}
+
+	e.hasher.hashes.Store(0)
+	e.call("POST", "/session/login", creds{"email": "up@example.com", "password": pw})
+	if got := e.hasher.hashes.Load(); got != 0 {
+		t.Fatalf("current hash re-hashed on login: %d Hash calls", got)
 	}
 }
 

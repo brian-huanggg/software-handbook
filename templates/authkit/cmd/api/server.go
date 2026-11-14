@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 	"github.com/brian-huanggg/software-handbook/templates/authkit/password"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/respond"
 	"github.com/brian-huanggg/software-handbook/templates/authkit/session"
 	"github.com/brian-huanggg/software-handbook/templates/authkit/store"
 	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
@@ -37,7 +39,7 @@ type deps struct {
 	Refresh          *token.RefreshManager
 	RefreshCookieTTL time.Duration
 	InsecureCookies  bool
-	AllowedOrigins   []string // CORS + CSRF; empty means same-origin only
+	AllowedOrigins   []string // CORS + CSRF; empty means no browser origin may send unsafe requests
 
 	// Brute-force limits. Nil disables a limit (tests). AuthIPLimit applies
 	// per client IP to /register and both logins; LoginEmailLimit applies per
@@ -94,22 +96,17 @@ func newHandler(d deps) (http.Handler, error) {
 	mux.HandleFunc("POST /token/logout", s.tokenLogout)
 	mux.Handle("GET /token/me", requireBearer(http.HandlerFunc(s.me)))
 
-	// CORS is outermost so preflights are answered before the CSRF check.
-	return middleware.CORS(d.AllowedOrigins)(middleware.CSRF(d.AllowedOrigins)(mux)), nil
+	// CORS is outside CSRF so preflights are answered before the CSRF check.
+	// NoStore is outermost so every response, errors included, is uncacheable.
+	return middleware.NoStore(middleware.CORS(d.AllowedOrigins)(middleware.CSRF(d.AllowedOrigins)(mux))), nil
 }
 
 // ---- helpers -------------------------------------------------------------
 
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
-}
-
-func writeError(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, map[string]string{"error": msg})
-}
+var (
+	writeJSON  = respond.JSON
+	writeError = respond.Error
+)
 
 func serverError(w http.ResponseWriter, r *http.Request, msg string, err error) {
 	slog.ErrorContext(r.Context(), msg, "err", err)
@@ -134,6 +131,11 @@ func readCredentials(w http.ResponseWriter, r *http.Request) (credentials, bool)
 		} else {
 			writeError(w, http.StatusBadRequest, "invalid JSON body")
 		}
+		return credentials{}, false
+	}
+	// Exactly one JSON value: {...}{...} or trailing garbage is rejected.
+	if err := dec.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
 		return credentials{}, false
 	}
 	return c, true
@@ -229,7 +231,15 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) (store.User, bool
 		writeError(w, http.StatusTooManyRequests, "too many login attempts; try again later")
 		return store.User{}, false
 	}
-	u, err := s.checkCredentials(r.Context(), c.Email, c.Password)
+	var (
+		u   store.User
+		err = errInvalidCredentials
+	)
+	// No stored password can be longer than register allows, so an
+	// over-long one is simply wrong; refuse it before paying for a hash.
+	if len(c.Password) <= maxPasswordBytes {
+		u, err = s.checkCredentials(r.Context(), c.Email, c.Password)
+	}
 	switch {
 	case errors.Is(err, errInvalidCredentials):
 		// One message for unknown account and wrong password.
@@ -239,7 +249,24 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) (store.User, bool
 		serverError(w, r, "check credentials", err)
 		return store.User{}, false
 	}
+	s.upgradeHash(r.Context(), u, c.Password)
 	return u, true
+}
+
+// upgradeHash re-hashes the password if the stored hash uses old Argon2
+// parameters or a previous pepper. This is the only moment the plaintext is
+// known. Failure is logged, not fatal: the login itself already succeeded.
+func (s *server) upgradeHash(ctx context.Context, u store.User, pw string) {
+	if !s.Hasher.NeedsRehash(u.PasswordHash) {
+		return
+	}
+	fresh, err := s.Hasher.Hash(pw)
+	if err == nil {
+		_, err = s.Users.ReplacePasswordHash(ctx, u.ID, u.PasswordHash, fresh)
+	}
+	if err != nil {
+		slog.WarnContext(ctx, "upgrade password hash", "err", err)
+	}
 }
 
 // ---- session mode --------------------------------------------------------

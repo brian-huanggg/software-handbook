@@ -25,6 +25,7 @@ func (h *slowHasher) enter() {
 }
 func (h *slowHasher) Hash(string) (string, error)         { h.enter(); return "x", nil }
 func (h *slowHasher) Verify(string, string) (bool, error) { h.enter(); return true, nil }
+func (h *slowHasher) NeedsRehash(string) bool             { return false }
 
 func TestLimited_CapsConcurrency(t *testing.T) {
 	inner := &slowHasher{}

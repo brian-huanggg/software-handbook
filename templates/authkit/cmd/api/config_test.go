@@ -16,19 +16,23 @@ func TestLoadConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Addr != ":8080" || cfg.Issuer != "authkit" || cfg.InsecureCookies || cfg.Pepper != nil ||
+	if cfg.Addr != ":8080" || cfg.Issuer != "authkit" || cfg.InsecureCookies || cfg.Pepper != nil || cfg.JWTPreviousSecrets != nil ||
 		cfg.AuthIPBurst != defaultAuthIPBurst || cfg.LoginEmailBurst != defaultLoginEmailBurst {
 		t.Fatalf("defaults wrong: %+v", cfg)
 	}
 
 	over := map[string]string{"ADDR": ":9", "JWT_ISSUER": "me", "COOKIE_INSECURE": "1", "PASSWORD_PEPPER": "pp",
-		"RATE_LIMIT_IP_BURST": "100", "RATE_LIMIT_EMAIL_BURST": "50"}
+		"RATE_LIMIT_IP_BURST": "100", "RATE_LIMIT_EMAIL_BURST": "50",
+		"JWT_PREVIOUS_SECRETS":      strings.Repeat("a", 32) + ", " + strings.Repeat("b", 32),
+		"PASSWORD_PREVIOUS_PEPPERS": "p1,p2"}
 	for k, v := range good {
 		over[k] = v
 	}
 	cfg, err = loadConfig(getenv(over))
 	if err != nil || cfg.Addr != ":9" || cfg.Issuer != "me" || !cfg.InsecureCookies || string(cfg.Pepper) != "pp" ||
-		cfg.AuthIPBurst != 100 || cfg.LoginEmailBurst != 50 {
+		cfg.AuthIPBurst != 100 || cfg.LoginEmailBurst != 50 ||
+		len(cfg.JWTPreviousSecrets) != 2 || string(cfg.JWTPreviousSecrets[1]) != strings.Repeat("b", 32) ||
+		len(cfg.PreviousPeppers) != 2 || string(cfg.PreviousPeppers[0]) != "p1" {
 		t.Fatalf("overrides wrong: %+v, %v", cfg, err)
 	}
 }
@@ -58,11 +62,12 @@ func TestLoadConfig_CORSOrigins(t *testing.T) {
 
 func TestLoadConfig_FailsFast(t *testing.T) {
 	for name, m := range map[string]map[string]string{
-		"no db":        {"JWT_SECRET": strings.Repeat("k", 32)},
-		"no secret":    {"DATABASE_URL": "x"},
-		"short secret": {"DATABASE_URL": "x", "JWT_SECRET": "short"},
-		"zero burst":   {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_IP_BURST": "0"},
-		"bad burst":    {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_EMAIL_BURST": "lots"},
+		"no db":          {"JWT_SECRET": strings.Repeat("k", 32)},
+		"no secret":      {"DATABASE_URL": "x"},
+		"short secret":   {"DATABASE_URL": "x", "JWT_SECRET": "short"},
+		"short previous": {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "JWT_PREVIOUS_SECRETS": "short"},
+		"zero burst":     {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_IP_BURST": "0"},
+		"bad burst":      {"DATABASE_URL": "x", "JWT_SECRET": strings.Repeat("k", 32), "RATE_LIMIT_EMAIL_BURST": "lots"},
 	} {
 		if _, err := loadConfig(getenv(m)); err == nil {
 			t.Errorf("%s: expected error", name)

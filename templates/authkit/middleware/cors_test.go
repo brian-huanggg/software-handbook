@@ -74,6 +74,9 @@ func TestCORS_NoOriginHeaderIsUntouched(t *testing.T) {
 	if !called || w.Header().Get("Access-Control-Allow-Origin") != "" {
 		t.Fatalf("called=%v headers=%v", called, w.Header())
 	}
+	if !strings.Contains(w.Header().Get("Vary"), "Origin") {
+		t.Fatal("Vary: Origin missing on no-Origin response; a cache could reuse it cross-origin")
+	}
 }
 
 func TestCORS_Preflight(t *testing.T) {

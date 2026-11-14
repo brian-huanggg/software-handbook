@@ -74,9 +74,13 @@ func TestAccess_Expiry(t *testing.T) {
 	}
 }
 
-func sign(t *testing.T, m jwt.SigningMethod, key any, claims jwt.MapClaims) string {
+// sign builds a token by hand. It carries kid, the id of the test secret, so
+// each forged case fails for its own reason rather than for an unknown kid.
+func sign(t *testing.T, kid string, m jwt.SigningMethod, key any, claims jwt.MapClaims) string {
 	t.Helper()
-	s, err := jwt.NewWithClaims(m, claims).SignedString(key)
+	tok := jwt.NewWithClaims(m, claims)
+	tok.Header["kid"] = kid
+	s, err := tok.SignedString(key)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,26 +101,77 @@ func TestAccess_RejectsForgedOrInvalid(t *testing.T) {
 
 	valid, _, _ := a.Issue(authn.Principal{UserID: "u1"})
 	parts := strings.Split(valid, ".")
+	parsed, _, _ := jwt.NewParser().ParseUnverified(valid, jwt.MapClaims{})
+	kid := parsed.Header["kid"].(string)
 
 	cases := map[string]string{
-		"alg=none":        sign(t, jwt.SigningMethodNone, jwt.UnsafeAllowNoneSignatureType, good()),
-		"alg=HS512":       sign(t, jwt.SigningMethodHS512, secret, good()),
-		"wrong secret":    sign(t, jwt.SigningMethodHS256, []byte("another-secret-another-secret-123"), good()),
-		"wrong issuer":    sign(t, jwt.SigningMethodHS256, secret, with("iss", "evil")),
-		"missing issuer":  sign(t, jwt.SigningMethodHS256, secret, without("iss")),
-		"missing exp":     sign(t, jwt.SigningMethodHS256, secret, without("exp")),
-		"expired":         sign(t, jwt.SigningMethodHS256, secret, with("exp", c.t.Add(-time.Minute).Unix())),
-		"iat in future":   sign(t, jwt.SigningMethodHS256, secret, with("iat", c.t.Add(time.Hour).Unix())),
-		"missing sub":     sign(t, jwt.SigningMethodHS256, secret, without("sub")),
-		"empty sub":       sign(t, jwt.SigningMethodHS256, secret, with("sub", "")),
+		"alg=none":        sign(t, kid, jwt.SigningMethodNone, jwt.UnsafeAllowNoneSignatureType, good()),
+		"alg=HS512":       sign(t, kid, jwt.SigningMethodHS512, secret, good()),
+		"wrong secret":    sign(t, kid, jwt.SigningMethodHS256, []byte("another-secret-another-secret-123"), good()),
+		"wrong issuer":    sign(t, kid, jwt.SigningMethodHS256, secret, with("iss", "evil")),
+		"missing issuer":  sign(t, kid, jwt.SigningMethodHS256, secret, without("iss")),
+		"missing exp":     sign(t, kid, jwt.SigningMethodHS256, secret, without("exp")),
+		"expired":         sign(t, kid, jwt.SigningMethodHS256, secret, with("exp", c.t.Add(-time.Minute).Unix())),
+		"iat in future":   sign(t, kid, jwt.SigningMethodHS256, secret, with("iat", c.t.Add(time.Hour).Unix())),
+		"missing sub":     sign(t, kid, jwt.SigningMethodHS256, secret, without("sub")),
+		"empty sub":       sign(t, kid, jwt.SigningMethodHS256, secret, with("sub", "")),
 		"tampered sig":    parts[0] + "." + parts[1] + "." + strings.Repeat("A", len(parts[2])),
 		"tampered claims": parts[0] + "." + "eyJzdWIiOiJhZG1pbiJ9" + "." + parts[2],
+		"unknown kid":     sign(t, "nope", jwt.SigningMethodHS256, secret, good()),
+		"no kid":          sign(t, "", jwt.SigningMethodHS256, secret, good()),
 		"garbage":         "not-a-jwt",
 		"empty":           "",
 	}
 	for name, tok := range cases {
 		if _, err := a.Verify(tok); !errors.Is(err, authn.ErrUnauthenticated) {
 			t.Errorf("%s: got %v, want ErrUnauthenticated", name, err)
+		}
+	}
+}
+
+func TestAccess_KeyRotation(t *testing.T) {
+	c := newClock()
+	other := []byte("fedcba9876543210fedcba9876543210")
+	old := newAccess(t, c)
+	oldTok, _, _ := old.Issue(authn.Principal{UserID: "u1"})
+
+	rotated, err := token.NewAccess(token.AccessOptions{Secret: other, PreviousSecrets: [][]byte{secret}, Issuer: "authkit", Now: c.now})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p, err := rotated.Verify(oldTok); err != nil || p.UserID != "u1" {
+		t.Fatalf("token from previous key: %v %v", p, err)
+	}
+	newTok, _, _ := rotated.Issue(authn.Principal{UserID: "u2"})
+	if _, err := old.Verify(newTok); !errors.Is(err, authn.ErrUnauthenticated) {
+		t.Fatalf("old instance accepted a token from a key it does not know: %v", err)
+	}
+
+	// Once the previous key is dropped, its tokens stop verifying.
+	dropped, _ := token.NewAccess(token.AccessOptions{Secret: other, Issuer: "authkit", Now: c.now})
+	if _, err := dropped.Verify(oldTok); !errors.Is(err, authn.ErrUnauthenticated) {
+		t.Fatalf("token from dropped key accepted: %v", err)
+	}
+}
+
+func TestAccess_IssuedTokenHasKid(t *testing.T) {
+	tok, _, _ := newAccess(t, newClock()).Issue(authn.Principal{UserID: "u1"})
+	parsed, _, err := jwt.NewParser().ParseUnverified(tok, jwt.MapClaims{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if kid, _ := parsed.Header["kid"].(string); kid == "" {
+		t.Fatalf("no kid in header %v", parsed.Header)
+	}
+}
+
+func TestNewAccess_RejectsBadPreviousSecrets(t *testing.T) {
+	for name, prev := range map[string][][]byte{
+		"short":     {[]byte("short")},
+		"duplicate": {secret},
+	} {
+		if _, err := token.NewAccess(token.AccessOptions{Secret: secret, PreviousSecrets: prev, Issuer: "x"}); err == nil {
+			t.Errorf("%s: accepted", name)
 		}
 	}
 }

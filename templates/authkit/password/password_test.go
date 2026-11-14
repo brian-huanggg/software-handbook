@@ -89,3 +89,66 @@ func TestPepper(t *testing.T) {
 		t.Fatal("different pepper must not verify")
 	}
 }
+
+func TestPepperRotation(t *testing.T) {
+	old := password.NewArgon2id([]byte("old pepper"))
+	enc, _ := old.Hash("pw")
+
+	rotated := password.NewArgon2id([]byte("new pepper"), []byte("old pepper"))
+	if ok, err := rotated.Verify("pw", enc); err != nil || !ok {
+		t.Fatalf("previous pepper must still verify: %v, %v", ok, err)
+	}
+	if !rotated.NeedsRehash(enc) {
+		t.Fatal("hash under a previous pepper must need a rehash")
+	}
+	fresh, _ := rotated.Hash("pw")
+	if rotated.NeedsRehash(fresh) {
+		t.Fatal("fresh hash must not need a rehash")
+	}
+	if strings.Contains(fresh, "pepper") {
+		t.Fatalf("pepper leaked into hash: %q", fresh)
+	}
+
+	dropped := password.NewArgon2id([]byte("new pepper"))
+	if _, err := dropped.Verify("pw", enc); !errors.Is(err, password.ErrUnknownPepper) {
+		t.Fatalf("dropped pepper: err = %v, want ErrUnknownPepper", err)
+	}
+}
+
+func TestPepper_AddedLater(t *testing.T) {
+	enc, _ := newHasher().Hash("pw") // no pepper, so no k parameter
+	if strings.Contains(enc, ",k=") {
+		t.Fatalf("unpeppered hash has a pepper id: %q", enc)
+	}
+	h := password.NewArgon2id([]byte("pepper"))
+	if ok, err := h.Verify("pw", enc); err != nil || !ok {
+		t.Fatalf("unpeppered hash must verify after a pepper is added: %v, %v", ok, err)
+	}
+	if !h.NeedsRehash(enc) {
+		t.Fatal("unpeppered hash must need a rehash once a pepper is set")
+	}
+}
+
+func TestNeedsRehash_OldParams(t *testing.T) {
+	h := newHasher()
+	enc, _ := h.Hash("pw")
+	if h.NeedsRehash(enc) {
+		t.Fatal("current hash needs rehash")
+	}
+	weaker := strings.Replace(enc, "t=2", "t=1", 1)
+	if !h.NeedsRehash(weaker) {
+		t.Fatal("hash with old time cost must need a rehash")
+	}
+	if !h.NeedsRehash("garbage") {
+		t.Fatal("malformed hash must need a rehash")
+	}
+}
+
+func TestVerify_RejectsTrailingParams(t *testing.T) {
+	h := newHasher()
+	enc, _ := h.Hash("pw")
+	bad := strings.Replace(enc, "p=1", "p=1,x=9", 1)
+	if _, err := h.Verify("pw", bad); !errors.Is(err, password.ErrInvalidHash) {
+		t.Fatalf("err = %v, want ErrInvalidHash", err)
+	}
+}

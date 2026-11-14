@@ -39,6 +39,10 @@ type UserStore interface {
 	Create(ctx context.Context, email, passwordHash string) (User, error)
 	ByEmail(ctx context.Context, email string) (User, error)
 	ByID(ctx context.Context, id string) (User, error)
+	// ReplacePasswordHash sets a new hash only if the stored one is still
+	// oldHash, so an upgrade racing with a password change cannot undo it.
+	// It reports whether the row was updated.
+	ReplacePasswordHash(ctx context.Context, id, oldHash, newHash string) (bool, error)
 }
 
 type pgUserStore struct{ pool *pgxpool.Pool }
@@ -93,4 +97,14 @@ func (s *pgUserStore) one(ctx context.Context, q string, arg any) (User, error) 
 		return User{}, ErrNotFound
 	}
 	return User{}, err
+}
+
+func (s *pgUserStore) ReplacePasswordHash(ctx context.Context, id, oldHash, newHash string) (bool, error) {
+	tag, err := s.pool.Exec(ctx,
+		`UPDATE users SET password_hash = $3 WHERE id = $1 AND password_hash = $2`,
+		id, oldHash, newHash)
+	if err != nil {
+		return false, err
+	}
+	return tag.RowsAffected() == 1, nil
 }

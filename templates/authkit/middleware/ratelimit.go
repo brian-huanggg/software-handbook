@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/brian-huanggg/software-handbook/templates/authkit/respond"
 )
 
 // Limiter is an in-memory token bucket per key: each key may spend Burst
@@ -101,7 +103,7 @@ func RateLimit(l *Limiter, key func(*http.Request) string) func(http.Handler) ht
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if ok, wait := l.Allow(key(r)); !ok {
 				RetryAfter(w, wait)
-				http.Error(w, "too many requests", http.StatusTooManyRequests)
+				respond.Error(w, http.StatusTooManyRequests, "too many requests")
 				return
 			}
 			next.ServeHTTP(w, r)

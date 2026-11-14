@@ -55,7 +55,11 @@ func run() error {
 	}
 
 	users := store.NewUserStore(pool)
-	access, err := token.NewAccess(token.AccessOptions{Secret: cfg.JWTSecret, Issuer: cfg.Issuer})
+	access, err := token.NewAccess(token.AccessOptions{
+		Secret:          cfg.JWTSecret,
+		PreviousSecrets: cfg.JWTPreviousSecrets,
+		Issuer:          cfg.Issuer,
+	})
 	if err != nil {
 		return err
 	}
@@ -68,7 +72,7 @@ func run() error {
 	handler, err := newHandler(deps{
 		Users: users,
 		// Each Argon2id call holds ~19 MiB; cap how many run at once.
-		Hasher:           password.NewLimited(password.NewArgon2id(cfg.Pepper), runtime.NumCPU()),
+		Hasher:           password.NewLimited(password.NewArgon2id(cfg.Pepper, cfg.PreviousPeppers...), runtime.NumCPU()),
 		Sessions:         sessions,
 		Access:           access,
 		Refresh:          refresh,

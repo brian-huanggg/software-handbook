@@ -13,14 +13,17 @@ public interface RefreshStore {
     Optional<Refresh> find(byte[] idHash);
 
     /**
-     * Atomically marks {@code oldHash} used (only if it exists and is still
-     * unused) and stores {@code next}, all or nothing. Returns whether this
-     * call did so; on false or on an exception nothing changed. Rotation
-     * relies on exactly one concurrent caller winning.
+     * Atomically marks {@code oldHash} used (only if it exists, is still
+     * unused and its user exists) and stores {@code next}, all or nothing.
+     * When this call did so, returns the user's current role, read in the
+     * same step, so the caller needs no further lookup after the rotation has
+     * committed. Empty means this call did not rotate, and nothing changed;
+     * on an exception nothing changed either. Rotation relies on exactly one
+     * concurrent caller winning.
      *
      * @throws DuplicateRefreshException if {@code next} collides; the old token stays unused
      */
-    boolean rotate(byte[] oldHash, Instant usedAt, Refresh next);
+    Optional<String> rotate(byte[] oldHash, Instant usedAt, Refresh next);
 
     /** Removes every token of the family. An unknown family is not an error. */
     void deleteFamily(UUID familyId);

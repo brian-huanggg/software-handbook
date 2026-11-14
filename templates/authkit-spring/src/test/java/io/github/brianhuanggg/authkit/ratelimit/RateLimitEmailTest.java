@@ -1,5 +1,6 @@
 package io.github.brianhuanggg.authkit.ratelimit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -95,6 +96,27 @@ class RateLimitEmailTest extends PostgresTestBase {
             mvc.perform(login("/session/login", "not json")).andExpect(status().isBadRequest());
         }
         mvc.perform(login("/session/login", creds(email, PASSWORD))).andExpect(status().isUnauthorized());
+    }
+
+    /** The controller answers 415 for a non-JSON content type, so the limiter must not spend for it. */
+    @Test
+    void nonJsonContentTypeDoesNotSpendTheEmailLimit() throws Exception {
+        String email = "ct-" + UUID.randomUUID() + "@example.com";
+        for (int i = 0; i < 4; i++) {
+            mvc.perform(login("/session/login", creds(email, PASSWORD)).contentType(MediaType.TEXT_PLAIN))
+                    .andExpect(status().isUnsupportedMediaType());
+        }
+        mvc.perform(login("/session/login", creds(email, PASSWORD))).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void isJsonMatchesWhatTheConverterReads() {
+        assertThat(RateLimitFilter.isJson("application/json")).isTrue();
+        assertThat(RateLimitFilter.isJson("application/json; charset=utf-8")).isTrue();
+        assertThat(RateLimitFilter.isJson("application/problem+json")).isTrue();
+        for (String other : new String[] {null, "", "text/plain", "application/xml", "text/json", "*/*", "garbage"}) {
+            assertThat(RateLimitFilter.isJson(other)).as(String.valueOf(other)).isFalse();
+        }
     }
 
     @Test

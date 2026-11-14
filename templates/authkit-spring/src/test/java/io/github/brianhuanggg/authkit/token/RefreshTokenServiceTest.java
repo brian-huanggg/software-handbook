@@ -26,6 +26,7 @@ class RefreshTokenServiceTest {
         String first = service.start(USER);
         var rotated = service.rotate(first);
         assertThat(rotated.userId()).isEqualTo(USER);
+        assertThat(rotated.role()).isEqualTo("user");
         assertThat(rotated.raw()).isNotEqualTo(first);
         assertThat(stored(rotated.raw()).familyId()).isEqualTo(stored(first).familyId());
         assertThat(stored(first).usedAt()).isEqualTo(clock.now);
@@ -140,7 +141,7 @@ class RefreshTokenServiceTest {
             }
 
             @Override
-            public boolean rotate(byte[] oldHash, Instant usedAt, Refresh next) {
+            public java.util.Optional<String> rotate(byte[] oldHash, Instant usedAt, Refresh next) {
                 throw new IllegalStateException("db down");
             }
 
@@ -157,5 +158,64 @@ class RefreshTokenServiceTest {
         assertThatThrownBy(() -> new RefreshTokenService(failing, clock).rotate(raw))
                 .isInstanceOf(IllegalStateException.class);
         assertThat(service.rotate(raw).userId()).as("retry after the failure").isEqualTo(USER);
+    }
+
+    /** The real store, with {@code between} run after rotate()'s find and before its store step. */
+    private RefreshStore interleaved(Runnable between) {
+        return new RefreshStore() {
+            @Override
+            public void create(Refresh t) {
+                store.create(t);
+            }
+
+            @Override
+            public java.util.Optional<Refresh> find(byte[] h) {
+                return store.find(h);
+            }
+
+            @Override
+            public java.util.Optional<String> rotate(byte[] oldHash, Instant usedAt, Refresh next) {
+                between.run();
+                return store.rotate(oldHash, usedAt, next);
+            }
+
+            @Override
+            public void deleteFamily(UUID f) {
+                store.deleteFamily(f);
+            }
+
+            @Override
+            public long deleteExpired(Instant now) {
+                return store.deleteExpired(now);
+            }
+        };
+    }
+
+    /** A logout that lands mid-rotation makes the token invalid, not "reused". */
+    @Test
+    void concurrentLogoutIsInvalidNotReuse() {
+        String raw = service.start(USER);
+        var racing = new RefreshTokenService(interleaved(() -> service.revoke(raw)), clock);
+        assertThatThrownBy(() -> racing.rotate(raw)).isExactlyInstanceOf(InvalidRefreshException.class);
+    }
+
+    /** Another use of the same token winning mid-rotation is reuse: the family is revoked. */
+    @Test
+    void losingTheRaceIsReuse() {
+        String raw = service.start(USER);
+        String[] winner = new String[1];
+        var racing = new RefreshTokenService(interleaved(() -> winner[0] = service.rotate(raw).raw()), clock);
+        assertThatThrownBy(() -> racing.rotate(raw)).isInstanceOf(RefreshReuseException.class);
+        assertThat(store.find(OpaqueIds.hash(winner[0]))).as("winner's token revoked with the family").isEmpty();
+    }
+
+    /** A user deleted mid-rotation cannot rotate, and that is no reuse alarm either. */
+    @Test
+    void deletedUserCannotRotate() {
+        var noUsers = new InMemoryRefreshStore(id -> java.util.Optional.empty());
+        var svc = new RefreshTokenService(noUsers, clock);
+        String raw = svc.start(USER);
+        assertThatThrownBy(() -> svc.rotate(raw)).isExactlyInstanceOf(InvalidRefreshException.class);
+        assertThat(noUsers.find(OpaqueIds.hash(raw)).orElseThrow().usedAt()).as("not consumed").isNull();
     }
 }

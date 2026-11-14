@@ -6,11 +6,26 @@ import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 /** For tests and single-process demos; tokens vanish on restart. Not a bean. */
 public final class InMemoryRefreshStore implements RefreshStore {
 
     private final Map<String, Refresh> tokens = new HashMap<>();
+    private final Function<UUID, Optional<String>> roleOf;
+
+    /** Every user exists and has the role {@code user}. */
+    public InMemoryRefreshStore() {
+        this(id -> Optional.of("user"));
+    }
+
+    /**
+     * @param roleOf the current role of a user, empty when the user does not
+     *               exist. There is no users table here, so the caller supplies it.
+     */
+    public InMemoryRefreshStore(Function<UUID, Optional<String>> roleOf) {
+        this.roleOf = roleOf;
+    }
 
     private static String key(byte[] idHash) {
         return HexFormat.of().formatHex(idHash);
@@ -31,10 +46,14 @@ public final class InMemoryRefreshStore implements RefreshStore {
     }
 
     @Override
-    public synchronized boolean rotate(byte[] oldHash, Instant usedAt, Refresh next) {
+    public synchronized Optional<String> rotate(byte[] oldHash, Instant usedAt, Refresh next) {
         Refresh old = tokens.get(key(oldHash));
         if (old == null || old.usedAt() != null) {
-            return false;
+            return Optional.empty();
+        }
+        Optional<String> role = roleOf.apply(old.userId());
+        if (role.isEmpty()) {
+            return role;
         }
         if (tokens.containsKey(key(next.idHash()))) {
             throw new DuplicateRefreshException();
@@ -42,7 +61,7 @@ public final class InMemoryRefreshStore implements RefreshStore {
         tokens.put(key(oldHash), new Refresh(old.idHash(), old.userId(), old.familyId(), usedAt,
                 old.expiresAt(), old.familyExpiresAt()));
         tokens.put(key(next.idHash()), next.copy());
-        return true;
+        return role;
     }
 
     @Override

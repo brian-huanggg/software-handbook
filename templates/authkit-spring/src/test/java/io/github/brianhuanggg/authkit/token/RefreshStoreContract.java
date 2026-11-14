@@ -75,16 +75,16 @@ interface RefreshStoreContract {
         store().create(old);
         Instant at = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
-        assertThat(store().rotate(old.idHash(), at, next)).isTrue();
+        assertThat(store().rotate(old.idHash(), at, next)).as("returns the owner's role").contains("user");
         assertThat(store().find(old.idHash()).orElseThrow().usedAt()).isEqualTo(at);
         Refresh stored = store().find(next.idHash()).orElseThrow();
         assertThat(stored.usedAt()).isNull();
         assertThat(stored.familyId()).isEqualTo(family);
 
         Refresh again = fresh(user, family);
-        assertThat(store().rotate(old.idHash(), at, again)).as("second rotate").isFalse();
+        assertThat(store().rotate(old.idHash(), at, again)).as("second rotate").isEmpty();
         assertThat(store().find(again.idHash())).as("losing rotate stores nothing").isEmpty();
-        assertThat(store().rotate(hash(), at, fresh(user, family))).as("missing token").isFalse();
+        assertThat(store().rotate(hash(), at, fresh(user, family))).as("missing token").isEmpty();
     }
 
     /** A failed insert must not consume the old token, so the client can retry. */
@@ -120,7 +120,7 @@ interface RefreshStoreContract {
             for (int i = 0; i < callers; i++) {
                 Callable<Boolean> call = () -> {
                     go.await();
-                    return store().rotate(old.idHash(), Instant.now(), fresh(user, family));
+                    return store().rotate(old.idHash(), Instant.now(), fresh(user, family)).isPresent();
                 };
                 results.add(pool.submit(call));
             }

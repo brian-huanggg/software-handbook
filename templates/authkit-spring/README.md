@@ -100,7 +100,7 @@ refresh token 7 days idle and 30 days per login chain
 access token 15 min
 ([JwtService](src/main/java/io/github/brianhuanggg/authkit/token/JwtService.java)),
 janitor every 10 min
-([Janitor](src/main/java/io/github/brianhuanggg/authkit/ratelimit/Janitor.java)).
+([Janitor](src/main/java/io/github/brianhuanggg/authkit/maintenance/Janitor.java)).
 
 Pepper and JWT key rotation work exactly as in the Go README: set the new
 value, move the old one to the `*_PREVIOUS_*` variable, and remove it once
@@ -199,9 +199,15 @@ an `HttpSession`.
   exactly one wins. If the insert fails the update rolls back and the old token
   stays valid.
 - **Reuse detection**: an already-used token, or losing the race, revokes the
-  whole family. Rotation never extends past `family_expires_at`.
+  whole family. A token that disappears during the rotation, because a logout
+  ran at the same time or the user was deleted, is only invalid and raises no
+  reuse alarm. Rotation never extends past `family_expires_at`.
 - Roles are read from `users` on every refresh, so a role change applies at
-  the next refresh.
+  the next refresh. The rotation's `UPDATE` joins `users` and returns the
+  role, so no query runs after the old token is consumed. A failure there
+  would lose the new token and turn the client's retry into reuse.
+- `/token/login` reads the login email for the rate limiter only from a JSON
+  body. Any other content type gets `415` and spends nothing.
 
 ### Passwords
 
@@ -400,7 +406,8 @@ src/main/java/io/github/brianhuanggg/authkit/
   password/      PepperedArgon2Encoder
   session/       session service, filter, memory and Postgres stores
   token/         JwtService, RefreshTokenService, memory and Postgres stores
-  ratelimit/     Limiter, RateLimitFilter, client IP, Janitor
+  ratelimit/     Limiter, RateLimitFilter, client IP
+  maintenance/   Janitor: purges expired sessions and refresh tokens
   user/          user repository
   web/           controllers, error handling, request log, body size, CSRF and cache filters
 src/main/resources/db/migration/    Flyway migrations

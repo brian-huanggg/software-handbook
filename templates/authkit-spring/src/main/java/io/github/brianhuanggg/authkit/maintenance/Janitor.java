@@ -1,4 +1,4 @@
-package io.github.brianhuanggg.authkit.ratelimit;
+package io.github.brianhuanggg.authkit.maintenance;
 
 import io.github.brianhuanggg.authkit.session.SessionStore;
 import io.github.brianhuanggg.authkit.token.RefreshTokenService;

@@ -53,11 +53,14 @@
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
 | idempotency | 冪等 | 冒等、幂等 | |
 | image | 映像 | 鏡像、鏡像檔 | 唯讀 layer 加啟動設定；container 由它啟動 |
+| implicit assertion | implicit assertion | | 不翻譯；PASETO 簽發與驗證雙方各自帶入、不出現在 token 裡的值（如租戶編號），會被簽進去，不一致就驗不過 |
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
+| JSON Web Key Set (JWKS) | JWKS | | 不翻譯；以 JSON 發布一組公鑰的格式（RFC 7517），驗證方依 `kid` 取用，OIDC 與 API 閘道靠它驗證 JWT |
 | JSON Web Token (JWT) | JWT | | 不翻譯；`header.payload.signature` 三段 base64url 的自包含 token（RFC 7519），簽章防竄改、不加密；到期前難以撤銷 |
+| key ID (kid) | kid | | 不翻譯；標示用哪把金鑰簽章的識別字，JWT 放 header、PASETO 放 footer；只能用來查自己持有的金鑰，不能直接採用 token 帶的金鑰 |
 | key stretching | 金鑰延展 | 密鑰拉伸 | 把雜湊重複很多輪讓單次計算變貴；密碼雜湊的核心做法 |
 | kill switch | kill switch | 緊急開關 | 不翻譯；營運用旗標，出事時一關就停用某個功能，不需重新部署 |
 | layer | layer | 層、圖層 | 不翻譯；Dockerfile 每個 `COPY`／`RUN` 產生一個，建好後不再改動 |
@@ -76,9 +79,11 @@
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
+| PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
 | password hashing | 密碼雜湊 | 口令哈希 | 用刻意設計成慢且吃記憶體的函式處理密碼後再儲存；與 SHA-256 等通用雜湊不同類 |
 | payload | 酬載 | 載荷 | 攻擊者送進目標、要讓它執行的內容；在 XSS 中是那段注入的標記或腳本 |
 | pepper | pepper | 胡椒 | 不翻譯；全站共用、存在資料庫以外的祕密值，與 salt 搭配使用 |
+| Pre-Authentication Encoding (PAE) | PAE | | 不翻譯；PASETO 把 header、payload、footer、implicit assertion 串成唯一位元組序列再簽章的編碼，讓片段邊界無法被挪動 |
 | preflight request | 預檢請求 | 預檢、OPTIONS 請求 | 瀏覽器在非簡單請求前自動發出的 `OPTIONS` |
 | primary / replica | primary／replica | master／slave、主庫／從庫 | 不翻譯；標題或總稱可寫「主從複寫」 |
 | quorum | quorum | 法定人數 | 不翻譯；超過一半節點互相連得上，只有這一邊能繼續寫入 |
@@ -98,6 +103,7 @@
 | SameSite | SameSite | 同站屬性 | 不翻譯；Cookie 屬性，限制跨站請求是否附上該 Cookie（`Strict`、`Lax`、`None`） |
 | sanitizer | sanitizer | 清洗器 | 不翻譯；把使用者貼的 HTML 去掉危險部分、保留安全標籤的函式庫（如 DOMPurify、bluemonday）；不要自己寫 |
 | secondary index | 次要索引 | 二級索引、輔助索引 | 非主鍵的索引；InnoDB 的葉節點存主鍵值，Postgres 存 ctid |
+| self-contained token | 自包含 token | | 身分與期限寫在 token 裡、驗證方只驗簽章不查儲存的 token（JWT、PASETO）；到期前難以撤銷 |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
 | sensitive data exposure | 敏感資料外洩 | 敏感資料暴露 | 不該被看到的資料經由回應欄位、錯誤訊息、日誌等路徑離開伺服器；對外回應用只列允許欄位的型別（白名單）預防 |
 | session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |

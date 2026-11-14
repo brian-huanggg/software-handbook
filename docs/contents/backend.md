@@ -142,6 +142,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 
 - [ ] OAuth 2.0 與 OpenID Connect
 - [ ] Access token 與 Refresh token
+- [x] JWT vs PASETO：自包含 token 的選型 → [文章](../../site/src/content/docs/backend/l2/2-6-auth-advanced/jwt-vs-paseto.md)
 - [ ] RBAC 與 ABAC
 - [ ] 服務間認證
 - [ ] 秘密管理

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -812,5 +813,82 @@ func TestAuthEndpoints_LimitedPerIP(t *testing.T) {
 	}
 	if w := e.call("POST", "/register", creds{"email": "b@example.com", "password": pw}, other); w.Code != 202 {
 		t.Fatalf("other IP = %d, want 202", w.Code)
+	}
+}
+
+func TestReadyz(t *testing.T) {
+	e := newEnv(t)
+	if w := e.call("GET", "/readyz", nil); w.Code != 200 {
+		t.Fatalf("no checker: code %d, want 200", w.Code)
+	}
+	access, _ := token.NewAccess(token.AccessOptions{Secret: []byte(testSecret), Issuer: "authkit"})
+	for _, tc := range []struct {
+		name string
+		err  error
+		want int
+	}{{"up", nil, 200}, {"db down", fmt.Errorf("connection refused"), 503}} {
+		h, err := newHandler(deps{
+			Users: e.users, Hasher: e.hasher,
+			Sessions: session.NewManager(session.NewMemoryStore(), session.Options{Roles: rolesFromStore(e.users)}),
+			Access:   access,
+			Refresh:  token.NewRefreshManager(token.NewMemoryRefreshStore(), token.RefreshOptions{}),
+			Ready:    func(context.Context) error { return tc.err },
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, httptest.NewRequest("GET", "/readyz", nil))
+		if w.Code != tc.want {
+			t.Errorf("%s: code %d, want %d", tc.name, w.Code, tc.want)
+		}
+		// liveness must not depend on the DB
+		w = httptest.NewRecorder()
+		h.ServeHTTP(w, httptest.NewRequest("GET", "/healthz", nil))
+		if w.Code != 200 {
+			t.Errorf("%s: healthz code %d, want 200", tc.name, w.Code)
+		}
+	}
+}
+
+func TestRequestID_EchoedAndGenerated(t *testing.T) {
+	e := newEnv(t)
+	w := e.call("GET", "/healthz", nil, func(r *http.Request) { r.Header.Set("X-Request-Id", "abc-123") })
+	if got := w.Header().Get("X-Request-Id"); got != "abc-123" {
+		t.Errorf("echo: got %q", got)
+	}
+	w = e.call("GET", "/healthz", nil, func(r *http.Request) { r.Header.Set("X-Request-Id", "bad id\nforged") })
+	if got := w.Header().Get("X-Request-Id"); got == "" || strings.ContainsAny(got, " \n") {
+		t.Errorf("unsafe id not replaced: %q", got)
+	}
+}
+
+func TestReuseLogCarriesFamilyAndUser(t *testing.T) {
+	var buf bytes.Buffer
+	prev := slog.Default()
+	slog.SetDefault(newLogger(&buf, true))
+	t.Cleanup(func() { slog.SetDefault(prev) })
+
+	e := newEnv(t)
+	e.register(t, "r@example.com", pw)
+	_, old := e.tokenLogin(t, "r@example.com")
+	if w := e.call("POST", "/token/refresh", nil, withCookie(old)); w.Code != 200 {
+		t.Fatalf("refresh: %d", w.Code)
+	}
+	e.call("POST", "/token/refresh", nil, withCookie(old), func(r *http.Request) { r.Header.Set("X-Request-Id", "rid-1") })
+
+	var found bool
+	for _, line := range strings.Split(strings.TrimSpace(buf.String()), "\n") {
+		var rec map[string]any
+		if json.Unmarshal([]byte(line), &rec) != nil || !strings.Contains(fmt.Sprint(rec["msg"]), "reuse detected") {
+			continue
+		}
+		found = true
+		if rec["family_id"] == nil || rec["family_id"] == "" || rec["user_id"] == nil || rec["user_id"] == "" || rec["request_id"] != "rid-1" {
+			t.Errorf("reuse log missing fields: %v", rec)
+		}
+	}
+	if !found {
+		t.Fatalf("no reuse log line in:\n%s", buf.String())
 	}
 }

@@ -42,6 +42,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	slog.SetDefault(newLogger(os.Stderr, cfg.LogJSON))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -77,6 +78,7 @@ func run() error {
 		Access:           access,
 		Refresh:          refresh,
 		RefreshCookieTTL: refreshTTL,
+		Ready:            pool.Ping,
 		InsecureCookies:  cfg.InsecureCookies,
 		AllowedOrigins:   cfg.AllowedOrigins,
 		AuthIPLimit:      middleware.NewLimiter(authIPEvery, cfg.AuthIPBurst),

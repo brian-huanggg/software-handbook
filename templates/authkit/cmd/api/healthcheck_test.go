@@ -8,11 +8,11 @@ import (
 
 func TestHealthcheckURL(t *testing.T) {
 	for addr, want := range map[string]string{
-		"":             "http://127.0.0.1:8080/healthz",
-		":8080":        "http://127.0.0.1:8080/healthz",
-		":9000":        "http://127.0.0.1:9000/healthz",
-		"0.0.0.0:9000": "http://127.0.0.1:9000/healthz",
-		"localhost:81": "http://127.0.0.1:81/healthz",
+		"":             "http://127.0.0.1:8080/readyz",
+		":8080":        "http://127.0.0.1:8080/readyz",
+		":9000":        "http://127.0.0.1:9000/readyz",
+		"0.0.0.0:9000": "http://127.0.0.1:9000/readyz",
+		"localhost:81": "http://127.0.0.1:81/readyz",
 	} {
 		if got := healthcheckURL(addr); got != want {
 			t.Errorf("healthcheckURL(%q) = %q, want %q", addr, got, want)

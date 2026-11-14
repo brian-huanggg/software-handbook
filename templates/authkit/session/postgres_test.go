@@ -28,6 +28,10 @@ func testPool(t *testing.T) *pgxpool.Pool {
 		err = pool.Ping(ctx)
 	}
 	if err != nil {
+		// A green CI run must mean Postgres was actually tested.
+		if os.Getenv("CI") != "" {
+			t.Fatalf("database unavailable in CI: %v", err)
+		}
 		t.Skipf("database unavailable: %v", err)
 	}
 	t.Cleanup(pool.Close)

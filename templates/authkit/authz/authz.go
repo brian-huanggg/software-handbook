@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"slices"
 
-	"authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 )
 
 // HasRole reports whether p holds role (exact, case-sensitive match).

@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
 )
 
 // Factory returns a fresh store and a function creating a user ID valid for

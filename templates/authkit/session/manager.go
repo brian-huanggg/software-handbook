@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 )
 
 const idBytes = 32

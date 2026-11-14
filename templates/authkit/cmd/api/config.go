@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 )
 
 const (

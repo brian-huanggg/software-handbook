@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"authkit/session"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/session"
 )
 
 // Factory returns a fresh store and a function creating a user ID that is

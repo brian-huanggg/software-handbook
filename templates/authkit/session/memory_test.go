@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"authkit/session"
-	"authkit/session/storetest"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/session"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/session/storetest"
 )
 
 func TestMemoryStore(t *testing.T) {

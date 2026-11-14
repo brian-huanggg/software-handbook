@@ -16,11 +16,11 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"authkit/middleware"
-	"authkit/password"
-	"authkit/session"
-	"authkit/store"
-	"authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/password"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/session"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/store"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
 )
 
 func main() {

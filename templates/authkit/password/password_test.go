@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"authkit/password"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/password"
 )
 
 func newHasher() password.Hasher { return password.NewArgon2id(nil) }

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
 )
 
 type rfix struct {

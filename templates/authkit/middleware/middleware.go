@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 )
 
 // Require authenticates every request with a. On success the Principal is

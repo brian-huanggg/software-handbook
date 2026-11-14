@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"authkit/token"
-	"authkit/token/storetest"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token/storetest"
 )
 
 func TestMemoryRefreshStore(t *testing.T) {

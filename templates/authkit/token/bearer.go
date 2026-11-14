@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 )
 
 // Bearer authenticates requests carrying "Authorization: Bearer <access jwt>".

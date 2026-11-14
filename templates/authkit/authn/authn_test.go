@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
 )
 
 func TestFromContext_Empty(t *testing.T) {

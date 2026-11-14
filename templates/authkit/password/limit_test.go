@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"authkit/password"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/password"
 )
 
 // slowHasher records the peak number of calls running at the same time.

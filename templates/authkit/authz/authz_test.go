@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"authkit/authn"
-	"authkit/authz"
-	"authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authz"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 )
 
 type stub struct {

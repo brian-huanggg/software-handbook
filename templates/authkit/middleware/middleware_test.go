@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"authkit/authn"
-	"authkit/middleware"
-	"authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
 )
 
 type stub struct {

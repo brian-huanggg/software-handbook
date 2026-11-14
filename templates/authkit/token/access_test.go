@@ -11,8 +11,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"authkit/authn"
-	"authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
 )
 
 var secret = []byte("0123456789abcdef0123456789abcdef") // 32 bytes

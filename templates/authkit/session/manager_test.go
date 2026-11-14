@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"authkit/authn"
-	"authkit/session"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/authn"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/session"
 )
 
 type fixture struct {

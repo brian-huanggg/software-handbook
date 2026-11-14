@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 )
 
 func csrfServe(method string, hdr map[string]string) (int, bool) {

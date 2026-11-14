@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 )
 
 const allowed = "http://localhost:3000"

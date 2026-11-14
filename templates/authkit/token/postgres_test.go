@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"authkit/store"
-	"authkit/token"
-	"authkit/token/storetest"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/store"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/token/storetest"
 )
 
 func testPool(t *testing.T) *pgxpool.Pool {

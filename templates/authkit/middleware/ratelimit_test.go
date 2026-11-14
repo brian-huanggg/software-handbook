@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"authkit/middleware"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/middleware"
 )
 
 type fakeClock struct{ t time.Time }

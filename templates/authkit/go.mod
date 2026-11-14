@@ -1,4 +1,4 @@
-module authkit
+module github.com/brian-huanggg/software-handbook/templates/authkit
 
 go 1.26.10
 

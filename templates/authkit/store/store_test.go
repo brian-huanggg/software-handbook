@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"authkit/store"
+	"github.com/brian-huanggg/software-handbook/templates/authkit/store"
 )
 
 const defaultURL = "postgres://authkit:authkit@localhost:5432/authkit?sslmode=disable"

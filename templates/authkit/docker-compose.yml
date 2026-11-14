@@ -9,5 +9,16 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  # Static front end on its own origin (http://localhost:3000), so the demo
+  # exercises real CORS and cross-origin cookie rules against the API.
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: http://localhost:8080
+    environment:
+      API_ORIGIN: http://localhost:8080
+    ports:
+      - "3000:80"
 volumes:
   pgdata:

@@ -2,6 +2,7 @@ package token_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"sync"
 	"sync/atomic"
@@ -20,7 +21,7 @@ type rfix struct {
 func newRefresh(t *testing.T) *rfix {
 	t.Helper()
 	f := &rfix{store: token.NewMemoryRefreshStore(), c: newClock()}
-	f.m = token.NewRefreshManager(f.store, token.RefreshOptions{TTL: 24 * time.Hour, Now: f.c.now})
+	f.m = token.NewRefreshManager(f.store, token.RefreshOptions{TTL: 24 * time.Hour, FamilyTTL: 72 * time.Hour, Now: f.c.now})
 	return f
 }
 
@@ -160,5 +161,52 @@ func TestRefresh_ConcurrentRotateHasOneWinner(t *testing.T) {
 	w, r, i := wins.Load(), reuse.Load(), invalid.Load()
 	if w != 1 || r < 1 || w+r+i != 20 {
 		t.Fatalf("wins=%d reuse=%d invalid=%d, want 1 winner, >=1 reuse, 20 total", w, r, i)
+	}
+}
+
+// Rotation slides the idle window but must never outlive the family cap.
+func TestRefresh_FamilyAbsoluteLimit(t *testing.T) {
+	f := newRefresh(t)
+	start := f.c.t
+	cur, _ := f.m.Start(ctx, "u1")
+
+	rotate := func(after time.Duration) (string, error) {
+		f.c.t = f.c.t.Add(after)
+		next, _, err := f.m.Rotate(ctx, cur)
+		return next, err
+	}
+	var err error
+	for i := 0; i < 3; i++ { // at 20h, 40h, 60h
+		if cur, err = rotate(20 * time.Hour); err != nil {
+			t.Fatalf("rotation %d: %v", i+1, err)
+		}
+	}
+	// token issued at 60h would idle-expire at 84h, but is capped at 72h
+	h := sha256.Sum256([]byte(cur))
+	got, err := f.store.Get(ctx, h[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := start.Add(72 * time.Hour); !got.ExpiresAt.Equal(want) {
+		t.Fatalf("ExpiresAt = %v, want capped at %v", got.ExpiresAt, want)
+	}
+
+	if cur, err = rotate(11 * time.Hour); err != nil { // 71h: still inside the cap
+		t.Fatalf("rotation at 71h: %v", err)
+	}
+	if _, err = rotate(time.Hour); !errors.Is(err, token.ErrInvalidRefresh) { // 72h: cap reached
+		t.Fatalf("rotation at 72h: got %v, want ErrInvalidRefresh", err)
+	}
+}
+
+func TestRefresh_FamilyCapAppliesToFirstToken(t *testing.T) {
+	s := token.NewMemoryRefreshStore()
+	c := newClock()
+	m := token.NewRefreshManager(s, token.RefreshOptions{TTL: 48 * time.Hour, FamilyTTL: 24 * time.Hour, Now: c.now})
+	raw, _ := m.Start(ctx, "u1")
+	h := sha256.Sum256([]byte(raw))
+	got, _ := s.Get(ctx, h[:])
+	if !got.ExpiresAt.Equal(c.t.Add(24 * time.Hour)) {
+		t.Fatalf("first token ExpiresAt = %v, want capped at 24h", got.ExpiresAt)
 	}
 }

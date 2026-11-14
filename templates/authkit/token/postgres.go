@@ -17,9 +17,9 @@ func NewPostgresRefreshStore(pool *pgxpool.Pool) RefreshStore { return &pgRefres
 
 func (s *pgRefreshStore) Create(ctx context.Context, r Refresh) error {
 	_, err := s.pool.Exec(ctx,
-		`INSERT INTO refresh_tokens (id_hash, user_id, family_id, used_at, expires_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		r.IDHash, r.UserID, r.FamilyID, r.UsedAt, r.ExpiresAt)
+		`INSERT INTO refresh_tokens (id_hash, user_id, family_id, used_at, expires_at, family_expires_at)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		r.IDHash, r.UserID, r.FamilyID, r.UsedAt, r.ExpiresAt, r.FamilyExpiresAt)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		return ErrDuplicate
@@ -30,9 +30,9 @@ func (s *pgRefreshStore) Create(ctx context.Context, r Refresh) error {
 func (s *pgRefreshStore) Get(ctx context.Context, idHash []byte) (Refresh, error) {
 	var r Refresh
 	err := s.pool.QueryRow(ctx,
-		`SELECT id_hash, user_id::text, family_id::text, used_at, expires_at
+		`SELECT id_hash, user_id::text, family_id::text, used_at, expires_at, family_expires_at
 		 FROM refresh_tokens WHERE id_hash = $1`, idHash).
-		Scan(&r.IDHash, &r.UserID, &r.FamilyID, &r.UsedAt, &r.ExpiresAt)
+		Scan(&r.IDHash, &r.UserID, &r.FamilyID, &r.UsedAt, &r.ExpiresAt, &r.FamilyExpiresAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Refresh{}, ErrNotFound
 	}

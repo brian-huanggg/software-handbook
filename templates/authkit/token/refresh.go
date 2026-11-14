@@ -30,6 +30,9 @@ type Refresh struct {
 	FamilyID  string // all tokens descending from one login share it
 	UsedAt    *time.Time
 	ExpiresAt time.Time
+	// FamilyExpiresAt is the absolute end of the login chain, fixed at Start.
+	// Rotation never issues a token that expires after it.
+	FamilyExpiresAt time.Time
 }
 
 type RefreshStore interface {
@@ -45,25 +48,30 @@ type RefreshStore interface {
 }
 
 type RefreshOptions struct {
-	TTL time.Duration // lifetime of each token; default 7 days
-	Now func() time.Time
+	TTL       time.Duration // idle lifetime of each token; default 7 days
+	FamilyTTL time.Duration // absolute lifetime of a login chain; default 30 days
+	Now       func() time.Time
 }
 
 // RefreshManager issues, rotates and revokes opaque refresh tokens.
 type RefreshManager struct {
-	store RefreshStore
-	ttl   time.Duration
-	now   func() time.Time
+	store     RefreshStore
+	ttl       time.Duration
+	familyTTL time.Duration
+	now       func() time.Time
 }
 
 func NewRefreshManager(s RefreshStore, o RefreshOptions) *RefreshManager {
 	if o.TTL <= 0 {
 		o.TTL = 7 * 24 * time.Hour
 	}
+	if o.FamilyTTL <= 0 {
+		o.FamilyTTL = 30 * 24 * time.Hour
+	}
 	if o.Now == nil {
 		o.Now = time.Now
 	}
-	return &RefreshManager{store: s, ttl: o.TTL, now: o.Now}
+	return &RefreshManager{store: s, ttl: o.TTL, familyTTL: o.FamilyTTL, now: o.Now}
 }
 
 func hashToken(raw string) []byte {
@@ -79,14 +87,18 @@ func newRaw() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func (m *RefreshManager) issue(ctx context.Context, userID, familyID string) (string, error) {
+func (m *RefreshManager) issue(ctx context.Context, userID, familyID string, familyExpires time.Time) (string, error) {
 	raw, err := newRaw()
 	if err != nil {
 		return "", err
 	}
+	exp := m.now().Add(m.ttl)
+	if exp.After(familyExpires) {
+		exp = familyExpires
+	}
 	err = m.store.Create(ctx, Refresh{
 		IDHash: hashToken(raw), UserID: userID, FamilyID: familyID,
-		ExpiresAt: m.now().Add(m.ttl),
+		ExpiresAt: exp, FamilyExpiresAt: familyExpires,
 	})
 	if err != nil {
 		return "", fmt.Errorf("store refresh token: %w", err)
@@ -96,7 +108,7 @@ func (m *RefreshManager) issue(ctx context.Context, userID, familyID string) (st
 
 // Start begins a new family (a login) and returns its first raw token.
 func (m *RefreshManager) Start(ctx context.Context, userID string) (string, error) {
-	return m.issue(ctx, userID, uuid.NewString())
+	return m.issue(ctx, userID, uuid.NewString(), m.now().Add(m.familyTTL))
 }
 
 // Rotate consumes raw and returns its replacement plus the owning user ID.
@@ -117,7 +129,7 @@ func (m *RefreshManager) Rotate(ctx context.Context, raw string) (newRaw, userID
 	if err != nil {
 		return "", "", fmt.Errorf("get refresh token: %w", err)
 	}
-	if !m.now().Before(cur.ExpiresAt) {
+	if now := m.now(); !now.Before(cur.ExpiresAt) || !now.Before(cur.FamilyExpiresAt) {
 		return "", "", ErrInvalidRefresh
 	}
 	if cur.UsedAt != nil {
@@ -130,7 +142,7 @@ func (m *RefreshManager) Rotate(ctx context.Context, raw string) (newRaw, userID
 	if !won {
 		return "", "", m.revokeForReuse(ctx, cur.FamilyID)
 	}
-	newRaw, err = m.issue(ctx, cur.UserID, cur.FamilyID)
+	newRaw, err = m.issue(ctx, cur.UserID, cur.FamilyID, cur.FamilyExpiresAt)
 	if err != nil {
 		return "", "", err
 	}

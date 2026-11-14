@@ -31,7 +31,8 @@ func hash() []byte {
 func fresh(user, family string) token.Refresh {
 	return token.Refresh{
 		IDHash: hash(), UserID: user, FamilyID: family,
-		ExpiresAt: time.Now().Add(time.Hour).UTC().Truncate(time.Microsecond),
+		ExpiresAt:       time.Now().Add(time.Hour).UTC().Truncate(time.Microsecond),
+		FamilyExpiresAt: time.Now().Add(24 * time.Hour).UTC().Truncate(time.Microsecond),
 	}
 }
 
@@ -49,7 +50,8 @@ func Run(t *testing.T, f Factory) {
 			t.Fatal(err)
 		}
 		if !bytes.Equal(got.IDHash, want.IDHash) || got.UserID != want.UserID ||
-			got.FamilyID != want.FamilyID || got.UsedAt != nil || !got.ExpiresAt.Equal(want.ExpiresAt) {
+			got.FamilyID != want.FamilyID || got.UsedAt != nil || !got.ExpiresAt.Equal(want.ExpiresAt) ||
+			!got.FamilyExpiresAt.Equal(want.FamilyExpiresAt) {
 			t.Fatalf("got %+v, want %+v", got, want)
 		}
 	})

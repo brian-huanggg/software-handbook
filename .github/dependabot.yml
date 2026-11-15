@@ -1,0 +1,37 @@
+# Dependency updates for what is deployed or reused: the site, the two
+# templates and the workflows. playground/ modules are pinned teaching examples
+# and are left out to avoid a stream of PRs for 29 small demos.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    groups:
+      site:
+        patterns: ["*"]
+
+  - package-ecosystem: gomod
+    directory: /templates/authkit
+    schedule:
+      interval: weekly
+    groups:
+      authkit-go:
+        patterns: ["*"]
+
+  - package-ecosystem: maven
+    directory: /templates/authkit-spring
+    schedule:
+      interval: weekly
+    groups:
+      authkit-spring:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

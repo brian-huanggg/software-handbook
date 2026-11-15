@@ -1,0 +1,141 @@
+# Go checks.
+#   playground: every directory with a go.mod is its own module. On a PR only
+#               the modules the PR touches run; on main / schedule all of them.
+#   authkit:    the template runs its Postgres-backed tests and the end-to-end
+#               suite against the real docker compose stack.
+name: go
+
+on:
+  pull_request:
+    paths:
+      - "playground/**"
+      - "templates/authkit/**"
+      - ".github/workflows/go.yml"
+  push:
+    branches: [main]
+    paths:
+      - "playground/**"
+      - "templates/authkit/**"
+      - ".github/workflows/go.yml"
+  schedule:
+    - cron: "0 3 * * 1" # weekly, catches toolchain or dependency drift
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.modules.outputs.modules }}
+      authkit: ${{ steps.modules.outputs.authkit }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: modules
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          all=$(git ls-files 'playground/*go.mod' | xargs -n1 dirname | sort)
+          if [ "$EVENT" = "pull_request" ]; then
+            changed=$(git diff --name-only "$BASE_SHA" HEAD)
+          else
+            changed=$(git ls-files)
+          fi
+          # Editing this workflow re-runs everything.
+          if echo "$changed" | grep -qx '.github/workflows/go.yml'; then
+            changed=$(git ls-files)
+          fi
+          modules=$(for m in $all; do
+            echo "$changed" | grep -q "^$m/" && echo "$m"
+          done | jq -R . | jq -cs .)
+          authkit=false
+          echo "$changed" | grep -q '^templates/authkit/' && authkit=true
+          echo "modules=$modules" >> "$GITHUB_OUTPUT"
+          echo "authkit=$authkit" >> "$GITHUB_OUTPUT"
+          echo "modules: $modules"
+          echo "authkit: $authkit"
+
+  playground:
+    needs: detect
+    if: needs.detect.outputs.modules != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.detect.outputs.modules) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - name: gofmt
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then
+            echo "::error::files need gofmt:"; echo "$out"; exit 1
+          fi
+
+      - run: go vet ./...
+
+      # -short skips the tests that need Docker (testcontainers). Tests that
+      # need a local database skip themselves when it is not running.
+      - run: go test -short -count=1 ./...
+
+  authkit:
+    needs: detect
+    if: needs.detect.outputs.authkit == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: templates/authkit
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: templates/authkit/go.mod
+          cache-dependency-path: templates/authkit/go.sum
+
+      - name: gofmt
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then
+            echo "::error::files need gofmt:"; echo "$out"; exit 1
+          fi
+
+      - run: go vet ./...
+
+      # The Postgres tests fail (not skip) when CI is set and the database is
+      # missing, so start it and apply the migrations first.
+      - name: Start Postgres and migrate
+        run: |
+          docker compose up -d --wait db
+          docker compose run --rm migrate
+
+      - run: go test -count=1 ./...
+
+      # Builds the api and web images, starts the full stack, runs ./integration.
+      - run: make integration
+
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

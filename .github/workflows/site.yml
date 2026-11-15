@@ -1,0 +1,55 @@
+# Build check for the Starlight site.
+# Deployment is NOT done here: Cloudflare Git integration builds and deploys
+# every push on its own. This workflow only makes a broken build fail the PR.
+name: site
+
+on:
+  pull_request:
+    paths:
+      - "site/**"
+      - "mise.toml"
+      - ".github/workflows/site.yml"
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "mise.toml"
+      - ".github/workflows/site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v5
+
+      # Node and pnpm versions come from mise.toml, the single source of truth.
+      - uses: jdx/mise-action@v3
+        with:
+          install_args: node pnpm
+
+      - id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('site/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - run: pnpm install --frozen-lockfile
+
+      # astro build validates frontmatter against the content schema,
+      # renders Mermaid fences and resolves every sidebar entry.
+      - run: pnpm build

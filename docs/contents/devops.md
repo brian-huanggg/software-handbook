@@ -66,7 +66,7 @@
 | --- | --- | --- |
 | ⬜ | 從 Dockerfile 到映像 | layer、快取、multi-stage build |
 | ⬜ | 把映像做小做安全 | 非 root、最小基底 |
-| ✅ | [Distroless 映像](../../site/src/content/docs/devops/l1/1-2-container-image/distroless-image.md) | 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。 |
+| ✅ | [Distroless Image](../../site/src/content/docs/devops/l1/1-2-container-image/distroless-image.md) | 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。 |
 | ✅ | [Golden Image](../../site/src/content/docs/devops/l1/1-2-container-image/golden-image.md) | 建立一份受信任的基底映像清單，用 digest、掃描、簽章把關，並用 Conftest 擋下任何不從它開始的 Dockerfile。 |
 | ⬜ | 映像倉庫 | 推送、拉取、標籤策略 |
 

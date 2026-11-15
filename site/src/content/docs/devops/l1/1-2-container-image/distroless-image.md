@@ -1,5 +1,5 @@
 ---
-title: Distroless 映像
+title: Distroless Image
 description: 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。
 sidebar:
   order: 3

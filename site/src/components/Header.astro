@@ -1,8 +1,8 @@
 ---
-// Starlight's default header with the field switcher added to the right group.
-// Kept close to the original (dist/components/Header.astro) so upgrades are
-// easy to diff. Below 50rem the right group is hidden, so the switcher moves
-// into the mobile menu instead (see Sidebar.astro).
+// Header in three zones: site title (left), field switcher (centre), search
+// and theme switcher (right). Built from Starlight's default
+// (dist/components/Header.astro). Below 50rem the switcher and the controls
+// are hidden, so they move into the mobile menu instead (see Sidebar.astro).
 import config from 'virtual:starlight/user-config';
 
 import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
@@ -19,12 +19,14 @@ const shouldRenderSearch =
 
 <div class="header">
 	<div class="title-wrapper sl-flex"><SiteTitle /></div>
-	<div class="sl-flex print:hidden">{shouldRenderSearch && <Search />}</div>
-	<div class="sl-hidden md:sl-flex print:hidden right-group">
-		<div class="sl-flex field-nav"><FieldNav variant="bar" /></div>
-		<div class="sl-flex social-icons"><SocialIcons /></div>
-		<ThemeSelect />
-		<LanguageSelect />
+	<div class="sl-hidden md:sl-flex print:hidden field-nav"><FieldNav variant="bar" /></div>
+	<div class="sl-flex print:hidden right-group">
+		{shouldRenderSearch && <Search />}
+		<div class="sl-hidden md:sl-flex controls">
+			<div class="sl-flex social-icons"><SocialIcons /></div>
+			<ThemeSelect />
+			<LanguageSelect />
+		</div>
 	</div>
 </div>
 
@@ -35,10 +37,6 @@ const shouldRenderSearch =
 		justify-content: space-between;
 		align-items: center;
 		height: 100%;
-		/* Same cap as the page frame (src/styles/custom.css), minus the
-		   header's own padding, so the title stays over the sidebar. */
-		max-width: calc(var(--hb-frame-max, 100vw) - 2 * var(--sl-nav-pad-x));
-		margin-inline: auto;
 	}
 
 	.title-wrapper {
@@ -49,87 +47,58 @@ const shouldRenderSearch =
 		margin: -0.25rem;
 		min-width: 0;
 	}
+	/* The logo art has a square background; round it like an app icon. */
+	.title-wrapper :global(img) {
+		border-radius: 22%;
+	}
 
 	.right-group,
-	.social-icons,
-	.field-nav {
+	.controls,
+	.social-icons {
 		gap: 1rem;
 		align-items: center;
 	}
-	/* Divider between the field links and the site controls. */
-	.field-nav::after,
-	.social-icons::after {
-		content: '';
-		height: 2rem;
-		border-inline-end: 1px solid var(--sl-color-gray-5);
-	}
-	/* No social links are configured, so avoid an empty group with a second divider. */
+	/* No social links are configured, so avoid an empty group. */
 	.social-icons:empty {
 		display: none;
 	}
 
-	/* The field links leave the search box narrow on small desktops; keep its
-	   label on one line, and drop the field icons until there is room. */
 	:global(site-search button) {
 		white-space: nowrap;
 	}
-	@media (max-width: 64rem) {
+
+	@media (min-width: 50rem) {
+		/* Side columns share the leftover width equally, so the switcher sits
+		   in the middle of the viewport. */
+		.header {
+			display: grid;
+			grid-template-columns: 1fr auto 1fr;
+		}
+		.right-group {
+			justify-self: end;
+		}
+		.right-group :global(button[data-open-modal]) {
+			width: 14rem;
+		}
+	}
+
+	/* Small desktops: drop the field icons and shrink the search box to its label. */
+	@media (max-width: 72rem) {
 		.field-nav :global(svg) {
 			display: none;
 		}
-	}
-
-	/* Starlight's own grid: aligns the search box with the content column. */
-	@media (min-width: 50rem) {
-		:global(:root[data-has-sidebar]) {
-			--__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
-		}
-		:global(:root:not([data-has-toc])) {
-			--__toc-width: 0rem;
-		}
-		.header {
-			--__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
-			--__main-column-fr: calc(
-				(
-						100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
-							(2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) -
-							var(--sl-content-width)
-					) / 2
-			);
-			display: grid;
-			grid-template-columns:
-				minmax(
-					calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))),
-					auto
-				)
-				1fr
-				auto;
-			align-content: center;
+		.right-group :global(button[data-open-modal]) {
+			width: auto;
 		}
 	}
-
-	/* Our layout (custom.css) centres the text column left of a fixed-width
-	   outline, so Starlight's formula above no longer matches it. Here the
-	   first column ends where the text starts:
-	     sidebar - nav padding + content padding
-	     + half the free width of the main pane. */
-	@media (min-width: 72rem) {
-		.header {
-			--__content-start: calc(
-				var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x) + var(--sl-content-pad-x) +
-					max(
-						0rem,
-						(
-								100% + 2 * var(--sl-nav-pad-x) - var(--sl-content-inline-start, 0rem) -
-									var(--hb-toc-space, 0rem) - var(--sl-content-width) - 2 *
-									var(--sl-content-pad-x)
-							) / 2
-					)
-			);
-			grid-template-columns:
-				minmax(calc(var(--__content-start) - var(--sl-nav-gap)), auto)
-				1fr
-				auto;
+	/* Narrowest desktops: tighter topic pills and no shortcut hint, so the
+	   site title keeps its full width. */
+	@media (max-width: 64rem) {
+		.field-nav :global(a) {
+			padding-inline: 0.45rem;
+		}
+		.right-group :global(button[data-open-modal] kbd) {
+			display: none;
 		}
 	}
 </style>

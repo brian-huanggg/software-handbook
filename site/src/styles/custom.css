@@ -4,26 +4,36 @@
  * Starlight's defaults live in @layer starlight.*; these rules are unlayered,
  * so they win without !important.
  *
- * Palette and radius values are adapted from the Obsidian "Cupertino" theme
+ * Gray scale and radius values are adapted from the Obsidian "Cupertino" theme
  * by svnaxis (MIT): https://github.com/svnaxis/obsidian-cupertino
+ * The accent is a mint green built around #c0e2ca (the logo's palette).
  */
 
 /* ---------------------------------------------------------------------------
  * 1. Primitive tokens: raw values, no meaning attached.
  * ------------------------------------------------------------------------- */
 :root {
-	--hb-blue-dark: #6aadfa;
-	--hb-blue-light: hsl(212, 70%, 42%); /* darker than Cupertino's #5694da for 4.5:1 text contrast on white */
+	/* Mint green, hue 138. #c0e2ca is too light for text, so it is used as a
+	   tint (backgrounds) and darker shades of the same hue carry text. */
+	--hb-green-tint: #c0e2ca;
+	--hb-green-700: hsl(138, 40%, 28%); /* ~7:1 on white */
+	--hb-green-800: hsl(138, 40%, 20%);
+	--hb-green-300: hsl(138, 35%, 70%); /* links on the dark background */
+	--hb-green-900: hsl(138, 25%, 20%);
 
 	--hb-radius-s: 0.5rem;
 	--hb-radius-m: 0.75rem;
 
-	/* Layout: the page stops growing past --hb-frame-max and centres; the
-	   space outside becomes plain margin. The % resolves where the property
-	   is used (padding or inset), so it excludes any scrollbar. */
-	--hb-frame-max: 90rem;
-	--hb-frame-gutter: max(0px, (100% - var(--hb-frame-max)) / 2);
+	/* Layout: the sidebar stays on the viewport's left edge. Right of it, the
+	   text column and the outline stop growing past --hb-main-max and centre
+	   as one group. The % resolves where the property is used (padding), so it
+	   excludes any scrollbar. */
 	--hb-toc-width: 15rem;
+	--hb-main-max: 66rem;
+	--hb-main-gutter: max(
+		0px,
+		(100% - var(--sl-content-inline-start, 0rem) - var(--hb-main-max)) / 2
+	);
 
 	/* Latin first so letters and digits use the Latin face; CJK falls through. */
 	--hb-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC',
@@ -49,9 +59,12 @@
 	--sl-color-gray-6: #242427;
 	--sl-color-black: #1d1d20;
 
-	--sl-color-accent-low: hsl(212, 45%, 20%);
-	--sl-color-accent: var(--hb-blue-dark);
-	--sl-color-accent-high: hsl(212, 95%, 86%);
+	--sl-color-accent-low: var(--hb-green-900);
+	--sl-color-accent: var(--hb-green-300);
+	--sl-color-accent-high: var(--hb-green-tint);
+
+	/* Header shares the page background; its bottom border still separates it. */
+	--sl-color-bg-nav: var(--sl-color-bg);
 
 	--sl-content-width: 42rem; /* about 40 CJK characters per line at 16px */
 
@@ -88,9 +101,9 @@
 	--sl-color-gray-7: #f5f5f7;
 	--sl-color-black: #ffffff;
 
-	--sl-color-accent-low: hsl(212, 80%, 92%);
-	--sl-color-accent: var(--hb-blue-light);
-	--sl-color-accent-high: hsl(212, 75%, 28%);
+	--sl-color-accent-low: var(--hb-green-tint);
+	--sl-color-accent: var(--hb-green-700);
+	--sl-color-accent-high: var(--hb-green-800);
 }
 
 /* ---------------------------------------------------------------------------
@@ -139,13 +152,9 @@
  *    plus half of all leftover width; on wide screens that is ~800px.
  * ------------------------------------------------------------------------- */
 @media (min-width: 50rem) {
-	.sidebar-pane {
-		inset-inline-start: var(--hb-frame-gutter);
-	}
-
 	.main-frame {
-		padding-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--hb-frame-gutter));
-		padding-inline-end: var(--hb-frame-gutter);
+		padding-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--hb-main-gutter));
+		padding-inline-end: var(--hb-main-gutter);
 	}
 }
 
@@ -162,6 +171,29 @@
 		max-width: none;
 	}
 
+	/* Border only as tall as the outline list, not the full-height column.
+	   The section being read marks its stretch of the border in the accent. */
+	.right-sidebar {
+		border-inline-start: 0;
+	}
+	starlight-toc nav > ul {
+		--hb-toc-rail-pad: 0.5rem;
+		border-inline-start: 1px solid var(--sl-color-hairline);
+		padding-inline-start: var(--hb-toc-rail-pad);
+	}
+	starlight-toc nav > ul a {
+		position: relative;
+	}
+	starlight-toc nav > ul a[aria-current='true']::before {
+		content: '';
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: calc(-1 * var(--hb-toc-rail-pad) - 1.5px);
+		width: 2px;
+		border-radius: 1px;
+		background: var(--sl-color-text-accent);
+	}
+
 	/* Text column centred in the space left of a fixed-width outline. */
 	[data-has-toc] .main-pane {
 		--sl-content-margin-inline: auto;
@@ -169,12 +201,38 @@
 	}
 }
 
-/* Once there is margin outside the frame, close the sidebar's open edge.
-   Slightly past 90rem so the border never sits on the viewport edge. */
-@media (min-width: 91rem) {
-	.sidebar-pane {
-		border-inline-start: 1px solid var(--sl-color-hairline-shade);
+/* Sidebar: smaller text, taller rows. Unlayered, so it beats Starlight's
+   scoped sidebar styles. */
+@media (min-width: 50rem) {
+	.sidebar-content .top-level > li + li {
+		margin-top: 1.25rem;
 	}
+	.sidebar-content .top-level .large {
+		font-size: var(--sl-text-sm);
+	}
+	.sidebar-content .top-level summary {
+		padding-block: 0.35rem;
+		line-height: 1.5;
+	}
+	.sidebar-content .top-level a {
+		font-size: 0.8125rem;
+		padding-block: 0.4rem;
+		line-height: 1.5;
+	}
+}
+.sidebar-content .top-level a:hover {
+	background-color: var(--sl-color-gray-6);
+}
+.sidebar-content .top-level [aria-current='page'],
+.sidebar-content .top-level [aria-current='page']:is(:hover, :focus) {
+	color: var(--sl-color-accent-high);
+	background-color: var(--sl-color-accent-low);
+}
+
+/* Outline: taller rows. */
+starlight-toc a {
+	padding-block: 0.375rem;
+	line-height: 1.5;
 }
 
 /* ---------------------------------------------------------------------------

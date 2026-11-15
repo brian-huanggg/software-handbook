@@ -286,7 +286,7 @@ GenerateFromPassword 會回傳 bcrypt.ErrPasswordTooLong，因為 bcrypt 只使�
 </details>
 
 <details>
-<summary>驗證時寫 `HashPassword(pw) == stored`，有什麼問題？</summary>
+<summary>驗證時寫  <code>HashPassword(pw) == stored</code> ，有什麼問題？</summary>
 
 字串比對在第一個不同的 byte 就停止，耗時會洩漏比對進度。應使用 subtle.ConstantTimeCompare 做固定時間比對。
 

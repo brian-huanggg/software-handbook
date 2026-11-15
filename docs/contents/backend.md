@@ -114,7 +114,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 | --- | --- | --- |
 | ✅ | [正規化與反正規化](../../site/src/content/docs/backend/l2/2-2-database/normalization.md) | 用函數相依判斷資料表該不該拆，把短網址服務的 links 表一路拆到 3NF 與 BCNF，並學會何時該刻意複製資料。 |
 | ⬜ | 資料型別選擇 | 整數、`NUMERIC` 與金額、`timestamptz` 與時區、文字長度、布林 |
-| ⬜ | 以資料庫時間作為唯一時鐘 | `NOW()`、UTC 儲存、狀態即時推算，以及應用程式時間與多節點時鐘漂移的陷阱 |
+| ✅ | [以資料庫時間作為唯一時鐘](../../site/src/content/docs/backend/l2/2-2-database/db-clock.md) | 用 now() 與 timestamptz 判斷過期，讓多節點得到同一個答案，並避開時鐘漂移的陷阱。 |
 | ⬜ | 約束 | `NOT NULL`、`UNIQUE`、`CHECK`、外鍵與 `ON DELETE` 策略 |
 | ⬜ | 讓資料庫守住不變量 | 複合 `UNIQUE`、`CHECK`、原子 upsert，用約束取代 check-then-insert 的競態 |
 | ⬜ | `NULL` 的語意 | 三值邏輯、`NOT IN` 的陷阱、何時該用預設值 |

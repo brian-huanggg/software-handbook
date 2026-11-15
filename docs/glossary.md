@@ -3,6 +3,9 @@
 全書統一用語。寫文章時照這張表使用；遇到新術語就加一列，依英文字母排序。
 
 | bead | bead | | 不翻譯；Beads 裡的一個任務，有 ID、優先度、狀態與依賴 |
+| clock drift | 時鐘漂移 | | 一台機器的時鐘隨時間逐漸變快或變慢；靠 NTP 校準，但校準不是即時的 |
+| clock skew | 時鐘偏移 | 時鐘歪斜 | 兩台機器的時鐘在同一個瞬間讀數不同；多節點各自用系統時間判斷過期，就會得到不一致的答案 |
+| derived value | 派生值 | 衍生值 | 可由其他欄位與「現在」算出來的值（如「是否過期」）；存成欄位就會與來源不同步，應即時推算 |
 | Dolt | Dolt | | 不翻譯；有版本控制、支援分支與合併的 SQL 資料庫，Beads 用它存任務 |
 | English | 本書用法 | 不要用 | 備註 |
 | --- | --- | --- | --- |
@@ -88,6 +91,7 @@
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | MIME sniffing | MIME 嗅探 | 內容嗅探 | 依內容前段猜類型的 WHATWG 演算法；Go 的 `http.DetectContentType` 實作它；回應加 `nosniff` 禁止瀏覽器自行嗅探 |
+| monotonic clock | 單調時鐘 | 單調遞增時鐘 | 只會前進、不受校時與閏秒影響的時鐘，用來量測經過時間（Go 的 `time.Since`）；不能用來回答「現在幾點」 |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | multipart/form-data | multipart/form-data | 多部分表單 | 不翻譯；請求本體切成多個 part，每個 part 是欄位或檔案（RFC 7578） |
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
@@ -162,6 +166,7 @@
 | Testcontainers | Testcontainers | | 不翻譯；在測試程式裡透過 Docker 啟動一次性真實服務的函式庫，Go 版是 testcontainers-go |
 | thread | 執行緒 | 線程 | |
 | timeout | 逾時 | 超時 | |
+| timestamptz | timestamptz | | 不翻譯；PostgreSQL 存絕對時間點的型別（內部為 UTC），讀出時依 session 時區顯示；存時間點的預設選擇，不要用不帶時區的 `timestamp` |
 | trunk-based development | 主幹式開發 | 主幹開發 | 所有人每天合併進同一條主幹，未完成的功能藏在關著的功能旗標後面 |
 | Trusted Types | Trusted Types | | 不翻譯；瀏覽器機制，強制 `innerHTML` 等出口只接受經指定函式處理的值，用來根治 DOM 型 XSS |
 | undo log | undo log | 回滾日誌 | 不翻譯；InnoDB 存放資料列舊版本的區域，供回滾與一致性讀取使用，由 purge 回收 |

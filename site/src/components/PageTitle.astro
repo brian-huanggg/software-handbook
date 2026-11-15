@@ -1,0 +1,176 @@
+---
+// Starlight's page title with a breadcrumb above it and a "copy page" button
+// beside it. The breadcrumb is the current field plus the sidebar groups that
+// lead to this page; the button copies the page's Markdown source
+// (src/pages/[...slug].md.ts).
+import { Icon } from '@astrojs/starlight/components';
+
+import { markdownPath } from '../lib/markdown-path';
+
+// Starlight's PAGE_TITLE_ID; its constants module is not a public export.
+const PAGE_TITLE_ID = '_top';
+
+type SidebarEntry = (typeof Astro.locals.starlightRoute.sidebar)[number];
+
+const { entry, sidebar } = Astro.locals.starlightRoute;
+const topic = Astro.locals.starlightSidebarTopics?.topics.find((t) => t.isCurrent);
+
+/** Labels of the groups that contain the current page, outermost first. */
+function groupTrail(entries: SidebarEntry[]): string[] | undefined {
+	for (const item of entries) {
+		if (item.type === 'link' && item.isCurrent) return [];
+		if (item.type === 'group') {
+			const inner = groupTrail(item.entries);
+			if (inner) return [item.label, ...inner];
+		}
+	}
+	return undefined;
+}
+
+const crumbs: { label: string; href?: string }[] = [];
+const isTopicHome = topic && Astro.url.pathname.replace(/\/$/, '') === topic.link.replace(/\/$/, '');
+if (topic && !isTopicHome) crumbs.push({ label: topic.label, href: topic.link });
+for (const label of groupTrail(sidebar) ?? []) crumbs.push({ label });
+
+const mdHref = markdownPath(entry.id);
+---
+
+{
+	crumbs.length > 0 && (
+		<nav aria-label="導覽路徑" class="breadcrumb">
+			<ol>
+				{crumbs.map((c) => (
+					<li>{c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}</li>
+				))}
+			</ol>
+		</nav>
+	)
+}
+<div class="title-row">
+	<h1 id={PAGE_TITLE_ID}>{entry.data.title}</h1>
+	<copy-page class="print:hidden" data-src={mdHref}>
+		<button type="button" data-label="複製頁面" data-done="已複製" data-fail="複製失敗">
+			<Icon name="document" size="1em" />
+			<span>複製頁面</span>
+		</button>
+		<a href={mdHref} title="以 Markdown 檢視" aria-label="以 Markdown 檢視">
+			<Icon name="external" size="1em" />
+		</a>
+	</copy-page>
+</div>
+
+<script>
+	class CopyPage extends HTMLElement {
+		connectedCallback() {
+			const button = this.querySelector('button')!;
+			const label = button.querySelector('span')!;
+			const src = this.dataset.src!;
+			// Hand the clipboard a promise so Safari keeps the click's permission
+			// while the Markdown is fetched.
+			const text = () =>
+				fetch(src).then((r) => {
+					if (!r.ok) throw new Error(String(r.status));
+					return r.text();
+				});
+			button.addEventListener('click', async () => {
+				try {
+					if ('ClipboardItem' in window && navigator.clipboard.write) {
+						const blob = text().then((t) => new Blob([t], { type: 'text/plain' }));
+						await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })]);
+					} else {
+						await navigator.clipboard.writeText(await text());
+					}
+					label.textContent = button.dataset.done!;
+				} catch {
+					label.textContent = button.dataset.fail!;
+				}
+				setTimeout(() => (label.textContent = button.dataset.label!), 2000);
+			});
+		}
+	}
+	customElements.define('copy-page', CopyPage);
+</script>
+
+<style>
+	.breadcrumb {
+		margin-top: 1rem;
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
+	}
+	.breadcrumb ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 0.5rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.breadcrumb li + li::before {
+		content: '›';
+		margin-inline-end: 0.5rem;
+		color: var(--sl-color-gray-4);
+	}
+	.breadcrumb a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.breadcrumb a:hover {
+		color: var(--sl-color-white);
+	}
+
+	.title-row {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+	.breadcrumb + .title-row {
+		margin-top: 0.5rem;
+	}
+	h1 {
+		font-size: var(--sl-text-h1);
+		line-height: var(--sl-line-height-headings);
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	copy-page {
+		display: flex;
+		flex-shrink: 0;
+		align-items: stretch;
+		margin-top: 0.35rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 0.5rem;
+		font-size: var(--sl-text-sm);
+	}
+	copy-page button,
+	copy-page a {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.3rem 0.65rem;
+		border: 0;
+		background: none;
+		color: var(--sl-color-gray-2);
+		font: inherit;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	copy-page a {
+		padding-inline: 0.5rem;
+		border-inline-start: 1px solid var(--sl-color-gray-5);
+	}
+	copy-page :is(button, a):hover {
+		color: var(--sl-color-white);
+		background: var(--sl-color-gray-6);
+	}
+	copy-page button {
+		border-start-start-radius: inherit;
+		border-end-start-radius: inherit;
+	}
+	copy-page a {
+		border-start-end-radius: inherit;
+		border-end-end-radius: inherit;
+	}
+</style>

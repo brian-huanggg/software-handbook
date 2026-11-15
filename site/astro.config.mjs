@@ -19,6 +19,9 @@ export default defineConfig({
 		mermaid(),
 		starlight({
 			title: '軟體工程手冊',
+			logo: { src: './src/assets/logo.png', alt: '' },
+			favicon: '/favicon.png',
+			head: [{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/favicon.png' } }],
 			// Root locale only: content lives at the root, but UI strings
 			// (search, "On this page", prev/next) render in Traditional Chinese.
 			defaultLocale: 'root',
@@ -33,6 +36,7 @@ export default defineConfig({
 			// otherwise repeat the switcher above the sidebar.
 			components: {
 				Header: './src/components/Header.astro',
+				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
 			},
 			// Each field gets its own sidebar.

@@ -40,6 +40,7 @@
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dangling record | 懸空紀錄 | 懸掛紀錄 | 資料庫裡的紀錄指向不存在的檔案；比孤兒檔案更糟，使用者看得到 |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
+| deadlock | 死結 | 死鎖、鎖死 | 兩個以上的交易各握一把鎖又互相等對方的鎖，形成環；PostgreSQL 偵測後回滾其中一個（SQLSTATE `40P01`），MySQL 是錯誤 1213 |
 | decompression bomb | 壓縮炸彈 | 解壓縮炸彈 | 檔案很小、展開後極大（zip 內容、圖片像素數）；上限要算實際產生的 byte 或像素，不信標頭；CWE-409 |
 | denormalization | 反正規化 | 去正規化 | 量到瓶頸後，刻意把資料存在多處換取讀取效能；要有同步與重建機制 |
 | deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
@@ -79,6 +80,7 @@
 | load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
 | load shedding | 負載卸除 | 負載篡除 | |
 | login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
+| lost update | 更新遺失 | 丟失更新 | 兩個交易讀到同一個舊值、各自算出新值，後寫的蓋掉先寫的；沒有鎖的「先讀再寫」會發生 |
 | magic bytes | 檔頭（magic bytes） | 魔數 | 檔案格式開頭固定的幾個 byte（如 PNG 的 `89 50 4E 47`）；只證明開頭像，不證明整個檔案乾淨 |
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
@@ -91,6 +93,7 @@
 | normalization | 正規化 | 標準化 | 依函數相依拆表，讓每個事實只存一處；1NF、2NF、3NF、BCNF 逐級加嚴 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
+| optimistic locking | 樂觀鎖 | 樂觀鎖定 | 不加鎖，寫入時檢查版本沒被改過，衝突就重試；適合衝突少的情境 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | orphan file | 孤兒檔案 | 孤立檔案 | 物件儲存裡沒有任何紀錄引用的檔案；無害但佔空間，靠定期掃描清除 |
 | outbox pattern | Outbox 模式 | 發件箱模式 | 把「之後要做的事」和業務資料寫在同一個交易的表，再由背景程序送出；跨系統一致性的待刪除表是它的最小版本 |
@@ -101,6 +104,7 @@
 | path traversal | 路徑穿越 | 目錄遍歷 | 用 `../` 等外部字串讓路徑跳出預定目錄；`filepath.Clean` 不擋，用 `filepath.IsLocal` 與 `os.Root`；CWE-22 |
 | payload | 酬載 | 載荷 | 攻擊者送進目標、要讓它執行的內容；在 XSS 中是那段注入的標記或腳本 |
 | pepper | pepper | 胡椒 | 不翻譯；全站共用、存在資料庫以外的祕密值，與 salt 搭配使用 |
+| pessimistic locking | 悲觀鎖 | 悲觀鎖定 | 先鎖再改（如 `SELECT ... FOR UPDATE`），其他交易排隊；適合衝突頻繁的情境 |
 | polyglot | 多重格式檔案（polyglot） | 多語檔案 | 同時符合兩種格式的檔案（如 GIF 開頭接 JavaScript），能通過檔頭嗅探 |
 | Pre-Authentication Encoding (PAE) | PAE | | 不翻譯；PASETO 把 header、payload、footer、implicit assertion 串成唯一位元組序列再簽章的編碼，讓片段邊界無法被挪動 |
 | preflight request | 預檢請求 | 預檢、OPTIONS 請求 | 瀏覽器在非簡單請求前自動發出的 `OPTIONS` |
@@ -117,6 +121,7 @@
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | role-based access control (RBAC) | RBAC（角色型存取控制） | | 依使用者的角色授權；第一次出現寫全名，之後只寫 RBAC |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
+| row lock | 行鎖 | 列鎖、記錄鎖 | 鎖住單一資料列，持有到交易結束；`UPDATE`、`DELETE` 與 `SELECT ... FOR UPDATE` 都會加 |
 | Ryuk | Ryuk | | 不翻譯；Testcontainers 啟動的小容器，測試程序結束（含被強制終止）後負責清掉這次啟動的容器 |
 | salt | salt | 鹽 | 不翻譯；每個使用者各自隨機產生、與雜湊存在一起的值，讓相同密碼得到不同雜湊 |
 | same-origin policy | 同源政策 | 同源策略 | |
@@ -131,6 +136,7 @@
 | session fixation | session fixation | 會話固定 | 不翻譯；攻擊者先讓受害者使用自己已知的 session ID，登入沿用該 ID 就被接管；對策是登入時換發新 ID |
 | session ID | session ID | 會話識別碼 | 不翻譯；不可猜測的隨機值（至少 128 位元、用 `crypto/rand`），放在 Cookie 裡當查表的鑰匙 |
 | session persistence | session 保持 | 會話黏滯、黏性會話 | 讓同一個使用者的請求固定到同一台後端；nginx 用 `ip_hash` 或 `hash` 實現 |
+| shared lock / exclusive lock | 共享鎖／排他鎖 | 共用鎖／互斥鎖 | 共享鎖允許多人同時持有（讀），排他鎖同一時間只有一人（改） |
 | simple request | 簡單請求 | | 不需預檢的跨源請求，條件見後端 1.4 CORS |
 | sink | 出口 | 匯 | 前端程式中會把字串當成程式或標記處理的位置（如 `innerHTML`、`eval`）；DOM 型 XSS 從來源流到這裡 |
 | smooth weighted round robin | 平滑加權輪詢 | | 每次把 weight 加到分數、挑最高分、從贏家扣總 weight，讓重的 server 不連續被選 |

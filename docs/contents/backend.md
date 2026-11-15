@@ -127,7 +127,7 @@ L2 的目標是把一個「能跑」的服務，變成「能上線、能承受�
 | ⬜ | 讀懂執行計畫 | `EXPLAIN` |
 | ⬜ | 交易與 ACID |  |
 | ⬜ | 隔離級別與異常現象 | dirty read、phantom read |
-| ⬜ | 資料庫鎖 | 行鎖、樂觀鎖、悲觀鎖、deadlock |
+| ✅ | [資料庫鎖](../../site/src/content/docs/backend/l2/2-2-database/database-locks.md) | 在 PostgreSQL 實測行鎖、悲觀鎖、樂觀鎖與 deadlock，學會依衝突頻率選擇鎖的策略，並用固定加鎖順序避開死結。 |
 | ⬜ | 版本欄位與條件更新 | 樂觀鎖的 SQL 實作與衝突處理（`UPDATE ... WHERE version = ?`） |
 | ✅ | [PostgreSQL vs MySQL](../../site/src/content/docs/backend/l2/2-2-database/postgres-vs-mysql.md) | 用同一張短網址資料表在兩個資料庫實測 MVCC、隔離級別與連線模型的差異，學會依工作負載選型，並避開換庫時最常踩的坑。 |
 | ⬜ | 慢查詢診斷與優化 |  |

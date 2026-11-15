@@ -1,0 +1,109 @@
+/*
+ * Site theme: maps our own tokens onto Starlight's --sl-* custom properties.
+ *
+ * Starlight's defaults live in @layer starlight.*; these rules are unlayered,
+ * so they win without !important.
+ *
+ * Palette and radius values are adapted from the Obsidian "Cupertino" theme
+ * by svnaxis (MIT): https://github.com/svnaxis/obsidian-cupertino
+ */
+
+/* ---------------------------------------------------------------------------
+ * 1. Primitive tokens: raw values, no meaning attached.
+ * ------------------------------------------------------------------------- */
+:root {
+	--hb-blue-dark: #6aadfa;
+	--hb-blue-light: hsl(212, 70%, 42%); /* darker than Cupertino's #5694da for 4.5:1 text contrast on white */
+
+	--hb-radius-s: 0.5rem;
+	--hb-radius-m: 0.75rem;
+
+	/* Latin first so letters and digits use the Latin face; CJK falls through. */
+	--hb-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC',
+		'Noto Sans TC', 'Noto Sans CJK TC', 'Microsoft JhengHei', sans-serif;
+	--hb-font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, 'PingFang TC',
+		'Noto Sans Mono CJK TC', 'Microsoft JhengHei', monospace;
+}
+
+/* ---------------------------------------------------------------------------
+ * 2. Semantic mapping onto Starlight (dark mode is Starlight's :root default).
+ *    In dark mode "white" is the brightest value and "black" the background.
+ * ------------------------------------------------------------------------- */
+:root {
+	--sl-font: var(--hb-font-sans);
+	--sl-font-mono: var(--hb-font-mono);
+
+	--sl-color-white: #ffffff;
+	--sl-color-gray-1: #ebebeb;
+	--sl-color-gray-2: #c1c1c1;
+	--sl-color-gray-3: #898989;
+	--sl-color-gray-4: #555555;
+	--sl-color-gray-5: #383838;
+	--sl-color-gray-6: #242427;
+	--sl-color-black: #1d1d20;
+
+	--sl-color-accent-low: hsl(212, 45%, 20%);
+	--sl-color-accent: var(--hb-blue-dark);
+	--sl-color-accent-high: hsl(212, 95%, 86%);
+
+	--sl-content-width: 42rem; /* about 40 CJK characters per line at 16px */
+}
+
+/* In light mode Starlight inverts the scale: "white" is the darkest text. */
+:root[data-theme='light'] {
+	--sl-color-white: #1d1d1f;
+	--sl-color-gray-1: #2c2c2e;
+	--sl-color-gray-2: #3d3d3d;
+	--sl-color-gray-3: #6e6e73;
+	--sl-color-gray-4: #8c8c8c;
+	--sl-color-gray-5: #d7d7d7;
+	--sl-color-gray-6: #ebebeb;
+	--sl-color-gray-7: #f5f5f7;
+	--sl-color-black: #ffffff;
+
+	--sl-color-accent-low: hsl(212, 80%, 92%);
+	--sl-color-accent: var(--hb-blue-light);
+	--sl-color-accent-high: hsl(212, 75%, 28%);
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. Traditional Chinese typography.
+ * ------------------------------------------------------------------------- */
+:root:lang(zh) {
+	--sl-line-height: 1.8;
+}
+
+.sl-markdown-content:lang(zh) {
+	/* Auto spacing between CJK and Latin/digits; ignored where unsupported. */
+	text-autospace: normal;
+	line-break: strict;
+	overflow-wrap: break-word;
+}
+
+/* CJK has no true italics; synthesized slant looks broken. Use emphasis dots. */
+.sl-markdown-content:lang(zh) :is(em, i) {
+	font-style: normal;
+	text-emphasis: filled circle;
+	text-emphasis-position: under right;
+}
+
+/* Code keeps the old behaviour: no CJK spacing inserted inside it. */
+.sl-markdown-content:lang(zh) :is(code, pre, kbd, samp) {
+	text-autospace: no-autospace;
+}
+
+/* ---------------------------------------------------------------------------
+ * 4. Shape.
+ * ------------------------------------------------------------------------- */
+.sl-markdown-content :is(img, video) {
+	border-radius: var(--hb-radius-s);
+}
+
+.starlight-aside {
+	border-radius: var(--hb-radius-s);
+}
+
+.card,
+.sl-link-card {
+	border-radius: var(--hb-radius-m);
+}

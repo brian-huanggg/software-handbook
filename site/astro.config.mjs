@@ -23,6 +23,11 @@ export default defineConfig({
 			// (search, "On this page", prev/next) render in Traditional Chinese.
 			defaultLocale: 'root',
 			locales: { root: { label: '繁體中文', lang: 'zh-TW' } },
+			// Theme tokens and zh-Hant typography (see the file header).
+			customCss: ['./src/styles/custom.css'],
+			expressiveCode: {
+				styleOverrides: { borderRadius: '0.5rem' },
+			},
 			// The field switcher lives in the header (src/components/Header.astro).
 			// Our Sidebar override takes precedence over the plugin's, which would
 			// otherwise repeat the switcher above the sidebar.

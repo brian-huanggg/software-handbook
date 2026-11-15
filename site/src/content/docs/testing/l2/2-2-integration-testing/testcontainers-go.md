@@ -1,5 +1,5 @@
 ---
-title: Testcontainers for Go：真資料庫測試
+title: Testcontainers for Go
 description: 在 Go 測試裡啟動真的 PostgreSQL 與 Redis，測出 fake 與 mock 永遠測不到的並行、約束與逾時行為。
 sidebar:
   order: 2

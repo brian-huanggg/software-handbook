@@ -1,5 +1,5 @@
 ---
-title: Origin 與同源政策：瀏覽器怎麼劃出信任邊界
+title: Origin 與同源政策
 description: 判斷兩個網址是否同源，並說清楚瀏覽器擋的是什麼、不擋什麼。
 sidebar:
   order: 4

@@ -24,16 +24,11 @@
 	--hb-radius-s: 0.5rem;
 	--hb-radius-m: 0.75rem;
 
-	/* Layout: the sidebar stays on the viewport's left edge. Right of it, the
-	   text column and the outline stop growing past --hb-main-max and centre
-	   as one group. The % resolves where the property is used (padding), so it
-	   excludes any scrollbar. */
-	--hb-toc-width: 15rem;
-	--hb-main-max: 66rem;
-	--hb-main-gutter: max(
-		0px,
-		(100% - var(--sl-content-inline-start, 0rem) - var(--hb-main-max)) / 2
-	);
+	/* Layout: left sidebar and right outline are the same width and sit on the
+	   viewport edges, so the text column between them is centred on the
+	   viewport and the free space on both sides is equal. No gutter. */
+	--hb-toc-width: 16rem; /* equal to --sl-sidebar-width */
+	--hb-main-gutter: 0px;
 
 	/* Latin first so letters and digits use the Latin face; CJK falls through. */
 	--hb-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC',
@@ -66,7 +61,8 @@
 	/* Header shares the page background; its bottom border still separates it. */
 	--sl-color-bg-nav: var(--sl-color-bg);
 
-	--sl-content-width: 42rem; /* about 40 CJK characters per line at 16px */
+	--sl-sidebar-width: 16rem;
+	--sl-content-width: 50rem; /* about 47 CJK characters per line at 16px */
 
 	/* A flatter heading scale: CJK glyphs read larger than Latin at the same
 	   size. Unlayered, so this also beats Starlight's desktop media query. */
@@ -194,11 +190,28 @@
 		background: var(--sl-color-text-accent);
 	}
 
+	/* Keep the outline off the viewport edge. The column stays 16rem wide, so
+	   the text column is still centred; only the outline's inner box shrinks. */
+	.right-sidebar-panel {
+		padding-inline-end: 4rem;
+	}
+
 	/* Text column centred in the space left of a fixed-width outline. */
 	[data-has-toc] .main-pane {
 		--sl-content-margin-inline: auto;
 		width: calc(100% - var(--hb-toc-width));
 	}
+}
+
+/* The rule under the page title spans the text column only, not the whole
+   main pane: Starlight draws it on .content-panel, move it to the inner box. */
+.content-panel + .content-panel {
+	border-top: 0;
+	padding-top: 0;
+}
+.content-panel + .content-panel > .sl-container {
+	border-top: 1px solid var(--sl-color-hairline);
+	padding-top: 1.5rem;
 }
 
 /* Sidebar: smaller text, taller rows. Unlayered, so it beats Starlight's

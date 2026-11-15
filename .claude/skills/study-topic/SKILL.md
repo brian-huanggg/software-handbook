@@ -48,7 +48,7 @@ Report back its result before moving on: file paths, checks that failed or were 
 ### 5. Commit
 
 1. Run `git status` and review the diff. Include only files from this task: the article, `playground/` code, sidebar `.ts`, `docs/glossary.md`, and `docs/contents/` changes. If other unrelated changes exist, leave them out and mention them.
-2. Commit with a Conventional Commits message, matching the repo history, for example `feat(backend): add cache-stampede article`. Use one commit, unless the catalog change in step 1 is large enough to deserve its own `docs(<field>): ...` commit.
+2. Stage the files for this task, then invoke the `commit-message` skill to get the message, for example `feat(backend): add cache-stampede article`. Use one commit, unless the catalog change in step 1 is large enough to deserve its own `docs(contents): ...` commit. If `commit-message` recommends a split, follow its groups. Then run `git commit` with the returned message yourself, because `commit-message` only generates text.
 3. Do not push unless the user asks.
 4. Final report: commit hash, the article path, the number of cards added, and a reminder that cards live in Anki and are not in git.
 

@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "toc": "node scripts/gen-toc.mjs",
+    "toc:check": "node scripts/gen-toc.mjs --check",
+    "build": "node scripts/gen-toc.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },

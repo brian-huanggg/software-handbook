@@ -1,0 +1,187 @@
+---
+title: 維運目錄
+description: 維運領域所有章節一覽，包含尚未寫好的章節。
+sidebar:
+  order: 0
+---
+
+<!-- 由 scripts/gen-toc.mjs 從 docs/contents/ 產生，請勿手動修改；改目錄請改 docs/contents/ 後重跑 `pnpm toc`。 -->
+
+下列為維運領域規劃的所有章節。左側欄只列出已寫好的章節，其餘陸續補上。
+
+## L0 系統管理：讓一台主機活著
+
+從單一台 Linux 主機開始，把服務手動架起來、讓它開機自啟、會輪替日誌、出事看得到。先感受痛，後面的自動化才有意義。
+
+### 0.1 Linux 主機基礎
+
+| 標題 | 說明 |
+| --- | --- |
+| 套件管理、使用者與權限 | 檔案系統佈局 |
+| systemd 服務與開機自啟 | unit、service、把服務設成開機自啟 |
+| journald 與日誌輪替 |  |
+| 網路設定與防火牆入門 |  |
+
+### 0.2 Shell 自動化
+
+| 標題 | 說明 |
+| --- | --- |
+| 可重複執行的 Shell 腳本 | `set -euo pipefail`、冪等 |
+| cron 與 timer 排程 | systemd timer 與 cron 兩種排程方式 |
+| 手動部署短網址服務 | 以 systemd 服務部署到一台主機 |
+
+### 0.3 除錯與觀察一台主機
+
+| 標題 | 說明 |
+| --- | --- |
+| 觀察 CPU、記憶體、磁碟、網路 | `top`、`ss`、`df`、`iostat` |
+| 追一個行程與一條連線 |  |
+| 「服務起不來」的排查順序 | 常見情況的排查順序 |
+
+## L1 交付流水線：讓程式自動變成映像
+
+把「手動 scp、手動重啟」換成一條流水線：推上程式，CI 自動測試、建置映像、推進倉庫。
+
+### 1.1 Git 工作流
+
+| 標題 | 說明 |
+| --- | --- |
+| 分支策略 | trunk-based 與 feature branch 的取捨 |
+| PR 與 code review 流程 |  |
+| 語意化版本、標籤與變更紀錄 |  |
+
+### 1.2 容器映像
+
+| 標題 | 說明 |
+| --- | --- |
+| 從 Dockerfile 到映像 | layer、快取、multi-stage build |
+| 把映像做小做安全 | 非 root、最小基底 |
+| [Distroless Image](/devops/l1/1-2-container-image/distroless-image/) | 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。 |
+| [Golden Image](/devops/l1/1-2-container-image/golden-image/) | 建立一份受信任的基底映像清單，用 digest、掃描、簽章把關，並用 Conftest 擋下任何不從它開始的 Dockerfile。 |
+| 映像倉庫 | 推送、拉取、標籤策略 |
+
+### 1.3 持續整合（CI）
+
+| 標題 | 說明 |
+| --- | --- |
+| CI 的核心概念 | 觸發、工作、產物、快取 |
+| 一條完整流水線 | lint、測試、建置、掃描、推映像 |
+| CI 的機密處理 | 把機密放進 CI 的正確方式，不寫進 repo |
+| Azure Pipelines | YAML、stage／job／step、agent pool、變數群組與服務連線 |
+| 安全掃描閘門 | SAST（Semgrep）、SCA（WhiteSource／Mend）、基底映像掃描、秘密偵測，及失敗門檻與例外管理 |
+| 測試覆蓋率閘門 | 在流水線發布覆蓋率報告並設定最低門檻 |
+
+### 1.4 小結
+
+| 標題 | 說明 |
+| --- | --- |
+| 為短網址服務建一條 CI | 提交即自動測試並產出映像推進倉庫 |
+
+## L2 基礎設施即程式碼：用程式碼重建環境
+
+不再手點主機。用 Terraform 描述要哪些資源，用 Ansible 描述機器要長成什麼樣，讓整套環境可以砍掉重建。
+
+### 2.1 Terraform 基礎
+
+| 標題 | 說明 |
+| --- | --- |
+| Terraform 核心概念 | 宣告式思維、provider、resource、state |
+| Terraform 變數、輸出與模組 |  |
+| plan 與 apply 工作流 | state 放哪裡 |
+| 用 Terraform 建立服務環境 | 開出跑短網址服務所需的機器與網路 |
+
+### 2.2 組態管理（Ansible）
+
+| 標題 | 說明 |
+| --- | --- |
+| Ansible 基本元件 | playbook、inventory、role |
+| 冪等的 Ansible 組態 | 把 L0 手動做的事寫成 Ansible |
+| Ansible 機密管理 | vault 與外部秘密來源 |
+
+### 2.3 環境與秘密
+
+| 標題 | 說明 |
+| --- | --- |
+| dev／staging／prod 分離 |  |
+| 集中式秘密管理 | 集中式秘密庫的概念與取捨 |
+| HashiCorp Vault | KV、動態機密、K8s 認證與注入（Agent Injector、CSI、External Secrets） |
+| 設定與環境分離 | Twelve-Factor 回顧 |
+
+## L3 叢集營運：在 Kubernetes 上跑服務
+
+單機不夠了。把服務搬上 Kubernetes，用宣告式的方式部署、升級、回滾，並讓整個流程由 Git 驅動。
+
+### 3.1 Kubernetes 核心
+
+| 標題 | 說明 |
+| --- | --- |
+| Kubernetes 核心物件 | Pod、Deployment、Service、Ingress 各自解決什麼 |
+| ConfigMap、Secret 與資源 | 資源限制與請求 |
+| Kubernetes 探針 | liveness、readiness、startup |
+| 有狀態服務與儲存 | StatefulSet、PVC，MariaDB Galera 與 MinIO 在 K8s 上的部署考量 |
+| Ingress 與同源前後端 | `/api` 路徑分流、Nginx 靜態站、TLS 終結 |
+| 部署短網址服務到單節點叢集 |  |
+
+### 3.2 套件化與發布
+
+| 標題 | 說明 |
+| --- | --- |
+| [Helm 基礎](/devops/l3/3-2-packaging-release/helm-basics/) | 用 Helm 安裝現成的 chart，用 values 區分環境，並能升級、查歷史與回滾 release。 |
+| [自寫 Helm chart](/devops/l3/3-2-packaging-release/custom-helm/) | 為自家服務寫一個可分環境部署的 chart，用 lint 與 template 驗證，並以 hook 在升級前跑 migration。 |
+| 升級、回滾與版本管理 |  |
+| 部署策略 | 滾動、藍綠、金絲雀 |
+| Azure 與 GitOps 銜接 | Azure Release：CI 產出映像、更新 Helm values 的 Git commit、核准關卡 |
+
+### 3.3 GitOps
+
+| 標題 | 說明 |
+| --- | --- |
+| 宣告式交付 | 期望狀態放在 Git，由控制器收斂 |
+| pull-based 部署 | 優點與邊界 |
+| 自動帶入映像更新 |  |
+| ArgoCD 實作 | Application、sync policy、health 與 drift、自動修復、回滾 |
+
+### 3.4 可觀測性
+
+| 標題 | 說明 |
+| --- | --- |
+| 可觀測性三支柱 | 日誌、指標、追蹤的回顧 |
+| Prometheus 與 Grafana | 蒐集指標、Grafana 看板 |
+| 集中式日誌 | 例如 Loki |
+| JSON 結構化日誌蒐集 | 每行帶 request-id、欄位規範與敏感欄位過濾 |
+| 分散式追蹤入門 |  |
+| 指標告警 | 從指標到可行動的通知 |
+
+## L4 SRE 與平台：為可靠性與成本負責
+
+工具都齊了，問題變成「怎麼讓它長期好好地跑、花得合理、出事能復原」。這一層程式碼變少，判斷變多。
+
+### 4.1 可靠性工程
+
+| 標題 | 說明 |
+| --- | --- |
+| SLI、SLO、SLA 與錯誤預算 |  |
+| 值班與事故處理流程 |  |
+| 無責任事後審查 | postmortem |
+
+### 4.2 容量與韌性
+
+| 標題 | 說明 |
+| --- | --- |
+| 容量規劃與自動擴縮 |  |
+| 混沌工程入門 | 主動注入故障 |
+| 災難復原 | RPO、RTO、備份與還原演練 |
+
+### 4.3 成本與平台
+
+| 標題 | 說明 |
+| --- | --- |
+| 雲端成本結構與 FinOps 入門 |  |
+| 內部開發者平台 | Platform Engineering：把上面所有工具包成自助服務 |
+| 自建 vs 買服務的取捨 |  |
+
+### 4.4 收尾
+
+| 標題 | 說明 |
+| --- | --- |
+| 交付與營運交接文件 | 把短網址服務的整套交付與營運，寫成一份能交接的 runbook 與平台說明 |

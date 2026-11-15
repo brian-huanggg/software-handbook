@@ -15,6 +15,9 @@ import testing from './src/sidebar/testing.ts';
 import tools from './src/sidebar/tools.ts';
 import frontend from './src/sidebar/frontend.ts';
 
+// Each field's sidebar opens with its table of contents page (scripts/gen-toc.mjs).
+const withToc = (field, items) => [{ label: '目錄', slug: `${field}/toc` }, ...items];
+
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://site.knowledge-forest.online',
@@ -77,14 +80,14 @@ export default defineConfig({
 			// Each field gets its own sidebar.
 			plugins: [
 				starlightSidebarTopics([
-					{ label: '計算機科學', link: '/cs/', icon: 'laptop', items: cs },
-					{ label: '後端', link: '/backend/', icon: 'seti:go', items: backend },
-					{ label: '前端', link: '/frontend/', icon: 'pencil', items: frontend },
-					{ label: '維運', link: '/devops/', icon: 'rocket', items: devops },
-					{ label: '資安', link: '/cyber/', icon: 'warning', items: cyber },
-					{ label: '測試', link: '/testing/', icon: 'approve-check', items: testing },
-					{ label: 'AI', link: '/ai/', icon: 'puzzle', items: ai },
-					{ label: '工具', link: '/tools/', icon: 'setting', items: tools },
+					{ label: '計算機科學', link: '/cs/', icon: 'laptop', items: withToc('cs', cs) },
+					{ label: '後端', link: '/backend/', icon: 'seti:go', items: withToc('backend', backend) },
+					{ label: '前端', link: '/frontend/', icon: 'pencil', items: withToc('frontend', frontend) },
+					{ label: '維運', link: '/devops/', icon: 'rocket', items: withToc('devops', devops) },
+					{ label: '資安', link: '/cyber/', icon: 'warning', items: withToc('cyber', cyber) },
+					{ label: '測試', link: '/testing/', icon: 'approve-check', items: withToc('testing', testing) },
+					{ label: 'AI', link: '/ai/', icon: 'puzzle', items: withToc('ai', ai) },
+					{ label: '工具', link: '/tools/', icon: 'setting', items: withToc('tools', tools) },
 				]),
 			],
 		}),

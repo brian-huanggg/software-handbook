@@ -1,5 +1,5 @@
 ---
-title: 用 Beads 管理代理人的任務與記憶
+title: Agent 任務與記憶管理
 description: 讀完能用依賴圖與持久記憶，讓 coding agent 跨 session 接續長任務
 sidebar:
   order: 1

@@ -15,7 +15,7 @@
 | 資料庫用戶端 | 連線、查詢、看執行計畫、匯出匯入並安全地操作資料 |
 | API 與網路工具 | 發請求、看回應、重現並除錯一個 HTTP 問題 |
 | 除錯與效能分析 | 用除錯器與 profiler 定位錯誤與瓶頸 |
-| 代理人輔助開發 | 用任務圖與持久記憶，讓 coding agent 跨 session 接續長任務 |
+| AI Agent 輔助開發 | 用任務圖與持久記憶，讓 coding agent 跨 session 接續長任務 |
 
 ## 寫作與維護規則（工具會更新，內容會過期）
 
@@ -124,8 +124,8 @@ verified:
 - [ ] 用 profiler 看 CPU 與記憶體（以 Go pprof 為例）
 - [ ] 火焰圖怎麼讀
 
-## A 代理人輔助開發
+## A AI Agent 輔助開發
 
 ### A.1 任務與記憶管理
 
-- [x] [用 Beads 管理代理人的任務與記憶](/tools/a-agent-dev/a-1-task-memory/beads-task-memory/)
+- [x] [Agent 任務與記憶管理](/tools/a-agent-dev/a-1-task-memory/beads-task-memory/)

@@ -57,7 +57,7 @@ export const levels: Level[] = [
 		],
 	},
 	{
-		label: '代理人輔助開發',
+		label: 'AI Agent 輔助開發',
 		dir: 'a-agent-dev',
 		sections: [{ label: '任務與記憶管理', dir: 'a-1-task-memory' }],
 	},

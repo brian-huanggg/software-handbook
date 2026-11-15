@@ -81,11 +81,11 @@ export default defineConfig({
 			plugins: [
 				starlightSidebarTopics([
 					{ label: '計算機科學', link: '/cs/', icon: 'laptop', items: withToc('cs', cs) },
-					{ label: '後端', link: '/backend/', icon: 'seti:go', items: withToc('backend', backend) },
 					{ label: '前端', link: '/frontend/', icon: 'pencil', items: withToc('frontend', frontend) },
+					{ label: '後端', link: '/backend/', icon: 'seti:go', items: withToc('backend', backend) },
 					{ label: '維運', link: '/devops/', icon: 'rocket', items: withToc('devops', devops) },
-					{ label: '資安', link: '/cyber/', icon: 'warning', items: withToc('cyber', cyber) },
 					{ label: '測試', link: '/testing/', icon: 'approve-check', items: withToc('testing', testing) },
+					{ label: '資安', link: '/cyber/', icon: 'warning', items: withToc('cyber', cyber) },
 					{ label: 'AI', link: '/ai/', icon: 'puzzle', items: withToc('ai', ai) },
 					{ label: '工具', link: '/tools/', icon: 'setting', items: withToc('tools', tools) },
 				]),

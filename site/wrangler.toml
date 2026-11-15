@@ -15,3 +15,6 @@ not_found_handling = "404-page"
 # Astro builds /foo/ as foo/index.html, so redirect /foo -> /foo/ and serve
 # the index file. This is the default, stated here so the intent is visible.
 html_handling = "auto-trailing-slash"
+
+# Required by `wrangler preview` (non-production branch builds). Block may be empty.
+[previews]

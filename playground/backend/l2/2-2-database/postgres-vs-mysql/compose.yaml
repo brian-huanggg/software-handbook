@@ -3,7 +3,7 @@
 # autovacuum 在範例程式裡針對單一資料表關掉，讓你親眼看到 dead tuple 累積。
 services:
   postgres:
-    image: postgres:18
+    image: postgres:16
     environment:
       POSTGRES_PASSWORD: demo
       POSTGRES_DB: demo

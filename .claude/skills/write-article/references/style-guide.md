@@ -44,6 +44,7 @@ Whenever the URL shortener service can be used as the example, use it, with the 
 - Go uses the latest stable version and by default only the standard library. Third-party packages are allowed only when the article topic is itself a package (for example a Redis client).
 - Every Go example goes in `playground/<field>/<level>/<section>/<slug>/` and is a standalone module (module path `handbook/playground/<field>/<slug>`): `go.mod`, `main.go` or package files, and `*_test.go`.
 - Code snippets in the article must be real excerpts of the example files. The code block title is only the file name, not the path: ` ```go title="main.go" `. The location of the example directory is stated in 「小練習」, not repeated in every block. Only when one article has two or more files with the same name, add the nearest parent directory in front of the file name to tell them apart, for example `policy/policy.go`.
+- Any `compose.yaml` that runs PostgreSQL uses `image: postgres:16` for consistency across examples. Do not use another major version unless the article topic is about that version.
 - A single snippet is at most 40 lines. For longer code, paste only the key part and omit the rest with the comment `// ...`.
 - Always handle errors; never write `_ = err`. Comments say "why", not "what".
 - Commands go in a ` ```bash ` block, and their output goes in a separate ` ```text ` block.

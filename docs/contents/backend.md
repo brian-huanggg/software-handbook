@@ -347,7 +347,7 @@ L4 的重心從「基礎設施怎麼設計」轉到「產品功能怎麼做對�
 | ⬜ | 上傳的三種做法 | 經過後端轉發、預簽名 URL 直傳物件儲存、分片與斷點續傳（tus、S3 multipart） |
 | ⬜ | multipart 解析與串流 | `multipart/form-data`：限制大小、不把整個檔案讀進記憶體 |
 | ✅ | [資料與檔案同一個請求](../../site/src/content/docs/backend/l4/4-1-file-upload/upload-with-data.md) | 讓一個 multipart 請求同時帶欄位與檔案，做到先驗證再落地、限制大小、失敗不留殘骸。 |
-| ⬜ | 檔案驗證 | 副檔名 vs MIME vs 檔頭（magic bytes）、檔名消毒、路徑穿越、壓縮炸彈 |
+| ✅ | [檔案驗證](../../site/src/content/docs/backend/l4/4-1-file-upload/file-validation.md) | 用檔頭判定類型、伺服器決定副檔名、檔名只當顯示用，並替解碼與解壓設上限。 |
 | ⬜ | 惡意檔案防護 | 病毒掃描、隔離區、不在主網域提供使用者上傳的內容 |
 | ⬜ | 上傳後處理管線 | 縮圖、轉檔、擷取中繼資料，用佇列非同步化（承 2.4） |
 | ⬜ | 中繼資料與物件分離 | 資料庫存什麼、物件儲存存什麼、孤兒檔案清理 |

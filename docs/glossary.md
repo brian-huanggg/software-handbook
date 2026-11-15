@@ -7,6 +7,7 @@
 | access control | 權限控制 | 存取控制 | 授權決策與強制執行的總稱；OWASP Top 10:2021 的 A01 |
 | access token | access token | 存取令牌 | 不翻譯；用來呼叫 API 的短效憑證（常是 JWT），效期通常 5 到 15 分鐘，過期後靠 refresh token 換新 |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
+| allowlist | 白名單 | 允許清單 | 只接受明確列出的值，其餘一律拒絕；檔案類型驗證用它而不用黑名單，新格式預設被擋 |
 | ambient authority | 環境權限 | 環境授權 | 憑證由瀏覽器依目的地自動附上、而非請求自己帶著；CSRF 濫用的對象 |
 | argon2id | argon2id | | 不翻譯；密碼雜湊競賽優勝者 argon2 的混合版本（RFC 9106），新專案的預設選擇 |
 | asynchronous replication | 非同步複寫 | | 主節點寫完就回覆，副本稍後才追；MariaDB 標準版的預設複寫方式 |
@@ -39,6 +40,7 @@
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dangling record | 懸空紀錄 | 懸掛紀錄 | 資料庫裡的紀錄指向不存在的檔案；比孤兒檔案更糟，使用者看得到 |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
+| decompression bomb | 壓縮炸彈 | 解壓縮炸彈 | 檔案很小、展開後極大（zip 內容、圖片像素數）；上限要算實際產生的 byte 或像素，不信標頭；CWE-409 |
 | denormalization | 反正規化 | 去正規化 | 量到瓶頸後，刻意把資料存在多處換取讀取效能；要有同步與重建機制 |
 | deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
@@ -48,6 +50,7 @@
 | failover | 故障轉移 | 容錯移轉、故障切換 | 主節點失效後改由另一個節點接手 |
 | feature flag | 功能旗標 | 特性開關 | 不重新部署就能開關新行為的設定；用來縮小影響範圍與快速回滾 |
 | Fetch Metadata | Fetch Metadata | 擷取中繼資料 | 不翻譯；瀏覽器附上的 `Sec-Fetch-*` header，如 `Sec-Fetch-Site` 標明請求是否跨站，網頁腳本無法偽造 |
+| file validation | 檔案驗證 | | 落地或處理前，以伺服器自己讀到的位元組判定類型、檔名與展開大小；不信客戶端給的描述 |
 | flow control | flow control | 流量控制 | 不翻譯；Galera 節點套用太慢時，通知其他節點暫停寫入 |
 | functional dependency | 函數相依 | 功能相依 | `X → Y`：X 相同則 Y 一定相同；來自業務規則，資料只能推翻它、不能證明它 |
 | Galera cluster | Galera 叢集 | Galera 集群 | MariaDB 的多主叢集，用 certification-based 複寫 |
@@ -76,16 +79,18 @@
 | load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
 | load shedding | 負載卸除 | 負載篡除 | |
 | login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
+| magic bytes | 檔頭（magic bytes） | 魔數 | 檔案格式開頭固定的幾個 byte（如 PNG 的 `89 50 4E 47`）；只證明開頭像，不證明整個檔案乾淨 |
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
+| MIME sniffing | MIME 嗅探 | 內容嗅探 | 依內容前段猜類型的 WHATWG 演算法；Go 的 `http.DetectContentType` 實作它；回應加 `nosniff` 禁止瀏覽器自行嗅探 |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | multipart/form-data | multipart/form-data | 多部分表單 | 不翻譯；請求本體切成多個 part，每個 part 是欄位或檔案（RFC 7578） |
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
 | MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
 | normalization | 正規化 | 標準化 | 依函數相依拆表，讓每個事實只存一處；1NF、2NF、3NF、BCNF 逐級加嚴 |
-| opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
+| opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | orphan file | 孤兒檔案 | 孤立檔案 | 物件儲存裡沒有任何紀錄引用的檔案；無害但佔空間，靠定期掃描清除 |
 | outbox pattern | Outbox 模式 | 發件箱模式 | 把「之後要做的事」和業務資料寫在同一個交易的表，再由背景程序送出；跨系統一致性的待刪除表是它的最小版本 |
@@ -93,8 +98,10 @@
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
 | password hashing | 密碼雜湊 | 口令哈希 | 用刻意設計成慢且吃記憶體的函式處理密碼後再儲存；與 SHA-256 等通用雜湊不同類 |
+| path traversal | 路徑穿越 | 目錄遍歷 | 用 `../` 等外部字串讓路徑跳出預定目錄；`filepath.Clean` 不擋，用 `filepath.IsLocal` 與 `os.Root`；CWE-22 |
 | payload | 酬載 | 載荷 | 攻擊者送進目標、要讓它執行的內容；在 XSS 中是那段注入的標記或腳本 |
 | pepper | pepper | 胡椒 | 不翻譯；全站共用、存在資料庫以外的祕密值，與 salt 搭配使用 |
+| polyglot | 多重格式檔案（polyglot） | 多語檔案 | 同時符合兩種格式的檔案（如 GIF 開頭接 JavaScript），能通過檔頭嗅探 |
 | Pre-Authentication Encoding (PAE) | PAE | | 不翻譯；PASETO 把 header、payload、footer、implicit assertion 串成唯一位元組序列再簽章的編碼，讓片段邊界無法被挪動 |
 | preflight request | 預檢請求 | 預檢、OPTIONS 請求 | 瀏覽器在非簡單請求前自動發出的 `OPTIONS` |
 | primary / replica | primary／replica | master／slave、主庫／從庫 | 不翻譯；標題或總稱可寫「主從複寫」 |
@@ -132,9 +139,9 @@
 | source | 來源 | | 前端程式中攻擊者可控制的輸入位置（如 `location.hash`、`postMessage`）；與 sink 相對 |
 | split-brain | split-brain | 腦裂 | 不翻譯；叢集分裂後兩邊都以為自己是主節點 |
 | staging area | 暫存區 | 暫存目錄 | 上傳先寫進的位置，與正式位置同一檔案系統，成功後以 rename 提交 |
+| state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | stateful authentication | 有狀態認證 | | 伺服器保存每次登入的紀錄，每個請求靠查表驗證；可立即撤銷，代價是每個請求一次儲存往返 |
 | stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
-| state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
 | superkey | 超鍵 | 超級鍵 | 能決定整列所有欄位的欄位組合 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |
@@ -158,3 +165,4 @@
 | whiteout | whiteout | 白除、刪除標記 | 不翻譯；後面 layer 以 `.wh.` 前綴檔標示「這個檔案已刪除」，舊 layer 內容不變 |
 | write-ahead log (WAL) | 預寫日誌（WAL） |  | 資料變更先寫進日誌再寫進資料檔；Postgres 的串流複寫就是傳送 WAL |
 | write-set | write-set | 寫入集 | 不翻譯；一筆交易要複寫給其他節點的變更內容 |
+| zip slip | zip slip | | 不翻譯；zip 項目名稱含 `../`，解壓時寫到目錄外；Snyk 2018 年公開 |

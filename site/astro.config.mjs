@@ -13,6 +13,7 @@ import cyber from './src/sidebar/cyber.ts';
 import devops from './src/sidebar/devops.ts';
 import testing from './src/sidebar/testing.ts';
 import tools from './src/sidebar/tools.ts';
+import frontend from './src/sidebar/frontend.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -77,6 +78,7 @@ export default defineConfig({
 				starlightSidebarTopics([
 					{ label: '計算機科學', link: '/cs/', icon: 'laptop', items: cs },
 					{ label: '後端', link: '/backend/', icon: 'seti:go', items: backend },
+					{ label: '前端', link: '/frontend/', icon: 'pencil', items: frontend },
 					{ label: '維運', link: '/devops/', icon: 'rocket', items: devops },
 					{ label: '資安', link: '/cyber/', icon: 'warning', items: cyber },
 					{ label: '測試', link: '/testing/', icon: 'approve-check', items: testing },

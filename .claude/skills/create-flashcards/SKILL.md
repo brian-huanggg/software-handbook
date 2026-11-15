@@ -12,7 +12,7 @@ Turn the questions (or Q&A) the user gives into Anki Basic cards and add them to
 1. **Deck**: always `🍎 Software`. Never create or use another deck.
 2. **Note type**: default `Basic` (fields `Front`, `Back`). Use `Cloze` only when the user asks for fill-in-the-blank.
 3. **Tag**: exactly one tag per card, format `<subject>:<topic>:<concept>`. Three levels, all lowercase, join multiple words with `-`.
-   - `subject` must be one of: `cs`, `backend`, `devops`, `cyber`, `testing`, `ai`, `tools` (matches the fields in `docs/contents/`).
+   - `subject` must be one of: `cs`, `backend`, `frontend`, `devops`, `cyber`, `testing`, `ai`, `tools` (matches the fields in `docs/contents/`).
    - No prefix such as `se:`.
    - Examples: `cs:networking:origin`, `backend:auth:token`, `cyber:auth:cors`, `devops:docker:images`.
    - If a topic spans subjects, pick the subject the concept mainly belongs to. If unsure, ask the user.

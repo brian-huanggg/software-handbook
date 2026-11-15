@@ -116,6 +116,7 @@
 
 - [ ] 整合測試的範圍：要真的接什麼、要假的接什麼
 - [x] Testcontainers for Go：真資料庫測試 → [文章](../../site/src/content/docs/testing/l2/2-2-integration-testing/testcontainers-go.md)
+- [ ] 用 Testcontainers 同時起 MariaDB 與 MinIO：測 migration、repository 與檔案流程
 - [ ] 測外部 HTTP 依賴：`httptest.Server` 與錄放
 - [ ] 測試訊息佇列與非同步流程
 - [ ] build tag 與 `testing.Short()`：分開快測試與慢測試
@@ -126,6 +127,9 @@
 - [ ] 以 OpenAPI 規格驅動測試與驗證回應結構
 - [ ] 用 Go 寫黑箱 API 測試套件：對著跑起來的服務測
 - [ ] 認證、冪等性、分頁、限流的測試重點
+- [ ] 並發與樂觀鎖測試：ETag 衝突、缺少 `If-Match` 的 428、過期的 412、同時請求的競態
+- [ ] 授權與防枚舉測試：401、CSRF、404、403、422 的固定順序，無權限與不存在的回應必須一致
+- [ ] 稽核不變量測試：每個成功寫入都有對應稽核、稽核寫入失敗時整筆回滾
 - [ ] 測 Gitea 的 REST API：讀別人的 API 文件找測試點
 
 ### 2.4 契約測試
@@ -184,6 +188,7 @@
 ### 3.4 衡量測試的有效性
 
 - [ ] 覆蓋率能說明什麼、不能說明什麼
+- [ ] 在 CI 強制覆蓋率門檻：`go test -coverprofile`、`-coverpkg` 跨套件、排除生成程式碼
 - [ ] 變異測試：用 gremlins 檢查測試真的會失敗
 - [ ] 缺陷逃逸率與其他測試指標
 - [ ] 刪掉測試：什麼樣的測試不值得留
@@ -216,6 +221,7 @@
 - [ ] 定義效能需求：延遲百分位、吞吐、錯誤率與 SLO
 - [ ] 用 vegeta 對短網址服務施壓
 - [ ] 用 k6 寫情境式負載測試（以及 xk6 的 Go 擴充）
+- [ ] 以一萬筆資料驗收列表 API：造資料、暖機、用 k6 threshold 設定 RPS 與 p95
 - [ ] 讀懂結果：協調遺漏（coordinated omission）與常見誤判
 - [ ] 前端效能：Core Web Vitals 與 Lighthouse
 
@@ -230,6 +236,7 @@
 
 - [ ] 混沌工程的原則與實驗設計
 - [ ] 故障注入：延遲、錯誤、依賴中斷
+- [ ] 依賴中斷的測試：停掉 MinIO 容器，驗證刪除成功、上傳與下載回 503
 - [ ] 災難復原與備份還原的驗證
 - [ ] 升級與資料遷移的測試
 

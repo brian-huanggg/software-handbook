@@ -98,12 +98,17 @@
 - [x] CSRF：原理與 token／SameSite 修補：跨站 POST 與頂層 GET 兩種偽造、SameSite／token／Fetch Metadata 三道防線與各自的盲點 → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/csrf.md)
 - [x] CORS 錯誤設定：反射 Origin、`null` origin、搭配 credentials 讀取他人資料與修補（CORS 主線 3/3，承後端 1.4） → [文章](../../site/src/content/docs/cyber/p2-web/2-3-cross-site/cors-misconfig.md)
 - [ ] SSRF：原理與出站控制修補
+- [ ] 安全回應標頭：CSP、HSTS、`X-Content-Type-Options`、`Referrer-Policy`、`frame-ancestors` 與同源 SPA 的設定
 
 ### 2.4 存取控制與認證
 
 - [ ] 壞掉的存取控制與 IDOR
+- [ ] 以 404 取代 403：不洩漏資源存在與授權層級的設計與代價
 - [ ] 認證繞過與工作階段問題
+- [ ] 暴力破解與憑證填充的防護：鎖定、throttle、延遲回應的取捨，以及被濫用成 DoS 的風險
+- [ ] 帳號枚舉與計時側通道：回應內容、狀態碼與回應時間的差異，dummy hash 與統一回應
 - [ ] 不安全的檔案上傳與修補
+- [ ] 上傳檔案的驗證層次：副檔名、MIME、magic bytes、大小；PPTX 本質是 ZIP：解壓炸彈與嵌入物件風險
 
 ### 2.5 API 與現代前端
 
@@ -113,6 +118,7 @@
 ### 2.6 防守視角
 
 - [ ] 把 P2 的攻擊變成應用層的偵測與防護（輸入驗證、WAF 的定位、日誌）
+- [ ] 供應鏈與機密洩漏的偵測：SAST、SCA、secret detection 與誤報處理（接進 CI 見維運 1.3）
 
 ## P3 系統與網路滲透：在實驗網路裡深入
 

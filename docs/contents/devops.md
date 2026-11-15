@@ -65,6 +65,9 @@
 - [ ] CI 的核心概念：觸發、工作、產物、快取
 - [ ] 一條流水線：lint、測試、建置、掃描、推映像
 - [ ] 把機密放進 CI 的正確方式（不寫進 repo）
+- [ ] Azure Pipelines：YAML、stage／job／step、agent pool、變數群組與服務連線
+- [ ] 安全掃描閘門：SAST（Semgrep）、SCA（WhiteSource／Mend）、基底映像掃描、秘密偵測，及失敗門檻與例外管理
+- [ ] 測試覆蓋率閘門：在流水線發布覆蓋率報告並設定最低門檻
 
 ### 1.4 小結
 
@@ -91,6 +94,7 @@
 
 - [ ] dev／staging／prod 的分離
 - [ ] 秘密管理：集中式秘密庫的概念與取捨
+- [ ] HashiCorp Vault：KV、動態機密、Kubernetes 認證與注入（Agent Injector、CSI、External Secrets）
 - [ ] 設定與環境分離（Twelve-Factor 回顧）
 
 ## L3 叢集營運：在 Kubernetes 上跑服務
@@ -102,25 +106,31 @@
 - [ ] Pod、Deployment、Service、Ingress 各自解決什麼
 - [ ] ConfigMap、Secret、資源限制與請求
 - [ ] 探針：liveness、readiness、startup
+- [ ] 有狀態服務與儲存：StatefulSet、PVC，MariaDB Galera 與 MinIO 在 K8s 上的部署考量
+- [ ] Ingress 與同源前後端：`/api` 路徑分流、Nginx 靜態站、TLS 終結
 - [ ] 把短網址服務部署上一座單節點叢集
 
 ### 3.2 套件化與發布
 
 - [ ] Helm：chart、values、release
+- [ ] 寫一個自己的 chart：templates、values 分環境、`helm lint`／`helm template`、migration Job 與 hooks
 - [ ] 升級、回滾、版本管理
 - [ ] 部署策略：滾動、藍綠、金絲雀
+- [ ] Azure Release 與 GitOps 的銜接：CI 產出映像、更新 Helm values 的 Git commit、核准關卡
 
 ### 3.3 GitOps
 
 - [ ] 宣告式交付：期望狀態放在 Git，由控制器收斂
 - [ ] pull-based 部署的優點與邊界
 - [ ] 把映像更新自動帶進叢集
+- [ ] ArgoCD 實作：Application、sync policy、health 與 drift、自動修復、回滾
 
 ### 3.4 可觀測性
 
 - [ ] 三支柱回顧：日誌、指標、追蹤
 - [ ] Prometheus 蒐集指標、Grafana 看板
 - [ ] 集中式日誌（例如 Loki）
+- [ ] JSON 結構化日誌的蒐集：每行帶 request-id、欄位規範與敏感欄位過濾
 - [ ] 分散式追蹤入門
 - [ ] 告警：從指標到可行動的通知
 

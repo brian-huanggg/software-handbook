@@ -91,6 +91,7 @@ verified:
 
 ### B.1 連線與查詢
 
+- [x] [DBeaver 功能導覽：後端工程師該學哪些](/tools/b-db-client/b-1-connect-query/dbeaver-overview/)
 - [ ] 連線設定、SSH tunnel 與連線安全
 - [ ] 查詢編輯器、結果匯出與匯入
 

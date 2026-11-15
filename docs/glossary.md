@@ -21,6 +21,7 @@
 | authentication (authn) | 認證 | 驗證、鑑權 | 確認呼叫者是誰；失敗回 401；第一次出現寫「認證（authentication，簡稱 authn）」 |
 | authorization (authz) | 授權 | 鑑權 | 決定已知身分能對哪些資源做哪些事；失敗回 403；第一次出現寫「授權（authorization，簡稱 authz）」 |
 | base64url | base64url | | 不翻譯；把位元組編碼成 URL 安全字元（`-`、`_`、無 `=` 填充）的方式，JWT 各段用它；是編碼不是加密 |
+| bastion host | 跳板機 | 堡壘機 | 對外開放、專門用來連進內網資料庫等主機的中繼主機；DBeaver 的 SSH tunnel 經它轉接 |
 | BCNF | BCNF（Boyce-Codd 正規化） | | 每條非平凡的函數相依，決定者都必須是超鍵；比 3NF 嚴，拆表後可能丟掉跨欄位約束 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
 | Bearer token | Bearer token | 持有者令牌 | 不翻譯；誰持有就能用的 token，放在 `Authorization: Bearer <token>`；被偷走就等於被冒用 |
@@ -35,6 +36,7 @@
 | claim | claim | 宣告 | JWT payload 裡的一個欄位，例如 `sub`、`exp`、`iss`；簽章驗過之前不可信 |
 | clustered index | 叢集索引 | 聚簇索引 | 表本身就是依主鍵排序的 B+ 樹，資料列在葉節點；InnoDB 的預設儲存方式 |
 | code review | 程式碼審查 | 代碼審查、程式碼評審 | 合併前由人或工具檢查改動；AI 時代拆成多層驗證，人只看高風險與方向 |
+| connection type | 連線類型 | | DBeaver 連線的 Development、Test、Production 分類；決定預設提交模式與是否要求確認 |
 | consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
 | container | 容器 | 貨櫃 | 共用主機核心、靠 namespace 與 cgroup 隔離的行程 |
 | Content Security Policy (CSP) | 內容安全政策（CSP） | | 伺服器以標頭告訴瀏覽器哪些來源的腳本可以執行；nonce 型政策只放行帶本次回應 nonce 的腳本。第一次出現寫全名，之後只寫 CSP |
@@ -45,6 +47,7 @@
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
 | dangling record | 懸空紀錄 | 懸掛紀錄 | 資料庫裡的紀錄指向不存在的檔案；比孤兒檔案更糟，使用者看得到 |
+| DBeaver | DBeaver | | 不翻譯；通用資料庫用戶端，用 JDBC 驅動連多種資料庫；本書用 Community 版 |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
 | deadlock | 死結 | 死鎖、鎖死 | 兩個以上的交易各握一把鎖又互相等對方的鎖，形成環；PostgreSQL 偵測後回滾其中一個（SQLSTATE `40P01`），MySQL 是錯誤 1213 |
 | decompression bomb | 壓縮炸彈 | 解壓縮炸彈 | 檔案很小、展開後極大（zip 內容、圖片像素數）；上限要算實際產生的 byte 或像素，不信標頭；CWE-409 |
@@ -77,6 +80,7 @@
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
+| JDBC | JDBC | | 不翻譯；Java 連資料庫的標準介面，DBeaver 靠它統一連線層 |
 | JSON Web Key Set (JWKS) | JWKS | | 不翻譯；以 JSON 發布一組公鑰的格式（RFC 7517），驗證方依 `kid` 取用，OIDC 與 API 閘道靠它驗證 JWT |
 | JSON Web Token (JWT) | JWT | | 不翻譯；`header.payload.signature` 三段 base64url 的自包含 token（RFC 7519），簽章防竄改、不加密；到期前難以撤銷 |
 | keep-alive | keep-alive | 長連線、持久連線 | 不翻譯；HTTP/1.1 預設行為，回應結束後連線不關，留給下一個請求復用，省掉 TCP 與 TLS 握手；任一方送 `Connection: close` 才關閉 |

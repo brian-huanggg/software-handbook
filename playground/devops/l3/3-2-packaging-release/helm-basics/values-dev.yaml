@@ -1,0 +1,13 @@
+# dev 環境：一個副本、少量資源，用來快速驗證。
+replicaCount: 1
+
+image:
+  tag: 6.7.1
+
+ui:
+  message: "shortener-dev"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi

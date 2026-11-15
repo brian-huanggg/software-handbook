@@ -136,7 +136,7 @@
 
 | 狀態 | 標題 | 說明 |
 | --- | --- | --- |
-| ⬜ | Helm 基礎 | chart、values、release |
+| ✅ | [Helm 基礎](../../site/src/content/docs/devops/l3/3-2-packaging-release/helm-basics.md) | 用 Helm 安裝現成的 chart，用 values 區分環境，並能升級、查歷史與回滾 release。 |
 | ⬜ | 自寫 Helm chart | templates、分環境 values、lint／template、migration Job 與 hooks |
 | ⬜ | 升級、回滾與版本管理 |  |
 | ⬜ | 部署策略 | 滾動、藍綠、金絲雀 |

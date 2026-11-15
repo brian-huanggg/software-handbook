@@ -1,0 +1,5 @@
+# AI 產生：prod 的 values 覆寫
+replicaCount: 3
+image:
+  tag: latest
+resources: {}

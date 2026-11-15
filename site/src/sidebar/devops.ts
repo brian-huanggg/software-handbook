@@ -10,6 +10,11 @@ export const levels: Level[] = [
 		dir: 'l1',
 		sections: [{ label: '1.2 容器映像', dir: '1-2-container-image' }],
 	},
+	{
+		label: 'L3 叢集營運',
+		dir: 'l3',
+		sections: [{ label: '3.2 套件化與發布', dir: '3-2-packaging-release' }],
+	},
 ];
 
 export default fieldSidebar('devops', levels);

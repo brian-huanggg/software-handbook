@@ -23,6 +23,7 @@
 | candidate key | 候選鍵 | 候補鍵 | 不能再縮小的超鍵；主鍵是從候選鍵挑出的一個 |
 | capabilities | capabilities | 權能、能力 | Linux 把 root 權力拆成的細項（如 `NET_ADMIN`）；不翻譯 |
 | certification | certification | 認證、驗證 | 不翻譯；Galera 各節點用同樣規則檢查 write-set 是否與已 commit 的交易衝突 |
+| chart | chart |  | 不翻譯；Helm 的套件單位，一組帶佔位符的 Kubernetes 清單模板加預設 values 與中繼資料 |
 | circuit breaker | 斷路器 | 熔斷器 | 指標惡化時自動收緊規則；審查的斷路器例子是 revert 率暴增時把低風險升為中風險（本書的示意設計） |
 | claim | claim | 宣告 | JWT payload 裡的一個欄位，例如 `sub`、`exp`、`iss`；簽章驗過之前不可信 |
 | clustered index | 叢集索引 | 聚簇索引 | 表本身就是依主鍵排序的 B+ 樹，資料列在葉節點；InnoDB 的預設儲存方式 |
@@ -53,6 +54,7 @@
 | gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
+| Helm | Helm |  | 不翻譯；Kubernetes 的套件管理器，把清單打包成可安裝、升級、回滾的 release |
 | HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |
 | HS256 | HS256 | | 不翻譯；以 HMAC-SHA256 簽章的 JWT 演算法，對稱金鑰，驗證方也有簽發能力；非對稱的有 RS256、ES256 |
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
@@ -102,6 +104,7 @@
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
 | refresh token | refresh token | 更新令牌 | 不翻譯；長效、只用來換新 access token 的憑證，伺服器要能撤銷，登出時撤銷它 |
 | refresh token rotation | refresh token 輪替 | | 每次用 refresh token 換新時就作廢舊的，每個 refresh token 只能用一次 |
+| release | release | 發行版、發布 | 不翻譯；Helm 中一個 chart 在某叢集與 namespace 的一次安裝，有名字與修訂號；一般語境的「發布」仍用中文 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | role-based access control (RBAC) | RBAC（角色型存取控制） | | 依使用者的角色授權；第一次出現寫全名，之後只寫 RBAC |
@@ -147,6 +150,7 @@
 | upstream | upstream | 上游 | 不翻譯；nginx 中一組後端 server 的群組，用 `proxy_pass` 指向它 |
 | UUID | UUID | 通用唯一識別碼 | 128 bits；v4 全隨機、v7 前 48 bits 是毫秒時間戳（RFC 9562） |
 | VACUUM | VACUUM |  | 不翻譯；Postgres 回收 dead tuple 空間的作業，通常不會把檔案縮小還給作業系統 |
+| values | values |  | 不翻譯；填進 Helm chart 模板的設定值，可用 `-f` 檔案或 `--set` 蓋過預設值 |
 | virtually synchronous | virtually synchronous | 虛擬同步 | 不翻譯；已 commit 的交易保證會被每個節點套用，但不保證同一時刻 |
 | wait strategy | 等待策略 | 等待機制 | 容器啟動後持續檢查某個條件（log、port、SQL 連線）、成立才算就緒；用來取代 `time.Sleep` |
 | weighted round robin | 加權輪詢 | 加權循環 | 依 weight 比例輪流分配請求；nginx upstream 的預設方式 |

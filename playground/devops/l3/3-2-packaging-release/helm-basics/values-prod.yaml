@@ -1,0 +1,15 @@
+# prod 環境：三個副本、明確的資源上下限。
+replicaCount: 3
+
+image:
+  tag: 6.7.1
+
+ui:
+  message: "shortener-prod"
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 64Mi
+  limits:
+    memory: 128Mi

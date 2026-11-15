@@ -118,9 +118,9 @@ const agents: Level[] = [
 		label: 'L1 工具與迴圈',
 		dir: 'l1',
 		sections: [
-			{ label: '1.1 什麼是代理人', dir: '1-1-what-is-agent' },
+			{ label: '1.1 什麼是 Agent', dir: '1-1-what-is-agent' },
 			{ label: '1.2 工具呼叫', dir: '1-2-tool-calling' },
-			{ label: '1.3 代理人迴圈', dir: '1-3-agent-loop' },
+			{ label: '1.3 Agent 迴圈', dir: '1-3-agent-loop' },
 			{ label: '1.4 工具設計', dir: '1-4-tool-design' },
 			{ label: '1.5 Model Context Protocol（MCP）', dir: '1-5-mcp' },
 		],
@@ -136,22 +136,22 @@ const agents: Level[] = [
 		],
 	},
 	{
-		label: 'L3 多代理人與工作流程',
+		label: 'L3 多 Agent 與工作流程',
 		dir: 'l3',
 		sections: [
 			{ label: '3.1 工作流程模式', dir: '3-1-workflow-patterns' },
-			{ label: '3.2 多代理人系統', dir: '3-2-multi-agent' },
+			{ label: '3.2 多 Agent 系統', dir: '3-2-multi-agent' },
 			{ label: '3.3 人機協作', dir: '3-3-human-in-the-loop' },
-			{ label: '3.4 程式碼代理人', dir: '3-4-coding-agents' },
+			{ label: '3.4 程式碼 Agent', dir: '3-4-coding-agents' },
 			{ label: '3.5 框架與 SDK', dir: '3-5-frameworks-sdks' },
 		],
 	},
 	{
-		label: 'L4 正式環境的代理人',
+		label: 'L4 正式環境的 Agent',
 		dir: 'l4',
 		sections: [
-			{ label: '4.1 代理人評估', dir: '4-1-agent-evaluation' },
-			{ label: '4.2 代理人安全', dir: '4-2-agent-security' },
+			{ label: '4.1 Agent 評估', dir: '4-1-agent-evaluation' },
+			{ label: '4.2 Agent 安全', dir: '4-2-agent-security' },
 			{ label: '4.3 沙箱與權限', dir: '4-3-sandbox-permissions' },
 			{ label: '4.4 營運與治理', dir: '4-4-operations-governance' },
 		],
@@ -161,7 +161,7 @@ const agents: Level[] = [
 export const tracks: Track[] = [
 	{ label: '理論基礎', dir: 'foundations', levels: foundations },
 	{ label: '應用工程', dir: 'engineering', levels: engineering },
-	{ label: '代理人', dir: 'agents', levels: agents },
+	{ label: 'Agent', dir: 'agents', levels: agents },
 ];
 
 // Tracks become the top-level sidebar groups; a track with no articles yet is

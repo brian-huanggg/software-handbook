@@ -16,7 +16,7 @@ These replace the URL shortener service used by the rest of the book, and differ
 
 - Theory foundations: tabular data, MNIST, and a Traditional Chinese corpus
 - Applied engineering: the 「手冊問答助理」 (handbook Q&A assistant)
-- Agents: the 「手冊維護代理人」 (handbook maintenance agent)
+- Agents: the 「手冊維護 Agent」 (handbook maintenance agent)
 
 The version matches the level (L1→v1, …). The URL shortener service is mentioned only when linking back to the backend field is needed.
 

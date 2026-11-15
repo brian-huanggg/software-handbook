@@ -5,7 +5,7 @@
 
 **先修**：會寫基本的 Python、懂 HTTP API 是什麼（後端領域 L1 的 1.2 有完整說明）。
 
-**同一個 AI 領域的其他軌道**：遇到「為什麼 temperature 會影響輸出」這類問題，文中會連回理論基礎軌道（`docs/contents/ai/foundations.md`）；本軌道是代理人軌道（`docs/contents/ai/ai-agents.md`）的先修。
+**同一個 AI 領域的其他軌道**：遇到「為什麼 temperature 會影響輸出」這類問題，文中會連回理論基礎軌道（`docs/contents/ai/foundations.md`）；本軌道是 Agent 軌道（`docs/contents/ai/ai-agents.md`）的先修。
 
 **模型與成本**：範例預設用本機 Ollama 跑開源模型，免費且可離線；需要更強的模型時改接商用 API，文中會標出哪些練習會產生費用與大約金額。
 

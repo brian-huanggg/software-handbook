@@ -25,10 +25,10 @@
 	--hb-radius-m: 0.75rem;
 
 	/* Layout: left sidebar and right outline are the same width and sit on the
-	   viewport edges, so the text column between them is centred on the
-	   viewport and the free space on both sides is equal. No gutter. */
+	   viewport edges. On pages with an outline, at 72rem and wider, the text
+	   column between them is centred on the viewport. Without an outline, or
+	   below 72rem, it is centred in the space right of the sidebar. */
 	--hb-toc-width: 16rem; /* equal to --sl-sidebar-width */
-	--hb-main-gutter: 0px;
 
 	/* Latin first so letters and digits use the Latin face; CJK falls through. */
 	--hb-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC',
@@ -143,13 +143,6 @@
  * 4. Layout (desktop). Starlight's defaults give the outline column 300px
  *    plus half of all leftover width; on wide screens that is ~800px.
  * ------------------------------------------------------------------------- */
-@media (min-width: 50rem) {
-	.main-frame {
-		padding-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--hb-main-gutter));
-		padding-inline-end: var(--hb-main-gutter);
-	}
-}
-
 @media (min-width: 72rem) {
 	.right-sidebar-container,
 	.right-sidebar {
@@ -189,7 +182,7 @@
 	/* Keep the outline off the viewport edge. The column stays 16rem wide, so
 	   the text column is still centred; only the outline's inner box shrinks. */
 	.right-sidebar-panel {
-		padding-inline-end: 4rem;
+		padding-inline-end: 1.5rem;
 	}
 
 	/* Text column centred in the space left of a fixed-width outline. */
@@ -271,6 +264,12 @@ starlight-toc a {
 }
 .sl-markdown-content :is(th, td):not(:where(.not-content *)) {
 	padding: 0.6rem 1rem;
+	overflow-wrap: anywhere;
+}
+/* Starlight gives `code` its own `overflow-wrap: break-word`, which does not
+   lower the cell's minimum width, so long tokens would push the table past
+   the text column. */
+.sl-markdown-content :is(th, td) code:not(:where(.not-content *)) {
 	overflow-wrap: anywhere;
 }
 .sl-markdown-content th:not(:where(.not-content *)) {

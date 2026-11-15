@@ -58,6 +58,7 @@ const mdHref = markdownPath(entry.id);
 		</a>
 	</copy-page>
 </div>
+{entry.data.description && <p class="lede">{entry.data.description}</p>}
 
 <script>
 	class CopyPage extends HTMLElement {
@@ -133,6 +134,13 @@ const mdHref = markdownPath(entry.id);
 		line-height: var(--sl-line-height-headings);
 		font-weight: 600;
 		color: var(--sl-color-white);
+	}
+
+	.lede {
+		margin: 0.5rem 0 0;
+		font-size: var(--sl-text-body);
+		line-height: 1.5;
+		color: var(--sl-color-gray-3);
 	}
 
 	copy-page {

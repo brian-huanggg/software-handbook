@@ -48,12 +48,20 @@ import Default from '@astrojs/starlight/components/TableOfContents.astro';
 			// when this runs.
 			const header = document.querySelector<HTMLElement>('header.header');
 			const hidden = document.documentElement.hasAttribute('data-header-hidden');
-			const base = (hidden || !header ? 0 : header.offsetHeight) + GAP;
-			// Over the last screen of scrolling, move the line down to the
-			// bottom of the viewport so every remaining section gets its turn.
+			const top = hidden || !header ? 0 : header.offsetHeight;
 			const vh = window.innerHeight;
-			const remaining = document.documentElement.scrollHeight - vh - window.scrollY;
-			const line = Math.max(base, vh - remaining);
+			// Reading line: a fifth of the way down the visible area, so a
+			// section counts as current once its heading is near the top.
+			const fixed = top + GAP + (vh - top - GAP) * 0.2;
+			// The last headings can sit too low to ever reach that line. Move it
+			// down over the end of the page so the last heading becomes current
+			// exactly when the page hits the bottom, and not before.
+			const remaining = Math.max(
+				document.documentElement.scrollHeight - vh - window.scrollY,
+				0,
+			);
+			const lastTop = headings[headings.length - 1].getBoundingClientRect().top;
+			const line = Math.max(fixed, lastTop - 2 * remaining + 1);
 
 			let active = headings[0];
 			for (const heading of headings) {

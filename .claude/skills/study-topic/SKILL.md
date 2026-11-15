@@ -15,8 +15,8 @@ Rule priority: the user's instruction in this request > this file > the called s
 
 1. Ask the user for their learning target (what they want to be able to do or understand). If the request already states it, do not ask again.
 2. Read the matching outline `docs/contents/<field>.md` (for `ai`, the track file under `docs/contents/ai/`). Find where the target fits: the field, the level, the chapter, and the item.
-3. If the item exists, use it. If the next unchecked (`- [ ]`) item in that chapter matches the target, prefer it. If the target is not in the outline yet, add a new item as `- [ ]` in the right chapter, in the same style as its neighbours.
-4. Only add or edit the item. Do not tick it `- [x]`; `write-article` does that when the article is done.
+3. If the item exists, use it. If the next `⬜` row in that chapter matches the target, prefer it. If the target is not in the outline yet, add a new row `| ⬜ | Title | Description |` to the table of the right section, following the Title rules (short noun phrase, 4 to 16 Chinese characters, hard cap 20, no `：`, unique in the section) and the Description rules (at most 60 characters, may be empty).
+4. Only add or edit the row (a new row is `| ⬜ | Title | Description |`). Do not change it to `✅`; `write-article` does that when the article is done.
 5. If the item needs a new section, `write-article` adds the sidebar entry. Do not do it here.
 
 ### 2. Explain the plan (review gate 1)

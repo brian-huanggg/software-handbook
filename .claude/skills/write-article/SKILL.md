@@ -21,7 +21,7 @@ Files of this skill: `assets/template.md` (article template), `references/style-
 Confirm these four things before starting. If any is missing, ask the user. Do not guess:
 
 1. **Field**: `cs`, `backend`, `frontend`, `devops`, `cyber`, `testing`, or `ai`. For `ai`, also confirm the track: `foundations`, `engineering`, or `agents`.
-2. **Topic**: which item of `docs/contents/<field>.md` (for example "2.3 快取穿透、擊穿、雪崩與對策").
+2. **Topic**: which row (table row) of `docs/contents/<field>.md` (for example "2.3 快取穿透、擊穿、雪崩與對策").
 3. **Level**: L0–L4, determined by the chapter the item belongs to. The level sets depth and length (see `references/style-guide.md`). The `cs` field has no levels; it is grouped by topic (C, D, O, N, T, Z). Length and depth always follow L0, and `<level>` in paths becomes the `dir` of that topic group in `site/src/sidebar/cs.ts` (for example `n-network`).
 4. **New or rewrite**: when rewriting, read the existing article in full first.
 
@@ -39,7 +39,7 @@ Confirm these four things before starting. If any is missing, ask the user. Do n
 5. **Verify**: go through `references/checklist.md` item by item. If `go` is available, run `go vet ./...` and `go test ./...` for Go examples. If `uv` is available, run `uv run ruff check .` and `uv run pytest` for Python examples. If a tool is missing, or the example needs a GPU or a paid API and cannot run, write "code not verified by execution" and the reason in the report.
 6. **Wrap up**
    - Add new terms to `docs/glossary.md`.
-   - In `docs/contents/<field>.md`, change the item's `- [ ]` to `- [x]` and add the article link after it.
+   - In `docs/contents/<field>.md`, In the section's table in `docs/contents/<field>.md`, change the row's status from `⬜` to `✅`, turn the Title into a link to the article (`[Title](relative/path.md)`), and set the Description cell to the article's frontmatter `description`.
    - Report: file paths, word count, checks that failed or were skipped, and anything you want the user to decide.
 
 ## File locations and naming
@@ -60,14 +60,14 @@ The frontmatter is always:
 
 ```yaml
 ---
-title: 快取穿透、擊穿、雪崩與對策     # same as the item text in docs/contents/<field>.md
-description: 一句話說明讀完能做到什麼    # one sentence on what the reader can do after reading; within 60 characters
+title: 快取穿透、擊穿、雪崩與對策     # same as the Title column in docs/contents/<field>.md
+description: 一句話說明讀完能做到什麼    # same as the Description column; within 60 characters
 sidebar:
   order: 5                             # position of this item within the section (starts at 1)
 ---
 ```
 
-- `title` must be clear and short, at most 30 characters. If the item text is longer, first ask the user how to shorten it, and update the item text in `docs/contents/<field>.md` to match.
+- `title` is the Title column of the outline row, 4 to 16 Chinese characters (hard cap 20). If the topic is not in the outline yet, add a row first (see `study-topic`). If a title does not fit the cap, shorten it in the outline row and the frontmatter together.
 
 ## Extra rules for security topics
 

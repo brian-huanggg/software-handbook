@@ -7,7 +7,7 @@ The nine section headings named below are the literal Chinese headings of `asset
 ## Structure
 
 - [ ] File path and frontmatter follow `SKILL.md`
-- [ ] `title` is clear and short, at most 30 characters
+- [ ] `title` equals the outline Title column, at most 20 characters
 - [ ] The nine `##` headings match `assets/template.md` exactly, in the correct order
 - [ ] All template comments are deleted
 - [ ] The end of 「怎麼運作」 answers the question from 「先想想」
@@ -45,4 +45,4 @@ The nine section headings named below are the literal Chinese headings of `asset
 
 ## Wrap-up
 
-- [ ] `docs/contents/<field>.md` is checked off and has the link
+- [ ] the outline row is ✅, the Title is a link, and the Description equals the article's description

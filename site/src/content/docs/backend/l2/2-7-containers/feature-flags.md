@@ -1,5 +1,5 @@
 ---
-title: 功能旗標：部署與發布分離、漸進放量、kill switch
+title: 功能旗標
 description: 用 Go 寫出穩定分桶的功能旗標，做到先部署、後放量，出事時不重新部署就能關掉，並學會清理過期旗標。
 sidebar:
   order: 5

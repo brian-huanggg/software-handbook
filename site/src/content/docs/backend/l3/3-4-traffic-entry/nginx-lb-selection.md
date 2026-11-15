@@ -1,5 +1,5 @@
 ---
-title: Nginx 負載平衡 1/3：選型與演算法
+title: Nginx 負載平衡 1/3 選型
 description: 比較輪詢、least_conn、random two 與 hash，依流量與 session 需求選出分配方式。
 sidebar:
   order: 6

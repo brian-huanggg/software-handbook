@@ -1,5 +1,5 @@
 ---
-title: MariaDB 標準版與 Galera 叢集
+title: MariaDB 與 Galera 叢集
 description: 比較 MariaDB 非同步主從與 Galera 多主叢集：資料何時算寫入成功、會不會掉資料、誰負責故障轉移，以及各自的代價。
 sidebar:
   order: 6

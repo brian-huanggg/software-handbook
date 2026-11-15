@@ -1,5 +1,5 @@
 ---
-title: Session vs Token：有狀態與無狀態認證的取捨與選型
+title: Session vs Token 選型
 description: 能說出 session 與 token 把狀態放在哪裡、撤銷得了什麼，並依情境選型。
 sidebar:
   order: 5

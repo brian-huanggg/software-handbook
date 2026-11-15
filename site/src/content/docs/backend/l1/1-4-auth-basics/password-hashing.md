@@ -1,5 +1,5 @@
 ---
-title: 密碼雜湊：bcrypt、argon2、salt 與 pepper
+title: 密碼雜湊
 description: 知道為什麼密碼不能用 SHA-256 存，並能用 argon2id 加 salt 與 pepper 寫出可驗證、可升級的密碼儲存。
 sidebar:
   order: 2

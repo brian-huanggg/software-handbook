@@ -1,5 +1,5 @@
 ---
-title: JWT vs PASETO：自包含 token 的選型
+title: JWT vs PASETO
 description: 能依驗證方是誰、能不能查儲存，在 opaque token、JWT 與 PASETO 之間選型，並說出換協定能消除與消除不了的風險。
 sidebar:
   order: 3

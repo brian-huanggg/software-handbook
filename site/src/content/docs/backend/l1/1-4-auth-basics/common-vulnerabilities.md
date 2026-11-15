@@ -1,5 +1,5 @@
 ---
-title: 常見漏洞入門：XSS、CSRF、敏感資料外洩
+title: 常見漏洞入門
 description: 認得三種最常見的 Web 漏洞，知道後端各要做哪一道防禦，並知道深入內容在資安領域的哪裡。
 sidebar:
   order: 6

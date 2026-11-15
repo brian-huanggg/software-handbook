@@ -1,5 +1,5 @@
 ---
-title: 正規化：1NF 到 BCNF 與何時反正規化
+title: 正規化與反正規化
 description: 用函數相依判斷資料表該不該拆，把短網址服務的 links 表一路拆到 3NF 與 BCNF，並學會何時該刻意複製資料。
 sidebar:
   order: 1

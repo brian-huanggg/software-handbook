@@ -1,5 +1,5 @@
 ---
-title: 認證（authn）vs 授權（authz）
+title: 認證與授權的差異
 description: 能分清「你是誰」與「你能做什麼」，並在 Go 服務中把兩者拆成各自的一層，擋下 IDOR。
 sidebar:
   order: 1

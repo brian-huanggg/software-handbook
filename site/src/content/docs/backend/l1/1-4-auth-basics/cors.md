@@ -1,5 +1,5 @@
 ---
-title: CORS：原理、預檢請求與在 Go 中正確設定
+title: CORS 與預檢請求
 description: 看懂 CORS 錯誤從哪來，並用白名單在 Go 裡安全地開放跨源讀取。
 sidebar:
   order: 7

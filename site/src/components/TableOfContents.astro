@@ -1,0 +1,85 @@
+---
+// Desktop "On this page" list: Starlight's default markup, with our own
+// highlight logic (see the script below).
+//
+// Starlight marks the current section with an IntersectionObserver whose band
+// sits a fixed distance below the header, measured once at load. That breaks
+// here in two ways:
+// - Header.astro slides the header away while scrolling down, so the band no
+//   longer lines up with the top of the visible text.
+// - Sections near the end of the page can never scroll up into the band, so
+//   the highlight stays on an earlier section.
+import Default from '@astrojs/starlight/components/TableOfContents.astro';
+---
+
+<Default />
+
+<script>
+	const GAP = 32; // Starlight's own offset below the header (2rem).
+
+	function setup(toc: HTMLElement) {
+		const minH = parseInt(toc.dataset.minH || '2', 10);
+		const maxH = parseInt(toc.dataset.maxH || '3', 10);
+		const levels = Array.from({ length: maxH - minH + 1 }, (_, i) => `h${minH + i}`).join();
+		const links = [...toc.querySelectorAll<HTMLAnchorElement>('a')];
+		const linkFor = new Map<Element, HTMLAnchorElement>();
+		for (const heading of document.querySelectorAll(`main :where(h1#_top, :where(${levels})[id])`)) {
+			const link = links.find((a) => a.hash === '#' + encodeURIComponent(heading.id));
+			if (link) linkFor.set(heading, link);
+		}
+		const headings = [...linkFor.keys()];
+		if (!headings.length) return;
+
+		// Starlight's observer still runs and assigns `current`. An own property
+		// shadows its setter, so those assignments do nothing.
+		Object.defineProperty(toc, 'current', { set() {}, configurable: true });
+
+		let current = toc.querySelector<HTMLAnchorElement>('a[aria-current="true"]');
+		function mark(link: HTMLAnchorElement) {
+			if (link === current) return;
+			current?.removeAttribute('aria-current');
+			link.setAttribute('aria-current', 'true');
+			current = link;
+		}
+
+		function update() {
+			ticking = false;
+			// Read the header's state, not its box: the box is still mid-slide
+			// when this runs.
+			const header = document.querySelector<HTMLElement>('header.header');
+			const hidden = document.documentElement.hasAttribute('data-header-hidden');
+			const base = (hidden || !header ? 0 : header.offsetHeight) + GAP;
+			// Over the last screen of scrolling, move the line down to the
+			// bottom of the viewport so every remaining section gets its turn.
+			const vh = window.innerHeight;
+			const remaining = document.documentElement.scrollHeight - vh - window.scrollY;
+			const line = Math.max(base, vh - remaining);
+
+			let active = headings[0];
+			for (const heading of headings) {
+				if (heading.getBoundingClientRect().top > line) break;
+				active = heading;
+			}
+			mark(linkFor.get(active)!);
+		}
+
+		let ticking = false;
+		const schedule = () => {
+			if (ticking) return;
+			ticking = true;
+			requestAnimationFrame(update);
+		};
+		window.addEventListener('scroll', schedule, { passive: true });
+		window.addEventListener('resize', schedule);
+		// The header can also hide or show without a scroll (keyboard focus).
+		new MutationObserver(schedule).observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-header-hidden'],
+		});
+		schedule();
+	}
+
+	customElements.whenDefined('starlight-toc').then(() => {
+		document.querySelectorAll<HTMLElement>('starlight-toc').forEach(setup);
+	});
+</script>

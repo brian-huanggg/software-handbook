@@ -72,6 +72,7 @@ export default defineConfig({
 				Header: './src/components/Header.astro',
 				PageTitle: './src/components/PageTitle.astro',
 				Sidebar: './src/components/Sidebar.astro',
+				TableOfContents: './src/components/TableOfContents.astro',
 			},
 			// Each field gets its own sidebar.
 			plugins: [

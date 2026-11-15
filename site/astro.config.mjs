@@ -30,6 +30,9 @@ export default defineConfig({
 			customCss: ['./src/styles/custom.css'],
 			expressiveCode: {
 				styleOverrides: { borderRadius: '0.5rem' },
+				// Inline EC styles per page. The external ec.*.css build emits only one
+				// of the hashed files, so pages link a missing one and render unstyled.
+				emitExternalStylesheet: false,
 			},
 			// The field switcher lives in the header (src/components/Header.astro).
 			// Our Sidebar override takes precedence over the plugin's, which would

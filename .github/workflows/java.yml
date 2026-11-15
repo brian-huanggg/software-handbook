@@ -28,7 +28,7 @@ jobs:
       run:
         working-directory: templates/authkit-spring
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Keep in step with java in mise.toml.
       - uses: actions/setup-java@v5

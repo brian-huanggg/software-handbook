@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "shortener.fullname" . }}
+  labels:
+    {{- include "shortener.labels" . | nindent 4 }}
+data:
+  BASE_URL: {{ required "config.baseUrl 必須設定" .Values.config.baseUrl | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}

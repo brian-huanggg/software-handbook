@@ -56,6 +56,7 @@
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
 | Helm | Helm |  | 不翻譯；Kubernetes 的套件管理器，把清單打包成可安裝、升級、回滾的 release |
 | HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |
+| hook | hook | 鉤子 | 不翻譯；Helm 中掛在 release 生命週期某時間點（如 `pre-upgrade`）的清單，由 Helm 建立並等它結束；不屬於 release，需用 `hook-delete-policy` 清理 |
 | HS256 | HS256 | | 不翻譯；以 HMAC-SHA256 簽章的 JWT 演算法，對稱金鑰，驗證方也有簽發能力；非對稱的有 RS256、ES256 |
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
 | idempotency | 冪等 | 冒等、幂等 | |

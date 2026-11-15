@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/example/shortener
+  # 留空時使用 Chart.yaml 的 appVersion
+  tag: ""
+
+service:
+  port: 80
+  targetPort: 8080
+
+config:
+  # 沒有合理的預設值，每個環境都必須自己給
+  baseUrl: ""
+  logLevel: info
+
+# 資料庫連線字串存在事先建立的 Secret 裡，chart 不管它的內容
+databaseSecret:
+  name: shortener-db
+  key: dsn
+
+migration:
+  enabled: true
+  command: ["/app/shortener", "migrate"]
+
+resources: {}

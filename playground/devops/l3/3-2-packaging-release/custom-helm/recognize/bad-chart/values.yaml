@@ -1,0 +1,8 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/example/shortener
+
+config:
+  baseUrl: ""
+  cacheTtlSeconds: 300

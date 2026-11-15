@@ -137,7 +137,7 @@
 | 狀態 | 標題 | 說明 |
 | --- | --- | --- |
 | ✅ | [Helm 基礎](../../site/src/content/docs/devops/l3/3-2-packaging-release/helm-basics.md) | 用 Helm 安裝現成的 chart，用 values 區分環境，並能升級、查歷史與回滾 release。 |
-| ⬜ | 自寫 Helm chart | templates、分環境 values、lint／template、migration Job 與 hooks |
+| ✅ | [自寫 Helm chart](../../site/src/content/docs/devops/l3/3-2-packaging-release/custom-helm.md) | 為自家服務寫一個可分環境部署的 chart，用 lint 與 template 驗證，並以 hook 在升級前跑 migration。 |
 | ⬜ | 升級、回滾與版本管理 |  |
 | ⬜ | 部署策略 | 滾動、藍綠、金絲雀 |
 | ⬜ | Azure 與 GitOps 銜接 | Azure Release：CI 產出映像、更新 Helm values 的 Git commit、核准關卡 |

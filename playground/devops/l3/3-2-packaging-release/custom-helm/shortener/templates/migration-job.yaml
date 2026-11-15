@@ -1,0 +1,29 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "shortener.fullname" . }}-migrate
+  labels:
+    {{- include "shortener.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            {{- toYaml .Values.migration.command | nindent 12 }}
+          env:
+            # pre-install 時 chart 自己的物件還沒建立，所以只能引用事先存在的 Secret
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret.name }}
+                  key: {{ .Values.databaseSecret.key }}
+{{- end }}

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shortener.fullname" . }}
+  labels:
+    {{- include "shortener.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shortener.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "shortener.selectorLabels" . | nindent 8 }}
+      annotations:
+        # ConfigMap 內容變了，這個雜湊就變，Pod 才會跟著重啟
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: shortener
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "shortener.fullname" . }}
+          env:
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret.name }}
+                  key: {{ .Values.databaseSecret.key }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

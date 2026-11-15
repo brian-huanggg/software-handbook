@@ -1,0 +1,28 @@
+# AI 產生：短網址服務的 Deployment，啟動前先跑資料庫 migration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-shortener
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: shortener
+  template:
+    metadata:
+      labels:
+        app: shortener
+    spec:
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:latest"
+          command: ["/app/shortener", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+      containers:
+        - name: shortener
+          image: "{{ .Values.image.repository }}:latest"
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config

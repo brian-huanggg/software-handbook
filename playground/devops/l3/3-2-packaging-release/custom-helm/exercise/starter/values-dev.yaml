@@ -1,0 +1,8 @@
+config:
+  baseUrl: http://localhost:8080
+  logLevel: debug
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi

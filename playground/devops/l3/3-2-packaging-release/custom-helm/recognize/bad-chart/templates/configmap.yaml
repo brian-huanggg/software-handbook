@@ -1,0 +1,8 @@
+# AI 產生：短網址服務的設定
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  BASE_URL: {{ .Values.config.baseUrl | default "http://localhost:8080" | quote }}
+  CACHE_TTL_SECONDS: {{ .Values.config.cacheTtlSeconds }}

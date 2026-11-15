@@ -139,10 +139,6 @@
 	margin-top: 0.75rem;
 }
 
-.sl-markdown-content :is(th, td) {
-	padding-block: 0.6em;
-}
-
 /* ---------------------------------------------------------------------------
  * 4. Layout (desktop). Starlight's defaults give the outline column 300px
  *    plus half of all leftover width; on wide screens that is ~800px.
@@ -257,6 +253,34 @@ starlight-toc a {
 
 .starlight-aside {
 	border-radius: var(--hb-radius-s);
+}
+
+/* Tables: a rounded frame, a tinted header row and row dividers only.
+   Starlight makes the table `display: block` so it scrolls sideways, but then
+   the frame hugs the content instead of the text column. Here it is a real
+   full-width table again, and cells may break anywhere so it never needs to
+   scroll. `separate` borders (spacing 0) let the radius clip the corners. */
+.sl-markdown-content table:not(:where(.not-content *)) {
+	display: table;
+	width: 100%;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: var(--hb-radius-s);
+	border-collapse: separate;
+	overflow: hidden;
+	font-size: var(--sl-text-sm);
+}
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+	padding: 0.6rem 1rem;
+	overflow-wrap: anywhere;
+}
+.sl-markdown-content th:not(:where(.not-content *)) {
+	background: var(--sl-color-gray-6);
+}
+:root[data-theme='light'] .sl-markdown-content th:not(:where(.not-content *)) {
+	background: var(--sl-color-gray-7);
+}
+.sl-markdown-content tr:last-child > td:not(:where(.not-content *)) {
+	border-bottom: 0;
 }
 
 .card,

@@ -1,5 +1,5 @@
 ---
-title: CORS 錯誤設定：反射 Origin、null origin 與憑證竊取
+title: CORS 錯誤設定
 description: 在自己的範例服務上重現三種 CORS 錯誤設定，讀出登入者的私密資料，再用白名單修好。
 sidebar:
   order: 1

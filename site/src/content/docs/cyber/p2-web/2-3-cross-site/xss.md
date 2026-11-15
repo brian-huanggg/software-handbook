@@ -1,5 +1,5 @@
 ---
-title: XSS：反射、儲存、DOM 型與對應修補
+title: XSS 的類型與修補
 description: 在自己的短網址服務上重現三種 XSS，再用輸出編碼、CSP 與安全的 DOM 寫法修好並驗證。
 sidebar:
   order: 3

@@ -1,5 +1,5 @@
 ---
-title: Container 與 Image 的攻擊面
+title: Container／Image 攻擊面
 description: 在本機重現殘留機密與 docker.sock 濫用，再用掃描、固定 digest 與最小權限擋下它們。
 sidebar:
   order: 1

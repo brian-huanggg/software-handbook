@@ -1,5 +1,5 @@
 ---
-title: CSRF：原理與 token／SameSite 修補
+title: CSRF
 description: 在自己的短網址服務上重現跨站請求偽造，再用 SameSite、token 與 Fetch Metadata 修好並驗證。
 sidebar:
   order: 2

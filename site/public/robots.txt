@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://site.knowledge-forest.online/sitemap-index.xml

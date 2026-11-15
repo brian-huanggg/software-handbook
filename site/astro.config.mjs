@@ -16,6 +16,7 @@ import tools from './src/sidebar/tools.ts';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://site.knowledge-forest.online',
 	integrations: [
 		// Must come before starlight() so ```mermaid fences are handled first.
 		mermaid(),

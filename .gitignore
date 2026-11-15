@@ -23,6 +23,10 @@ profile.cov
 go.work
 go.work.sum
 
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
 # env file
 .env.*
 

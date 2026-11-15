@@ -1,0 +1,41 @@
+# authkit-spring: compile and run the tests (Testcontainers starts Postgres,
+# the runner already has Docker).
+name: java
+
+on:
+  pull_request:
+    paths:
+      - "templates/authkit-spring/**"
+      - ".github/workflows/java.yml"
+  push:
+    branches: [main]
+    paths:
+      - "templates/authkit-spring/**"
+      - ".github/workflows/java.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: templates/authkit-spring
+    steps:
+      - uses: actions/checkout@v5
+
+      # Keep in step with java in mise.toml.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: templates/authkit-spring/pom.xml
+
+      - run: ./mvnw -B -ntp verify

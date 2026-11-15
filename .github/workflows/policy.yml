@@ -1,0 +1,50 @@
+# Rego policies: run each policy directory's *_test.rego with conftest.
+# Directories under exercise/ are left for the reader to solve and fail on
+# purpose, so they are excluded.
+name: policy
+
+on:
+  pull_request:
+    paths:
+      - "**/*.rego"
+      - ".github/workflows/policy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.rego"
+      - ".github/workflows/policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CONFTEST_IMAGE: openpolicyagent/conftest:v0.56.0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: conftest verify
+        run: |
+          dirs=$(git ls-files '*_test.rego' | grep -v '/exercise/' | xargs -n1 dirname | sort -u)
+          for d in $dirs; do
+            echo "::group::$d"
+            docker run --rm -v "$PWD/$d:/policy:ro" "$CONFTEST_IMAGE" verify -p /policy
+            echo "::endgroup::"
+          done
+
+      # Style report only. The existing policies have open findings, so this
+      # step does not fail the run yet; drop continue-on-error once they are fixed.
+      - uses: jdx/mise-action@v3
+        with:
+          install_args: regal
+      - name: regal lint
+        continue-on-error: true
+        run: regal lint $(git ls-files '*.rego' | grep -v '/exercise/' | xargs -n1 dirname | sort -u)

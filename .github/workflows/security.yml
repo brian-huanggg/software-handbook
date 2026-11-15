@@ -1,0 +1,79 @@
+# Security scans.
+#   dependency-review: blocks a PR that adds a dependency with a known CVE (SCA).
+#   codeql:            static analysis (SAST) of the code people reuse:
+#                      templates/ and the site. playground/ is excluded because
+#                      several examples (XSS, CSRF, CORS misconfig, ...) are
+#                      vulnerable on purpose.
+# Secret scanning and push protection are repository settings, not a workflow.
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 4 * * 1" # weekly, picks up newly published CodeQL queries
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # posts the summary comment
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # uploads results to the Security tab
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Go is compiled, so path filters do not apply; a manual build of
+          # only templates/authkit keeps the playground modules out.
+          - language: go
+            build-mode: manual
+          - language: java-kotlin
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v5
+
+      - if: matrix.language == 'go'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: templates/authkit/go.mod
+          cache-dependency-path: templates/authkit/go.sum
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - if: matrix.build-mode == 'manual'
+        working-directory: templates/authkit
+        run: go build ./...
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}

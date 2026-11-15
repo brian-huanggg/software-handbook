@@ -1,0 +1,15 @@
+# Scan only the code meant to be reused. playground/ holds teaching examples,
+# several of them vulnerable on purpose, and would flood the Security tab.
+name: software-handbook
+
+paths:
+  - templates
+  - site/src
+  - site/astro.config.mjs
+  - .github/workflows
+
+paths-ignore:
+  - playground
+  - "**/node_modules"
+  - "**/dist"
+  - "**/target"

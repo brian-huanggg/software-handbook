@@ -107,20 +107,18 @@ func Parse(rawURL string) (Origin, error) {
 
 ### 一次跨源 `fetch` 的完整過程
 
-```text
-evil.example 的網頁           瀏覽器                     sho.rt 伺服器
-       │                         │                             │
-       │ fetch(sho.rt/api/links) │                             │
-       ├────────────────────────►│ GET /api/links              │
-       │                         │ Origin: https://evil.example│
-       │                         │ Cookie: session=...         │
-       │                         ├────────────────────────────►│
-       │                         │                             │ 認得 Cookie，
-       │                         │       200 OK + 你的清單      │ 照常回應
-       │                         │◄────────────────────────────┤
-       │                         │ 檢查：回應沒有允許          │
-       │   TypeError（拿不到內容） │ evil.example 讀取           │
-       │◄────────────────────────┤                             │
+```mermaid
+sequenceDiagram
+    participant P as evil.example 的網頁
+    participant B as 瀏覽器
+    participant S as sho.rt 伺服器
+
+    P->>B: fetch("https://sho.rt/api/links")
+    B->>S: GET /api/links（Origin: https://evil.example、Cookie: session=...）
+    Note over S: 認得 Cookie，照常執行
+    S-->>B: 200 OK + 你的清單
+    Note over B: 檢查回應：沒有允許 evil.example 讀取
+    B--xP: TypeError（拿不到內容）
 ```
 
 這張圖的重點在中間那條線：請求完整送到了伺服器，伺服器也照常回應，擋下來的地方在最後一步，也就是瀏覽器把回應交給網頁之前。

@@ -31,10 +31,10 @@ jobs:
       run:
         working-directory: site
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Node and pnpm versions come from mise.toml, the single source of truth.
-      - uses: jdx/mise-action@v3
+      - uses: jdx/mise-action@v4
         with:
           install_args: node pnpm
 
@@ -42,7 +42,7 @@ jobs:
         run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
           key: pnpm-${{ runner.os }}-${{ hashFiles('site/pnpm-lock.yaml') }}

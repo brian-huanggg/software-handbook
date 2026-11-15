@@ -85,6 +85,7 @@
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
 | orphan file | 孤兒檔案 | 孤立檔案 | 物件儲存裡沒有任何紀錄引用的檔案；無害但佔空間，靠定期掃描清除 |
+| outbox pattern | Outbox 模式 | 發件箱模式 | 把「之後要做的事」和業務資料寫在同一個交易的表，再由背景程序送出；跨系統一致性的待刪除表是它的最小版本 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
@@ -96,6 +97,7 @@
 | primary / replica | primary／replica | master／slave、主庫／從庫 | 不翻譯；標題或總稱可寫「主從複寫」 |
 | quorum | quorum | 法定人數 | 不翻譯；超過一半節點互相連得上，只有這一邊能繼續寫入 |
 | rainbow table | 彩虹表 | | 預先算好的「密碼對雜湊」對照表；每人獨立的 salt 可使其失效 |
+| reconciliation scan | 對帳掃描 | 比對掃描 | 從物件儲存反查，找出沒有任何紀錄引用且超過寬限期的孤兒檔案；寬限期避免誤刪尚未提交的新上傳 |
 | recovery point objective (RPO) | RPO | | 故障後最多可接受丟失的資料量；RPO = 0 表示不丟已確認的寫入；第一次出現寫全名 |
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
 | refresh token | refresh token | 更新令牌 | 不翻譯；長效、只用來換新 access token 的憑證，伺服器要能撤銷，登出時撤銷它 |
@@ -132,6 +134,7 @@
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
 | superkey | 超鍵 | 超級鍵 | 能決定整列所有欄位的欄位組合 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |
+| sweeper | sweeper | 清掃器 | 不翻譯；背景程序，掃描待刪除表並冪等地刪除物件，成功後才刪該列 |
 | synchronizer token | CSRF token | 同步令牌 | 伺服器發、綁 session 的不可猜測值，不安全方法的請求必須帶上並由伺服器驗證 |
 | tag | tag | 標籤 | 不翻譯；映像上可被改指的名稱，與 digest 相對 |
 | Testcontainers | Testcontainers | | 不翻譯；在測試程式裡透過 Docker 啟動一次性真實服務的函式庫，Go 版是 testcontainers-go |

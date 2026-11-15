@@ -38,13 +38,12 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 /**
- * Issues and verifies access JWTs, same format as the Go API: HS256, claims
+ * Issues and verifies access JWTs, HS256, claims
  * {@code sub iss iat exp roles}, 15 minute lifetime, and a {@code kid} header
  * derived from the key so rotation needs no extra configuration.
  *
- * <p>Only the current secret signs. Previous secrets still verify. Tokens
- * from this class verify in the Go API and the other way round when both share
- * the same secrets.
+ * <p>Only the current secret signs. Previous secrets still verify. Every service that holds the same secrets can
+ * verify them.
  */
 public final class JwtService {
 
@@ -148,7 +147,7 @@ public final class JwtService {
     private OAuth2TokenValidatorResult requiredClaims(Jwt jwt) {
         Instant now = clock.instant();
         boolean ok = jwt.getHeaders().get("kid") instanceof String kid && !kid.isEmpty()
-                // Valid strictly before exp, like Go. Spring's own check still accepts the exp second itself.
+                // Valid strictly before exp. Spring's own check still accepts the exp second itself.
                 && jwt.getExpiresAt() != null && jwt.getExpiresAt().isAfter(now)
                 && (jwt.getIssuedAt() == null || !jwt.getIssuedAt().isAfter(now))
                 && isUuid(jwt.getSubject())
@@ -175,7 +174,7 @@ public final class JwtService {
 
     /**
      * A truncated hash of a high-entropy secret, so it reveals nothing usable
-     * about the key. Same derivation as the Go API.
+     * about the key.
      */
     static String keyId(byte[] key) {
         try {

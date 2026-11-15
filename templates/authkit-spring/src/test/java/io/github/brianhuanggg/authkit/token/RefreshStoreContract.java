@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 
 /**
- * Conformance suite for every {@link RefreshStore}, like Go's {@code storetest}.
+ * Conformance suite for every {@link RefreshStore}.
  * Implementations supply a store and a user valid for it (the Postgres table
  * has a foreign key to {@code users}).
  */

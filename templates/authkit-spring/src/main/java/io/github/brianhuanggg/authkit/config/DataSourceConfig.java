@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Builds the pool from {@code DATABASE_URL}, the same variable the Go API reads. */
+/** Builds the pool from {@code DATABASE_URL}. */
 @Configuration(proxyBeanMethods = false)
 class DataSourceConfig {
 

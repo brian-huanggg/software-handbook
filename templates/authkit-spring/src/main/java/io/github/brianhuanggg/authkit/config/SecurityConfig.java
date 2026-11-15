@@ -54,8 +54,8 @@ class SecurityConfig {
     static final String TOKEN_ME = "/token/me";
 
     /**
-     * Reads the bearer token only on {@code path}, like Go, which applies
-     * {@code requireBearer} to {@code GET /token/me} alone. Without this the
+     * Reads the bearer token only on {@code path}, which is
+     * {@code GET /token/me} alone. Without this the
      * resource server would verify any {@code Authorization} header on every
      * {@code /token/**} request and answer 401 on a bad one, even on
      * {@code permitAll} endpoints: a client that sends its expired access

@@ -123,20 +123,20 @@ class PepperedArgon2EncoderTest {
         assertThat(e.upgradeEncoding("garbage")).isTrue();
     }
 
-    // Made by the Go password package (password "cross-check pw ✓", pepper "cross pepper").
-    private static final String GO_PLAIN =
+    // Made by an independent implementation of the same format (password "cross-check pw ✓", pepper "cross pepper").
+    private static final String FOREIGN_PLAIN =
             "$argon2id$v=19$m=19456,t=2,p=1$jJW6n91O+gb6Nn2qM88t2g$wPHu0cVpXY4xZP8y4Fo9dX7EO9al4cQ0ihkk7TCt8hE";
-    private static final String GO_PEPPER =
+    private static final String FOREIGN_PEPPER =
             "$argon2id$v=19$m=19456,t=2,p=1,k=a1aaaa0d0755$/oSNz5KL5D0PvQ1dNFj+mQ$bHhngJpKzGF8vff3tytxw2quSyZnMKZU/XR1wiErLZ8";
 
     @Test
-    void verifiesHashesMadeByGo() {
-        assertThat(plain().matches("cross-check pw ✓", GO_PLAIN)).isTrue();
-        assertThat(plain().matches("other", GO_PLAIN)).isFalse();
-        assertThat(peppered("cross pepper").matches("cross-check pw ✓", GO_PEPPER)).isTrue();
-        assertThat(plain().upgradeEncoding(GO_PLAIN)).isFalse();
-        assertThat(peppered("cross pepper").upgradeEncoding(GO_PEPPER)).isFalse();
-        // Same pepper id as Go derives.
+    void verifiesHashesFromOtherImplementation() {
+        assertThat(plain().matches("cross-check pw ✓", FOREIGN_PLAIN)).isTrue();
+        assertThat(plain().matches("other", FOREIGN_PLAIN)).isFalse();
+        assertThat(peppered("cross pepper").matches("cross-check pw ✓", FOREIGN_PEPPER)).isTrue();
+        assertThat(plain().upgradeEncoding(FOREIGN_PLAIN)).isFalse();
+        assertThat(peppered("cross pepper").upgradeEncoding(FOREIGN_PEPPER)).isFalse();
+        // Pepper id is derived the same way in the other implementation.
         assertThat(peppered("cross pepper").encode("x")).contains(",k=a1aaaa0d0755$");
     }
 

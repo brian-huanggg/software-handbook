@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 
 /**
  * A {@code postgres://user:pass@host:port/db?sslmode=disable} URL, the format
- * the Go API uses for {@code DATABASE_URL}, split into what JDBC needs.
+ * of {@code DATABASE_URL}, split into what JDBC needs.
  * A ready-made {@code jdbc:postgresql:} URL is passed through unchanged.
  */
 public record DatabaseUrl(String jdbcUrl, String username, String password) {

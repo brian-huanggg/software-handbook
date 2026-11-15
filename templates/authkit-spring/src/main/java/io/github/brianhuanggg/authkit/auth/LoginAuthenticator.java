@@ -43,7 +43,7 @@ public class LoginAuthenticator {
         } catch (InternalAuthenticationServiceException e) {
             // Not a credential problem: the user lookup itself failed (for example
             // the database is down). DaoAuthenticationProvider wraps that in an
-            // AuthenticationException; unwrap it so it becomes a 500, as in Go.
+            // AuthenticationException; unwrap it so it becomes a 500.
             throw e.getCause() instanceof RuntimeException cause ? cause : e;
         } catch (AuthenticationException e) {
             throw invalid();

@@ -1,0 +1,47 @@
+# Local stack: Postgres and the API. Flyway applies the schema at API start.
+#   JWT_SECRET=$(openssl rand -hex 32) docker compose up -d --build --wait
+services:
+  db:
+    image: postgres:16@sha256:63e83b5a3dc36a917dccb76fe1bd2ac51f1ec9c1deb47ff20d4f04233bf6eae9
+    environment:
+      POSTGRES_USER: authkit
+      POSTGRES_PASSWORD: authkit
+      POSTGRES_DB: authkit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authkit -d authkit"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://authkit:authkit@db:5432/authkit?sslmode=disable
+      # Empty when unset: the API then refuses to start with a clear error.
+      JWT_SECRET: ${JWT_SECRET:-}
+      PASSWORD_PEPPER: ${PASSWORD_PEPPER:-}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      # Plain-HTTP curl needs the Secure cookie flag off. Development only.
+      COOKIE_INSECURE: ${COOKIE_INSECURE:-}
+      # Empty means the built-in defaults (20, 5).
+      RATE_LIMIT_IP_BURST: ${RATE_LIMIT_IP_BURST:-}
+      RATE_LIMIT_EMAIL_BURST: ${RATE_LIMIT_EMAIL_BURST:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "java", "-jar", "/app/app.jar", "healthcheck"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 20
+
+volumes:
+  pgdata:

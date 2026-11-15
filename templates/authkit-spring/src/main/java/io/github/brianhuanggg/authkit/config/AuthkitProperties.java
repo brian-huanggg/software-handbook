@@ -7,9 +7,9 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Every environment variable of the Go API, bound through {@code application.yml}.
+ * Every environment variable, bound through {@code application.yml}.
  * The compact constructor fails fast, so the app never starts with an unsafe
- * default. Empty values mean "unset", as in Go.
+ * default. Empty values mean "unset", as usual.
  */
 @ConfigurationProperties("authkit")
 public record AuthkitProperties(

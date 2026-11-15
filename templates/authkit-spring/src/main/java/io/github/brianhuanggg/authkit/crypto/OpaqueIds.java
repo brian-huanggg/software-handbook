@@ -9,8 +9,7 @@ import java.util.Base64;
 /**
  * Random bearer values that the server stores only as a hash: session IDs and
  * refresh tokens. The raw value exists only in the client's cookie; the store
- * sees its SHA-256, so a leaked database cannot be replayed. Same format as
- * the Go API: 32 random bytes, base64url without padding.
+ * sees its SHA-256, so a leaked database cannot be replayed. 32 random bytes, base64url without padding.
  */
 public final class OpaqueIds {
 

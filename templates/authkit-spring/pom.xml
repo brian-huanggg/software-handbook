@@ -15,7 +15,7 @@
   <artifactId>authkit-spring</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>authkit-spring</name>
-  <description>Spring Boot port of the Go authkit template</description>
+  <description>Spring Boot auth starter template: sessions and JWT with refresh-token rotation</description>
 
   <properties>
     <java.version>21</java.version>

@@ -10,7 +10,7 @@ import java.time.Duration;
 /**
  * {@code java -jar app.jar healthcheck}: asks the running API for
  * {@code /readyz} and exits 0 or 1. The container has no shell and no curl, so
- * the Docker health check runs the app itself, like the Go image does.
+ * the Docker health check runs the app itself.
  */
 final class Healthcheck {
 

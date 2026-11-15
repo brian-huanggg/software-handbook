@@ -7,7 +7,7 @@ import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerF
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Applies {@code ADDR} ({@code :8080} or {@code host:port}), the Go listen address format. */
+/** Applies {@code ADDR} ({@code :8080} or {@code host:port}). */
 @Configuration(proxyBeanMethods = false)
 class ListenAddressConfig {
 

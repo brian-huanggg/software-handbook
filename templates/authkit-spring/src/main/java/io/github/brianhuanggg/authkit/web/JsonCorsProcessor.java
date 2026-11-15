@@ -10,7 +10,7 @@ import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.DefaultCorsProcessor;
 
 /**
- * Spring's CORS processing, adjusted to the Go API's contract:
+ * Spring's CORS processing, adjusted to this API's contract:
  * <ul>
  * <li>an approved preflight answers 204, not 200;</li>
  * <li>a rejected preflight answers a JSON 403;</li>

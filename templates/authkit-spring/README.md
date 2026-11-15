@@ -1,9 +1,8 @@
 # authkit-spring
 
-The [Go authkit](../authkit) template, rebuilt on Spring Boot 4 (Spring
-Security 7, Jackson 3) and Java 21. It is the same HTTP API and the same
-database schema, so you can compare the two stacks, run both against one
-database, and use whichever fits your team.
+A starting-point auth service for a web app or SaaS, on Spring Boot 4
+(Spring Security 7, Jackson 3) and Java 21. It offers two parallel modes behind
+one HTTP API and one Postgres schema:
 
 | | Session mode | Token mode |
 |---|---|---|
@@ -12,48 +11,72 @@ database, and use whichever fits your team.
 | Revocation | Immediate (delete the row) | Access JWT lives until it expires (15 min); refresh chain is revoked immediately |
 | Endpoints | `/session/*` | `/token/*` |
 
-The contract is [../authkit/api/openapi.yaml](../authkit/api/openapi.yaml). The
-Go end-to-end suite in [../authkit/integration](../authkit/integration) runs
-unchanged against this API and is the acceptance test (see
-[Tests](#tests)).
+The contract is [api/openapi.yaml](api/openapi.yaml).
 
-> This is a learning and starting-point template, not a hosted product. Read
-> [Known limitations](#known-limitations) before using it in production.
-> [Differences from Go](#differences-from-go) explains what Spring Security
-> does for you here and what stayed custom, and why.
+> This is a template, not a hosted product: you copy it and own the code. Read
+> [Before production](#before-production) and
+> [Known limitations](#known-limitations) before you ship it.
+
+## Use it as a template
+
+1. Copy this directory to a new project and run `git init` there.
+2. Rename the Maven coordinates and the Java package:
+
+   ```sh
+   ./rename.sh com.acme acme-auth    # groupId, artifactId; package: com.acme.acmeauth
+   ./mvnw test                       # needs Docker for the Postgres tests
+   ```
+
+   The script deletes itself when it succeeds. It moves the source trees, rewrites `package` and `import` lines,
+   `pom.xml`, the `Dockerfile` and the paths in this README. Class names
+   (`AuthkitApplication`, `AuthkitProperties`) and the `authkit.*` property
+   prefix stay; rename them in your IDE if you like.
+3. Decide how your app uses it:
+   - **Run it as the auth service** of your product. Your other services read
+     the `Authorization` header or the cookie through this API, or verify the
+     JWT themselves (see [HS256 with one shared secret](#known-limitations)).
+   - **Grow it into your app.** It is an ordinary Spring Boot project. Add your
+     own controllers and `SecurityFilterChain` rules next to the existing ones.
+4. Put your own values in: the environment variables in
+   [Configuration](#configuration), the Postgres credentials in
+   [docker-compose.yml](docker-compose.yml) (local use only), the `<description>`
+   in `pom.xml`, and the license.
+
+Things you will most likely change:
+
+| Want | Where |
+|---|---|
+| More user fields (name, tenant) | A new Flyway migration in [src/main/resources/db/migration](src/main/resources/db/migration), then [UserRepository](src/main/java/io/github/brianhuanggg/authkit/user/UserRepository.java) |
+| Role-based rules | Add `hasRole(...)` to a chain in [SecurityConfig](src/main/java/io/github/brianhuanggg/authkit/config/SecurityConfig.java). Roles come from `users.role` |
+| Extra JWT claims | [JwtService](src/main/java/io/github/brianhuanggg/authkit/token/JwtService.java) |
+| Session or token lifetimes | Constants named in [Configuration](#configuration) |
+| Only one of the two modes | Delete the unused controller, filter chain and store; the other mode does not depend on it |
+| Redis instead of Postgres for sessions | Implement `SessionStore` or `RefreshStore`; the stores are interfaces with in-memory and Postgres versions |
+
+Never edit an applied Flyway migration. Add `V3__...sql` instead.
 
 ## Quick start
 
 Requirements: Java 21 and Docker (the tests start Postgres with
-Testcontainers). Go 1.26 is only needed for `make integration`, because the
-end-to-end suite is written in Go.
+Testcontainers).
 
 ### Full stack in containers
 
 ```sh
-make stack-up        # db, migrations, api-java (:8082). Uses ../authkit/docker-compose.yml
+make stack-up        # Postgres and the API on :8080 (docker-compose.yml); JWT_SECRET is generated per run
 make stack-down
 ```
 
-The Java API is an opt-in Compose service (`--profile java`) next to the Go
-one. It listens on host port **8082** so both can run at once. `JWT_SECRET` is
-generated for each run; export your own to keep it stable.
-
-To use the React demo from [../authkit/web](../authkit/web) with the Java API,
-point it at port 8082. Run this in `../authkit`:
-
-```sh
-WEB_API_URL=http://localhost:8082 docker compose --profile java up -d --build api-java web
-open http://localhost:3000
-```
+Export `JWT_SECRET` (at least 32 bytes) to keep tokens valid across runs.
 
 ### API on the host
 
 ```sh
-docker compose -f ../authkit/docker-compose.yml up -d db   # Postgres only
+docker compose up -d db                                       # Postgres only
 DATABASE_URL='postgres://authkit:authkit@localhost:5432/authkit?sslmode=disable' \
 JWT_SECRET=$(openssl rand -hex 32) \
 CORS_ORIGINS=http://localhost:3000 \
+COOKIE_INSECURE=1 \
 ./mvnw spring-boot:run
 ```
 
@@ -64,19 +87,14 @@ No separate migration step: Flyway applies the schema when the app starts.
 ```sh
 make test            # = ./mvnw test: unit tests plus MockMvc and Postgres tests (Testcontainers, postgres:16)
                      # The security-chain tests (SecurityTest) need no Docker: users are in memory
-make integration     # starts the stack, then runs the Go end-to-end suite against :8082
 ```
-
-`make integration` raises both rate-limit bursts to 1000, because the suite
-logs in dozens of times from one IP. The rate limiter has its own tests.
 
 ## Configuration
 
-All settings come from the same environment variables as the Go API, so a
-Compose file or deployment can swap one for the other. They are bound to the
-`AuthkitProperties` record through [application.yml](src/main/resources/application.yml).
-The app refuses to start if a required one is missing or invalid, so it never
-runs with an unsafe default.
+All settings are environment variables, bound to the `AuthkitProperties`
+record through [application.yml](src/main/resources/application.yml). The app
+refuses to start if a required one is missing or invalid, so it never runs with
+an unsafe default.
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
@@ -102,15 +120,12 @@ access token 15 min
 janitor every 10 min
 ([Janitor](src/main/java/io/github/brianhuanggg/authkit/maintenance/Janitor.java)).
 
-Pepper and JWT key rotation work exactly as in the Go README: set the new
-value, move the old one to the `*_PREVIOUS_*` variable, and remove it once
-nothing depends on it.
+Pepper and JWT key rotation: set the new value, move the old one to the
+`*_PREVIOUS_*` variable, and remove it once nothing depends on it.
 
 ## HTTP API
 
-Identical to the Go API; see [../authkit/api/openapi.yaml](../authkit/api/openapi.yaml)
-and the request examples in [../authkit/README.md](../authkit/README.md#http-api)
-(use port 8082).
+The full contract is [api/openapi.yaml](api/openapi.yaml). Summary:
 
 | Method and path | Auth | Description |
 |---|---|---|
@@ -128,11 +143,23 @@ and the request examples in [../authkit/README.md](../authkit/README.md#http-api
 Every `POST` must carry `X-Requested-With: XMLHttpRequest`. Every error is JSON
 `{"error": "..."}` and every response carries `Cache-Control: no-store`.
 
-## Design
+Example, token mode (the stack from `make stack-up` needs `COOKIE_INSECURE=1`
+for plain-HTTP `curl`, because the cookies are `Secure`):
 
-The behavior is the same as in Go, and the reasoning is in the
-[Go README](../authkit/README.md#design). This section lists where each part
-lives in Java.
+```sh
+curl -s -X POST localhost:8080/register \
+  -H 'Content-Type: application/json' -H 'X-Requested-With: XMLHttpRequest' \
+  -d '{"email":"a@example.com","password":"correct horse battery"}'
+
+curl -s -c jar -X POST localhost:8080/token/login \
+  -H 'Content-Type: application/json' -H 'X-Requested-With: XMLHttpRequest' \
+  -d '{"email":"a@example.com","password":"correct horse battery"}'
+# {"access_token":"...","token_type":"Bearer","expires_in":900}
+
+curl -s localhost:8080/token/me -H "Authorization: Bearer $ACCESS"
+```
+
+## Design
 
 ### Layering
 
@@ -165,11 +192,10 @@ All three come from JSON handlers, so the error shape never changes.
 
 ### Sessions
 
-Same design as Go: 32 random bytes, stored as SHA-256, 24 h expiry checked on
-read, login deletes any session the request already carried (fixation), roles
-read from `users` on every request (one query that joins `sessions` and
-`users`). The cookie is `sid`, `HttpOnly`, `Secure`,
-`SameSite=Lax`, `Path=/`.
+32 random bytes, stored as SHA-256, 24 h expiry checked on read, login deletes
+any session the request already carried (fixation), roles read from `users` on
+every request (one query that joins `sessions` and `users`). The cookie is
+`sid`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`.
 [SessionAuthenticationFilter](src/main/java/io/github/brianhuanggg/authkit/session/SessionAuthenticationFilter.java)
 puts an `AuthenticatedPrincipal` in the security context. Spring never creates
 an `HttpSession`.
@@ -177,8 +203,7 @@ an `HttpSession`.
 ### Tokens
 
 - **Access token**: HS256 JWT with `sub`, `iss`, `iat`, `exp` and `roles`, with
-  a `kid` derived from the key the same way as in Go. Tokens made by one API
-  verify in the other when both use the same secrets.
+  a `kid` derived from the key, so rotation needs no extra configuration.
   [JwtService](src/main/java/io/github/brianhuanggg/authkit/token/JwtService.java)
   signs with Spring's `NimbusJwtEncoder` and verifies with a `NimbusJwtDecoder`
   that pins HS256, selects the key by `kid`, and adds checks Spring does not
@@ -186,9 +211,9 @@ an `HttpSession`.
   non-UUID `sub`, an `iat` in the future, a `roles` claim that is not a list
   of strings, or when `exp` has been reached. There is no clock skew.
   Every failure is the same `401` with `WWW-Authenticate: Bearer realm="authkit"`.
-  As in Go, the `Authorization` header is read only on `GET /token/me`. Login,
-  refresh and logout ignore it, so a client that sends an expired access token
-  with `/token/refresh` can still refresh.
+  The `Authorization` header is read only on `GET /token/me`. Login, refresh and
+  logout ignore it, so a client that sends an expired access token with
+  `/token/refresh` can still refresh.
 - **Refresh token**: 32 random bytes stored as SHA-256, in the
   `refresh_token` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`,
   `Path=/token`).
@@ -214,9 +239,9 @@ an `HttpSession`.
 [PepperedArgon2Encoder](src/main/java/io/github/brianhuanggg/authkit/password/PepperedArgon2Encoder.java)
 is a Spring `PasswordEncoder`:
 
-- Argon2id with 19 MiB, 2 iterations, 1 thread, as a PHC string. Hashes made
-  by the Go API verify here and the other way round (a test checks Go-made
-  hashes, including the pepper id).
+- Argon2id with 19 MiB, 2 iterations, 1 thread, as a PHC string
+  (`$argon2id$v=19$m=...,t=...,p=...[,k=<pepper id>]$salt$hash`). A test checks
+  hashes made by another implementation of the format, including the pepper id.
 - HMAC-SHA256 pepper with a `k=<id>` parameter, so several peppers can verify
   at once. `upgradeEncoding` reports old parameters or a previous pepper, and
   the hash is replaced after a successful login. The update is conditional
@@ -227,10 +252,9 @@ is a Spring `PasswordEncoder`:
   takes one slot per 19 MiB of its memory cost, so a stored hash with a
   higher cost takes more slots, not one. A hash that cannot get its slots
   within 5 s fails, and the request gets `503` with `Retry-After: 1`. Request
-  threads never queue behind hashing without limit. Go waits instead, which is
-  cheap for goroutines but not for servlet threads.
+  threads never queue behind hashing without limit.
 - There is no `DelegatingPasswordEncoder` and so no `{argon2}` prefix: the
-  stored format must stay the same as Go's.
+  stored format is the bare PHC string.
 
 `/register` answers `202` with the same body, after the same hashing work, for
 a new and an existing email. Login goes through Spring's
@@ -272,22 +296,18 @@ with in-memory [Bucket4j](https://github.com/bucket4j/bucket4j) buckets:
 
 Spring's CSRF filter is off. Instead,
 [CsrfHeaderFilter](src/main/java/io/github/brianhuanggg/authkit/web/CsrfHeaderFilter.java)
-applies the Go rules to every unsafe method: `X-Requested-With` is required,
-and any `Origin` must be in `CORS_ORIGINS`. CORS is an explicit allowlist with
+applies to every unsafe method: `X-Requested-With` is required, and any
+`Origin` must be in `CORS_ORIGINS`. CORS is an explicit allowlist with
 credentials, never a wildcard. `GET` handlers must never change state.
 
 ### Database
 
-Flyway applies [V1 and V2](src/main/resources/db/migration), copies of the Go
-migrations, using `JdbcClient` and no JPA. The tables are the same:
-`users`, `sessions`, `refresh_tokens`.
-[FlywayConfig](src/main/java/io/github/brianhuanggg/authkit/config/FlywayConfig.java)
-lets Flyway adopt a schema that golang-migrate already created, which is what
-the Compose stack does. It records a baseline at version 2 only when
-golang-migrate's `schema_migrations` table is clean at version 2. It refuses to
-start on a dirty Go schema, on a Go schema at another version, or on any other
-non-empty schema without a Flyway history. Plain `baseline-on-migrate` is not
-used, because it would also adopt a schema that holds none of these tables.
+Flyway applies [V1 and V2](src/main/resources/db/migration) when the app
+starts, using `JdbcClient` and no JPA. The tables are `users`, `sessions` and
+`refresh_tokens`. Flyway refuses to start on a non-empty schema that has no
+Flyway history, so point `DATABASE_URL` at an empty database or at one this
+app created. To add to the schema, add a `V3__...sql` file; never edit V1 or V2
+once any database has run them.
 
 ### Deployment image
 
@@ -296,35 +316,35 @@ used, because it would also adopt a schema that holds none of these tables.
 the Compose health check runs `java -jar /app/app.jar healthcheck`, which
 calls `/readyz` and exits 0 or 1. Shutdown is graceful (10 s).
 
-## Differences from Go
+## What Spring does, and what stayed custom
 
-### What Spring Security and Spring Boot do
+Spring Security and Spring Boot do the following:
 
-| Concern | Spring piece | Go equivalent |
-|---|---|---|
-| Wiring the filters in order | Three `SecurityFilterChain` beans, lambda DSL only | `net/http` middleware stacked by hand |
-| Bearer token parsing and `401` flow | `oauth2ResourceServer(o -> o.jwt(...))`, Nimbus JOSE | `token.Bearer`, `golang-jwt` |
-| JWT signing and key lookup | `NimbusJwtEncoder`, `NimbusJwtDecoder` | `golang-jwt` |
-| Email and password check, timing protection, hash upgrade | `DaoAuthenticationProvider` with `UserDetailsPasswordService` | Written by hand in the login handler |
-| CORS | `CorsFilter` with a `CorsConfigurationSource` | `middleware.CORS` |
-| Turning off form login, HTTP Basic, logout, request cache, `HttpSession` | Security DSL and `SessionCreationPolicy.STATELESS` | Not applicable |
-| Config binding and fail-fast validation | `@ConfigurationProperties` record | `loadConfig` |
-| Migrations | Flyway | golang-migrate |
-| SQL | `JdbcClient` | `pgx` |
-| Janitor | `@Scheduled` | A goroutine ticker |
-| Graceful shutdown | `server.shutdown=graceful` | `http.Server.Shutdown` |
+| Concern | Spring piece |
+|---|---|
+| Wiring the filters in order | Three `SecurityFilterChain` beans, lambda DSL only |
+| Bearer token parsing and `401` flow | `oauth2ResourceServer(o -> o.jwt(...))`, Nimbus JOSE |
+| JWT signing and key lookup | `NimbusJwtEncoder`, `NimbusJwtDecoder` |
+| Email and password check, timing protection, hash upgrade | `DaoAuthenticationProvider` with `UserDetailsPasswordService` |
+| CORS | `CorsFilter` with a `CorsConfigurationSource` |
+| Turning off form login, HTTP Basic, logout, request cache, `HttpSession` | Security DSL and `SessionCreationPolicy.STATELESS` |
+| Config binding and fail-fast validation | `@ConfigurationProperties` record |
+| Migrations | Flyway |
+| SQL | `JdbcClient` |
+| Janitor | `@Scheduled` |
+| Graceful shutdown | `server.shutdown=graceful` |
 
-### What stayed custom, and why
+These parts are custom, and the reason for each:
 
-- **Sessions are not Spring Session.** Keeping hashed IDs in the same table as
-  Go, plus the per-request role lookup, is simpler than adapting Spring
-  Session's model. Spring is told to create no `HttpSession`.
+- **Sessions are not Spring Session.** Hashed IDs in their own table, plus the
+  per-request role lookup, are simpler than adapting Spring Session's model.
+  Spring is told to create no `HttpSession`.
 - **The password encoder is custom (BouncyCastle `Argon2BytesGenerator`).**
   Spring's `Argon2PasswordEncoder` cannot add the pepper `k=` parameter, read
   previous peppers, or cap parameters from a stored hash.
 - **CSRF is a custom filter**, not Spring's. Spring's CSRF protects
   form-style requests with a token; this API relies on a custom header plus an
-  `Origin` allowlist, as the Go API does.
+  `Origin` allowlist.
 - **The body size limit and the rate limiter are custom filters.** Spring has
   no 64 KiB limit that runs before everything else, and nothing keyed by IP
   and login email. Bucket4j does the bucket math; the keys, the IPv6 /64 rule
@@ -332,31 +352,33 @@ calls `/readyz` and exits 0 or 1. Shutdown is graceful (10 s).
 - **Refresh tokens are custom.** Spring Security has no rotating, reuse-
   detecting refresh token, and the atomic rotation is the one place where
   correctness depends on the exact SQL.
-- **JWT validation has extra rules** (see [Tokens](#tokens)) so both APIs
-  accept and reject the same tokens. Spring's own timestamp check accepts a
-  token at the exact `exp` second and the Go parser does not.
+- **JWT validation has extra rules** (see [Tokens](#tokens)). Spring's own
+  timestamp check accepts a token at the exact `exp` second; this one does not.
 - **The `Authentication` is our `AuthenticatedPrincipal`** in both modes, so
   controllers and `/session/me` and `/token/me` share one type.
 
-### Behavior that differs from the Go API
+## Before production
 
-- **Log field names differ.** JSON logs use Spring Boot's `logstash` layout
-  (`@timestamp`, `message`, `level`, `logger_name`, ...), so `duration_ms`
-  replaces Go's `duration` and the request fields are also repeated in the
-  message. A log pipeline needs a separate mapping for each stack.
-- **The access log counts bytes written through the response stream**, which is
-  how every response here is written.
-- **Startup is slower** and memory use is higher: a JVM, Flyway at boot, and
-  the image is about 339 MB. After the integration suite the container used
-  about 320 MiB.
-- **Schema management.** Flyway owns the schema in this project and
-  golang-migrate in the Go one. Both can run against one database (Flyway
-  adopts it at version 2), but a new migration has to be added to both
-  projects.
+- [ ] `JWT_SECRET` is random, at least 32 bytes, and comes from a secret store,
+      not from a file in the repository.
+- [ ] `PASSWORD_PEPPER` is set and kept outside the database. Existing hashes
+      upgrade to it at the next successful login.
+- [ ] `COOKIE_INSECURE` is unset and the API is served over HTTPS only.
+- [ ] `CORS_ORIGINS` lists your real front-end origins, and the front end and
+      the API are [same-site](#known-limitations).
+- [ ] The Postgres user and password in `docker-compose.yml` are for local use
+      only. Use your own credentials and a managed database.
+- [ ] Behind a reverse proxy, the client IP for rate limiting is derived from
+      the proxy's header. With more than one replica, the buckets are in a
+      shared store (see [Known limitations](#known-limitations)).
+- [ ] The container has enough memory for the hash slots (see
+      [Memory per hash](#known-limitations)).
+- [ ] You have added what this template lacks: email verification, password
+      reset, and MFA or account deletion if you need them.
+- [ ] `./mvnw test` passes on your copy, and you have a tested restore for the
+      database.
 
 ## Known limitations
-
-These match the Go template, with the Java-specific items at the end.
 
 - **Rate limits are per process.** With several replicas the effective limit
   is multiplied; move the buckets to a shared store (for example Redis) to
@@ -376,13 +398,13 @@ These match the Go template, with the Java-specific items at the end.
 - **Roles in the demo** come from `users.role`; no route uses a role rule. Add
   `hasRole(...)` to a chain to use it.
 - **HS256 with one shared secret.** Every service that verifies tokens can
-  also mint them.
+  also mint them. If other services must verify tokens, move to an asymmetric
+  key and publish a JWKS endpoint.
 - **No metrics or tracing.**
 - **Memory per hash.** Each Argon2id hash allocates 19 MiB on the Java heap.
   Slot weighting keeps all hashing together near `availableProcessors()`
-  times 19 MiB. One tampered row can still use up to the 256 MiB cap, the same
-  cap as Go. Size the container for the larger of the two, on top of the rest
-  of the app.
+  times 19 MiB. One tampered row can still use up to the 256 MiB cap. Size the
+  container for the larger of the two, on top of the rest of the app.
 - **Overload answers `503`.** When hashing stays saturated for 5 s, register
   and login answer `503` instead of waiting. A login whose password was
   correct can also get `503` if the hash upgrade, which runs after the check,
@@ -393,7 +415,7 @@ These match the Go template, with the Java-specific items at the end.
 - **Tied to Spring Boot 4.** It uses Spring Security 7 (lambda DSL only) and
   Jackson 3 (`tools.jackson.*`). Boot 3 code and snippets that use the old DSL
   or `com.fasterxml.jackson` imports will not compile against it.
-- **The front end is the Go template's React demo** and is not copied here.
+- **No front end.** This is an API only.
 
 ## Layout
 
@@ -412,5 +434,12 @@ src/main/java/io/github/brianhuanggg/authkit/
   web/           controllers, error handling, request log, body size, CSRF and cache filters
 src/main/resources/db/migration/    Flyway migrations
 src/test/                           JUnit 5, MockMvc, Testcontainers
-Dockerfile, Makefile                image, and `make integration` against the Go suite
+api/openapi.yaml                    the HTTP contract
+Dockerfile, docker-compose.yml      image, and a local Postgres + API stack
+Makefile                            test, package, stack-up, stack-down
+rename.sh                           one-time rename; deletes itself after a successful run
 ```
+
+## License
+
+[MIT](LICENSE).

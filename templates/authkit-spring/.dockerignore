@@ -6,3 +6,6 @@ target/
 .env*
 TODO.md
 Makefile
+docker-compose.yml
+rename.sh
+api/

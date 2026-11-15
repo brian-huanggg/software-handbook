@@ -35,6 +35,10 @@ const shouldRenderSearch =
 		justify-content: space-between;
 		align-items: center;
 		height: 100%;
+		/* Same cap as the page frame (src/styles/custom.css), minus the
+		   header's own padding, so the title stays over the sidebar. */
+		max-width: calc(var(--hb-frame-max, 100vw) - 2 * var(--sl-nav-pad-x));
+		margin-inline: auto;
 	}
 
 	.title-wrapper {
@@ -101,6 +105,31 @@ const shouldRenderSearch =
 				1fr
 				auto;
 			align-content: center;
+		}
+	}
+
+	/* Our layout (custom.css) centres the text column left of a fixed-width
+	   outline, so Starlight's formula above no longer matches it. Here the
+	   first column ends where the text starts:
+	     sidebar - nav padding + content padding
+	     + half the free width of the main pane. */
+	@media (min-width: 72rem) {
+		.header {
+			--__content-start: calc(
+				var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x) + var(--sl-content-pad-x) +
+					max(
+						0rem,
+						(
+								100% + 2 * var(--sl-nav-pad-x) - var(--sl-content-inline-start, 0rem) -
+									var(--hb-toc-space, 0rem) - var(--sl-content-width) - 2 *
+									var(--sl-content-pad-x)
+							) / 2
+					)
+			);
+			grid-template-columns:
+				minmax(calc(var(--__content-start) - var(--sl-nav-gap)), auto)
+				1fr
+				auto;
 		}
 	}
 </style>

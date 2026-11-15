@@ -18,6 +18,13 @@
 	--hb-radius-s: 0.5rem;
 	--hb-radius-m: 0.75rem;
 
+	/* Layout: the page stops growing past --hb-frame-max and centres; the
+	   space outside becomes plain margin. The % resolves where the property
+	   is used (padding or inset), so it excludes any scrollbar. */
+	--hb-frame-max: 90rem;
+	--hb-frame-gutter: max(0px, (100% - var(--hb-frame-max)) / 2);
+	--hb-toc-width: 15rem;
+
 	/* Latin first so letters and digits use the Latin face; CJK falls through. */
 	--hb-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC',
 		'Noto Sans TC', 'Noto Sans CJK TC', 'Microsoft JhengHei', sans-serif;
@@ -47,6 +54,26 @@
 	--sl-color-accent-high: hsl(212, 95%, 86%);
 
 	--sl-content-width: 42rem; /* about 40 CJK characters per line at 16px */
+
+	/* A flatter heading scale: CJK glyphs read larger than Latin at the same
+	   size. Unlayered, so this also beats Starlight's desktop media query. */
+	--sl-text-h1: 2rem;
+	--sl-text-h2: 1.5rem;
+	--sl-text-h3: 1.25rem;
+	--sl-text-h4: 1.125rem;
+	--sl-text-h5: 1rem;
+	--sl-line-height-headings: 1.4; /* wrapped CJK headings need room */
+
+	/* Space between Markdown blocks (paragraphs, tables, code). */
+	--sl-content-gap-y: 1.25rem;
+}
+
+/* Header.astro reads this to align the search box with the text column. */
+:root[data-has-toc] {
+	--hb-toc-space: var(--hb-toc-width);
+}
+:root:not([data-has-toc]) {
+	--hb-toc-space: 0rem;
 }
 
 /* In light mode Starlight inverts the scale: "white" is the darkest text. */
@@ -92,8 +119,66 @@
 	text-autospace: no-autospace;
 }
 
+/* Headings: more space above than below, so each one opens a section.
+   Starlight wraps h2–h6 in .sl-heading-wrapper (anchor links), so cover both. */
+.sl-markdown-content
+	:not(h1, h2, h3, h4, h5, h6, .sl-heading-wrapper)
+	+ :is(h1, h2, h3, h4, h5, h6, .sl-heading-wrapper) {
+	margin-top: 2em;
+}
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6, .sl-heading-wrapper) + * {
+	margin-top: 0.75rem;
+}
+
+.sl-markdown-content :is(th, td) {
+	padding-block: 0.6em;
+}
+
 /* ---------------------------------------------------------------------------
- * 4. Shape.
+ * 4. Layout (desktop). Starlight's defaults give the outline column 300px
+ *    plus half of all leftover width; on wide screens that is ~800px.
+ * ------------------------------------------------------------------------- */
+@media (min-width: 50rem) {
+	.sidebar-pane {
+		inset-inline-start: var(--hb-frame-gutter);
+	}
+
+	.main-frame {
+		padding-inline-start: calc(var(--sl-content-inline-start, 0rem) + var(--hb-frame-gutter));
+		padding-inline-end: var(--hb-frame-gutter);
+	}
+}
+
+@media (min-width: 72rem) {
+	.right-sidebar-container,
+	.right-sidebar {
+		width: var(--hb-toc-width);
+	}
+
+	/* Starlight sizes the outline's inner box from --sl-sidebar-width and
+	   100vw, which overflows the narrower column; let it fill the column. */
+	.right-sidebar-panel .sl-container {
+		width: auto;
+		max-width: none;
+	}
+
+	/* Text column centred in the space left of a fixed-width outline. */
+	[data-has-toc] .main-pane {
+		--sl-content-margin-inline: auto;
+		width: calc(100% - var(--hb-toc-width));
+	}
+}
+
+/* Once there is margin outside the frame, close the sidebar's open edge.
+   Slightly past 90rem so the border never sits on the viewport edge. */
+@media (min-width: 91rem) {
+	.sidebar-pane {
+		border-inline-start: 1px solid var(--sl-color-hairline-shade);
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * 5. Shape.
  * ------------------------------------------------------------------------- */
 .sl-markdown-content :is(img, video) {
 	border-radius: var(--hb-radius-s);

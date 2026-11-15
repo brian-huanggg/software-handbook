@@ -36,6 +36,7 @@
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
+| dangling record | 懸空紀錄 | 懸掛紀錄 | 資料庫裡的紀錄指向不存在的檔案；比孤兒檔案更糟，使用者看得到 |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
 | denormalization | 反正規化 | 去正規化 | 量到瓶頸後，刻意把資料存在多處換取讀取效能；要有同步與重建機制 |
 | deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
@@ -75,6 +76,7 @@
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
+| multipart/form-data | multipart/form-data | 多部分表單 | 不翻譯；請求本體切成多個 part，每個 part 是欄位或檔案（RFC 7578） |
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
 | MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
@@ -82,6 +84,7 @@
 | opaque token | 不透明 token | | 不翻譯；內容沒有意義的隨機字串，伺服器靠查表驗證，可隨時撤銷、不洩漏內容 |
 | opaque origin | 不透明 origin | | 序列化為 `null`，與任何 origin 都不相同 |
 | origin | origin | 來源、源 | 不翻譯；指 scheme、host、port 三者組成的組合 |
+| orphan file | 孤兒檔案 | 孤立檔案 | 物件儲存裡沒有任何紀錄引用的檔案；無害但佔空間，靠定期掃描清除 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
@@ -122,6 +125,7 @@
 | software bill of materials (SBOM) | 軟體物料清單（SBOM） | 軟體材料清單 | 列出映像內所有元件與版本；第一次出現寫全名，之後只寫 SBOM |
 | source | 來源 | | 前端程式中攻擊者可控制的輸入位置（如 `location.hash`、`postMessage`）；與 sink 相對 |
 | split-brain | split-brain | 腦裂 | 不翻譯；叢集分裂後兩邊都以為自己是主節點 |
+| staging area | 暫存區 | 暫存目錄 | 上傳先寫進的位置，與正式位置同一檔案系統，成功後以 rename 提交 |
 | stateful authentication | 有狀態認證 | | 伺服器保存每次登入的紀錄，每個請求靠查表驗證；可立即撤銷，代價是每個請求一次儲存往返 |
 | stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
 | state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |

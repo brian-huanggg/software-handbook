@@ -39,6 +39,12 @@ const shouldRenderSearch =
 	let lastY = window.scrollY;
 	let ticking = false;
 
+	// The attribute on <html> lets the fixed sidebars move up with the header.
+	function setHidden(header: Element, hidden: boolean) {
+		header.classList.toggle('header-hidden', hidden);
+		document.documentElement.toggleAttribute('data-header-hidden', hidden);
+	}
+
 	function update() {
 		ticking = false;
 		const header = document.querySelector('header.header');
@@ -46,8 +52,8 @@ const shouldRenderSearch =
 		const y = Math.max(window.scrollY, 0);
 		const hide = desktop.matches && y > header.clientHeight && y > lastY + DELTA;
 		const show = y < lastY - DELTA || y <= header.clientHeight || !desktop.matches;
-		if (hide && !header.contains(document.activeElement)) header.classList.add('header-hidden');
-		else if (show) header.classList.remove('header-hidden');
+		if (hide && !header.contains(document.activeElement)) setHidden(header, true);
+		else if (show) setHidden(header, false);
 		if (hide || show) lastY = y;
 	}
 
@@ -64,7 +70,7 @@ const shouldRenderSearch =
 	// Reveal when keyboard focus lands inside the header.
 	document.addEventListener('focusin', (e) => {
 		const header = document.querySelector('header.header');
-		if (header?.contains(e.target as Node)) header.classList.remove('header-hidden');
+		if (header?.contains(e.target as Node)) setHidden(header, false);
 	});
 </script>
 
@@ -75,8 +81,27 @@ const shouldRenderSearch =
 	header.header.header-hidden {
 		transform: translateY(-100%);
 	}
+	/* Fixed sidebars start below the header; follow it so no gap is left. */
+	@media (min-width: 50rem) {
+		.sidebar-pane {
+			transition: inset-block-start 0.25s ease;
+		}
+		:root[data-header-hidden] .sidebar-pane {
+			inset-block-start: 0;
+		}
+	}
+	@media (min-width: 72rem) {
+		.right-sidebar {
+			transition: padding-top 0.25s ease;
+		}
+		:root[data-header-hidden] .right-sidebar {
+			padding-top: 0;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
-		header.header {
+		header.header,
+		.sidebar-pane,
+		.right-sidebar {
 			transition: none;
 		}
 	}

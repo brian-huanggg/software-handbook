@@ -50,6 +50,7 @@
 | decompression bomb | 壓縮炸彈 | 解壓縮炸彈 | 檔案很小、展開後極大（zip 內容、圖片像素數）；上限要算實際產生的 byte 或像素，不信標頭；CWE-409 |
 | denormalization | 反正規化 | 去正規化 | 量到瓶頸後，刻意把資料存在多處換取讀取效能；要有同步與重建機制 |
 | deny-by-default | deny-by-default | 預設拒絕 | 不翻譯；沒有明確允許的動作一律拒絕 |
+| detach | 脫離（detach） | 分離 | 終端多工器中只關掉畫面（client），server 與窗格裡的程序繼續跑；之後可重新接回 |
 | digest | digest | 摘要 | 不翻譯；映像內容的 SHA-256 雜湊，`@sha256:...` 固定內容 |
 | distroless image | distroless 映像 | 無發行版映像 | 只含應用程式與執行期相依，無 shell 與套件管理器 |
 | DOM-based XSS | DOM 型 XSS | | 酬載由前端 JavaScript 從來源寫進出口（如 `innerHTML`）；`#` 之後的片段不送到伺服器，伺服器看不到 |
@@ -107,6 +108,7 @@
 | outbox pattern | Outbox 模式 | 發件箱模式 | 把「之後要做的事」和業務資料寫在同一個交易的表，再由背景程序送出；跨系統一致性的待刪除表是它的最小版本 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
+| pane | 窗格（pane） | 面板 | 終端多工器中的一個真正的終端機，可分割、可脫離後繼續執行；Herdr 的 agent 跑在窗格裡 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
 | password hashing | 密碼雜湊 | 口令哈希 | 用刻意設計成慢且吃記憶體的函式處理密碼後再儲存；與 SHA-256 等通用雜湊不同類 |
 | path traversal | 路徑穿越 | 目錄遍歷 | 用 `../` 等外部字串讓路徑跳出預定目錄；`filepath.Clean` 不擋，用 `filepath.IsLocal` 與 `os.Root`；CWE-22 |
@@ -164,6 +166,7 @@
 | sweeper | sweeper | 清掃器 | 不翻譯；背景程序，掃描待刪除表並冪等地刪除物件，成功後才刪該列 |
 | synchronizer token | CSRF token | 同步令牌 | 伺服器發、綁 session 的不可猜測值，不安全方法的請求必須帶上並由伺服器驗證 |
 | tag | tag | 標籤 | 不翻譯；映像上可被改指的名稱，與 digest 相對 |
+| terminal multiplexer | 終端多工器（terminal multiplexer） | 終端機復用器 | 讓一個終端機視窗分割成多個窗格，並可脫離後再接回的工具；如 tmux、Herdr |
 | Testcontainers | Testcontainers | | 不翻譯；在測試程式裡透過 Docker 啟動一次性真實服務的函式庫，Go 版是 testcontainers-go |
 | thread | 執行緒 | 線程 | |
 | timeout | 逾時 | 超時 | |
@@ -180,6 +183,8 @@
 | wait strategy | 等待策略 | 等待機制 | 容器啟動後持續檢查某個條件（log、port、SQL 連線）、成立才算就緒；用來取代 `time.Sleep` |
 | weighted round robin | 加權輪詢 | 加權循環 | 依 weight 比例輪流分配請求；nginx upstream 的預設方式 |
 | whiteout | whiteout | 白除、刪除標記 | 不翻譯；後面 layer 以 `.wh.` 前綴檔標示「這個檔案已刪除」，舊 layer 內容不變 |
+| workspace | workspace | 工作區 | 不翻譯；Herdr 中專案層級的容器，擁有 tabs 與窗格，建議一個 repo 或任務開一個 |
+| worktree | worktree | 工作樹 | 不翻譯；Git 讓同一個 repo 同時有多份工作目錄的功能，各在不同分支；多 Agent 並行時用來隔離改動 |
 | write-ahead log (WAL) | 預寫日誌（WAL） |  | 資料變更先寫進日誌再寫進資料檔；Postgres 的串流複寫就是傳送 WAL |
 | write-set | write-set | 寫入集 | 不翻譯；一筆交易要複寫給其他節點的變更內容 |
 | zip slip | zip slip | | 不翻譯；zip 項目名稱含 `../`，解壓時寫到目錄外；Snyk 2018 年公開 |

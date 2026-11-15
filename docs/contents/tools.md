@@ -129,3 +129,7 @@ verified:
 ### A.1 任務與記憶管理
 
 - [x] [Agent 任務與記憶管理](/tools/a-agent-dev/a-1-task-memory/beads-task-memory/)
+
+### A.2 多 Agent 並行與監控
+
+- [x] [Herdr 多 Agent 並行與監控](/tools/a-agent-dev/a-2-multi-agent/herdr-multi-agent/)

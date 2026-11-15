@@ -25,22 +25,28 @@
 
 ### 0.1 Linux 主機基礎
 
-- [ ] 套件管理、使用者與權限、檔案系統佈局
-- [ ] systemd：unit、service、把服務設成開機自啟
-- [ ] journald 與日誌輪替
-- [ ] 網路設定、防火牆入門
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 套件管理、使用者與權限 | 檔案系統佈局 |
+| ⬜ | systemd 服務與開機自啟 | unit、service、把服務設成開機自啟 |
+| ⬜ | journald 與日誌輪替 |  |
+| ⬜ | 網路設定與防火牆入門 |  |
 
 ### 0.2 Shell 自動化
 
-- [ ] 可重複執行的 Shell 腳本：`set -euo pipefail`、冪等
-- [ ] cron 與 systemd timer 排程
-- [ ] 把短網址服務以 systemd 服務手動部署到一台主機
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 可重複執行的 Shell 腳本 | `set -euo pipefail`、冪等 |
+| ⬜ | cron 與 timer 排程 | systemd timer 與 cron 兩種排程方式 |
+| ⬜ | 手動部署短網址服務 | 以 systemd 服務部署到一台主機 |
 
 ### 0.3 除錯與觀察一台主機
 
-- [ ] 看 CPU、記憶體、磁碟、網路：`top`、`ss`、`df`、`iostat`
-- [ ] 追一個行程、追一條連線
-- [ ] 常見「服務起不來」的排查順序
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 觀察 CPU、記憶體、磁碟、網路 | `top`、`ss`、`df`、`iostat` |
+| ⬜ | 追一個行程與一條連線 |  |
+| ⬜ | 「服務起不來」的排查順序 | 常見情況的排查順序 |
 
 ## L1 交付流水線：讓程式自動變成映像
 
@@ -48,30 +54,38 @@
 
 ### 1.1 Git 工作流
 
-- [ ] 分支策略：trunk-based 與 feature branch 的取捨
-- [ ] PR 與 code review 流程
-- [ ] 語意化版本與標籤、變更紀錄
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 分支策略 | trunk-based 與 feature branch 的取捨 |
+| ⬜ | PR 與 code review 流程 |  |
+| ⬜ | 語意化版本、標籤與變更紀錄 |  |
 
 ### 1.2 容器映像
 
-- [ ] 從 Dockerfile 到映像：layer、快取、multi-stage build
-- [ ] 把映像做小、做安全：非 root、最小基底
-- [x] Distroless 映像：去掉 shell 與套件管理器以縮小攻擊面，及其除錯取捨 → [文章](../../site/src/content/docs/devops/l1/1-2-container-image/distroless-image.md)
-- [x] Golden Image：組織核准的 base image、固定 digest、掃描與簽章，以及如何強制只能從它開始 → [文章](../../site/src/content/docs/devops/l1/1-2-container-image/golden-image.md)
-- [ ] 映像倉庫：推送、拉取、標籤策略
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 從 Dockerfile 到映像 | layer、快取、multi-stage build |
+| ⬜ | 把映像做小做安全 | 非 root、最小基底 |
+| ✅ | [Distroless 映像](../../site/src/content/docs/devops/l1/1-2-container-image/distroless-image.md) | 用 multi-stage build 把 Go 服務放進 distroless 映像，並知道沒有 shell 之後怎麼除錯。 |
+| ✅ | [Golden Image](../../site/src/content/docs/devops/l1/1-2-container-image/golden-image.md) | 建立一份受信任的基底映像清單，用 digest、掃描、簽章把關，並用 Conftest 擋下任何不從它開始的 Dockerfile。 |
+| ⬜ | 映像倉庫 | 推送、拉取、標籤策略 |
 
 ### 1.3 持續整合（CI）
 
-- [ ] CI 的核心概念：觸發、工作、產物、快取
-- [ ] 一條流水線：lint、測試、建置、掃描、推映像
-- [ ] 把機密放進 CI 的正確方式（不寫進 repo）
-- [ ] Azure Pipelines：YAML、stage／job／step、agent pool、變數群組與服務連線
-- [ ] 安全掃描閘門：SAST（Semgrep）、SCA（WhiteSource／Mend）、基底映像掃描、秘密偵測，及失敗門檻與例外管理
-- [ ] 測試覆蓋率閘門：在流水線發布覆蓋率報告並設定最低門檻
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | CI 的核心概念 | 觸發、工作、產物、快取 |
+| ⬜ | 一條完整流水線 | lint、測試、建置、掃描、推映像 |
+| ⬜ | CI 的機密處理 | 把機密放進 CI 的正確方式，不寫進 repo |
+| ⬜ | Azure Pipelines | YAML、stage／job／step、agent pool、變數群組與服務連線 |
+| ⬜ | 安全掃描閘門 | SAST（Semgrep）、SCA（WhiteSource／Mend）、基底映像掃描、秘密偵測，及失敗門檻與例外管理 |
+| ⬜ | 測試覆蓋率閘門 | 在流水線發布覆蓋率報告並設定最低門檻 |
 
 ### 1.4 小結
 
-- [ ] 為短網址服務建一條 CI：提交即自動測試並產出映像推進倉庫
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 為短網址服務建一條 CI | 提交即自動測試並產出映像推進倉庫 |
 
 ## L2 基礎設施即程式碼：用程式碼重建環境
 
@@ -79,23 +93,29 @@
 
 ### 2.1 Terraform 基礎
 
-- [ ] 宣告式思維、provider、resource、state
-- [ ] 變數、輸出、模組化
-- [ ] plan 與 apply 的工作流、state 放哪裡
-- [ ] 用 Terraform 開出跑短網址服務所需的機器與網路
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | Terraform 核心概念 | 宣告式思維、provider、resource、state |
+| ⬜ | Terraform 變數、輸出與模組 |  |
+| ⬜ | plan 與 apply 工作流 | state 放哪裡 |
+| ⬜ | 用 Terraform 建立服務環境 | 開出跑短網址服務所需的機器與網路 |
 
 ### 2.2 組態管理（Ansible）
 
-- [ ] playbook、inventory、role
-- [ ] 冪等的組態：把 L0 手動做的事寫成 Ansible
-- [ ] 機密：vault 與外部秘密來源
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | Ansible 基本元件 | playbook、inventory、role |
+| ⬜ | 冪等的 Ansible 組態 | 把 L0 手動做的事寫成 Ansible |
+| ⬜ | Ansible 機密管理 | vault 與外部秘密來源 |
 
 ### 2.3 環境與秘密
 
-- [ ] dev／staging／prod 的分離
-- [ ] 秘密管理：集中式秘密庫的概念與取捨
-- [ ] HashiCorp Vault：KV、動態機密、Kubernetes 認證與注入（Agent Injector、CSI、External Secrets）
-- [ ] 設定與環境分離（Twelve-Factor 回顧）
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | dev／staging／prod 分離 |  |
+| ⬜ | 集中式秘密管理 | 集中式秘密庫的概念與取捨 |
+| ⬜ | HashiCorp Vault | KV、動態機密、K8s 認證與注入（Agent Injector、CSI、External Secrets） |
+| ⬜ | 設定與環境分離 | Twelve-Factor 回顧 |
 
 ## L3 叢集營運：在 Kubernetes 上跑服務
 
@@ -103,36 +123,44 @@
 
 ### 3.1 Kubernetes 核心
 
-- [ ] Pod、Deployment、Service、Ingress 各自解決什麼
-- [ ] ConfigMap、Secret、資源限制與請求
-- [ ] 探針：liveness、readiness、startup
-- [ ] 有狀態服務與儲存：StatefulSet、PVC，MariaDB Galera 與 MinIO 在 K8s 上的部署考量
-- [ ] Ingress 與同源前後端：`/api` 路徑分流、Nginx 靜態站、TLS 終結
-- [ ] 把短網址服務部署上一座單節點叢集
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | Kubernetes 核心物件 | Pod、Deployment、Service、Ingress 各自解決什麼 |
+| ⬜ | ConfigMap、Secret 與資源 | 資源限制與請求 |
+| ⬜ | Kubernetes 探針 | liveness、readiness、startup |
+| ⬜ | 有狀態服務與儲存 | StatefulSet、PVC，MariaDB Galera 與 MinIO 在 K8s 上的部署考量 |
+| ⬜ | Ingress 與同源前後端 | `/api` 路徑分流、Nginx 靜態站、TLS 終結 |
+| ⬜ | 部署短網址服務到單節點叢集 |  |
 
 ### 3.2 套件化與發布
 
-- [ ] Helm：chart、values、release
-- [ ] 寫一個自己的 chart：templates、values 分環境、`helm lint`／`helm template`、migration Job 與 hooks
-- [ ] 升級、回滾、版本管理
-- [ ] 部署策略：滾動、藍綠、金絲雀
-- [ ] Azure Release 與 GitOps 的銜接：CI 產出映像、更新 Helm values 的 Git commit、核准關卡
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | Helm 基礎 | chart、values、release |
+| ⬜ | 自寫 Helm chart | templates、分環境 values、lint／template、migration Job 與 hooks |
+| ⬜ | 升級、回滾與版本管理 |  |
+| ⬜ | 部署策略 | 滾動、藍綠、金絲雀 |
+| ⬜ | Azure 與 GitOps 銜接 | Azure Release：CI 產出映像、更新 Helm values 的 Git commit、核准關卡 |
 
 ### 3.3 GitOps
 
-- [ ] 宣告式交付：期望狀態放在 Git，由控制器收斂
-- [ ] pull-based 部署的優點與邊界
-- [ ] 把映像更新自動帶進叢集
-- [ ] ArgoCD 實作：Application、sync policy、health 與 drift、自動修復、回滾
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 宣告式交付 | 期望狀態放在 Git，由控制器收斂 |
+| ⬜ | pull-based 部署 | 優點與邊界 |
+| ⬜ | 自動帶入映像更新 |  |
+| ⬜ | ArgoCD 實作 | Application、sync policy、health 與 drift、自動修復、回滾 |
 
 ### 3.4 可觀測性
 
-- [ ] 三支柱回顧：日誌、指標、追蹤
-- [ ] Prometheus 蒐集指標、Grafana 看板
-- [ ] 集中式日誌（例如 Loki）
-- [ ] JSON 結構化日誌的蒐集：每行帶 request-id、欄位規範與敏感欄位過濾
-- [ ] 分散式追蹤入門
-- [ ] 告警：從指標到可行動的通知
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 可觀測性三支柱 | 日誌、指標、追蹤的回顧 |
+| ⬜ | Prometheus 與 Grafana | 蒐集指標、Grafana 看板 |
+| ⬜ | 集中式日誌 | 例如 Loki |
+| ⬜ | JSON 結構化日誌蒐集 | 每行帶 request-id、欄位規範與敏感欄位過濾 |
+| ⬜ | 分散式追蹤入門 |  |
+| ⬜ | 指標告警 | 從指標到可行動的通知 |
 
 ## L4 SRE 與平台：為可靠性與成本負責
 
@@ -140,22 +168,30 @@
 
 ### 4.1 可靠性工程
 
-- [ ] SLI、SLO、SLA 與錯誤預算
-- [ ] 值班與事故處理流程
-- [ ] 無責任事後審查（postmortem）
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | SLI、SLO、SLA 與錯誤預算 |  |
+| ⬜ | 值班與事故處理流程 |  |
+| ⬜ | 無責任事後審查 | postmortem |
 
 ### 4.2 容量與韌性
 
-- [ ] 容量規劃與自動擴縮
-- [ ] 混沌工程入門：主動注入故障
-- [ ] 災難復原：RPO、RTO、備份與還原演練
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 容量規劃與自動擴縮 |  |
+| ⬜ | 混沌工程入門 | 主動注入故障 |
+| ⬜ | 災難復原 | RPO、RTO、備份與還原演練 |
 
 ### 4.3 成本與平台
 
-- [ ] 雲端成本結構與 FinOps 入門
-- [ ] 內部開發者平台（Platform Engineering）：把上面所有工具包成自助服務
-- [ ] 自建 vs 買服務的取捨
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 雲端成本結構與 FinOps 入門 |  |
+| ⬜ | 內部開發者平台 | Platform Engineering：把上面所有工具包成自助服務 |
+| ⬜ | 自建 vs 買服務的取捨 |  |
 
 ### 4.4 收尾
 
-- [ ] 把短網址服務的整套交付與營運，寫成一份能交接的 runbook 與平台說明
+| 狀態 | 標題 | 說明 |
+| --- | --- | --- |
+| ⬜ | 交付與營運交接文件 | 把短網址服務的整套交付與營運，寫成一份能交接的 runbook 與平台說明 |

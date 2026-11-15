@@ -1,0 +1,28 @@
+# Regal lint config for the Rego policies in playground/.
+# The policies are written for conftest, which loads `package main` by default,
+# so the OPA layout rules below conflict with how conftest finds rules.
+rules:
+  testing:
+    # conftest verify runs tests from the same package as the rules.
+    test-outside-test-package:
+      level: ignore
+  idiomatic:
+    # Package is `main` for conftest; the directory is named `policy/`.
+    directory-package-mismatch:
+      level: ignore
+    # conftest discovers deny/warn/violation rules itself; no entrypoint annotation.
+    no-defined-entrypoint:
+      level: ignore
+    # `$"..."` interpolation may not be supported by the OPA bundled in the
+    # pinned conftest image; keep sprintf until conftest is upgraded.
+    prefer-string-interpolation:
+      level: ignore
+  style:
+    # Image references carry full sha256 digests and cannot be wrapped.
+    line-length:
+      level: ignore
+
+# exercise/ policies are left unfinished for the reader on purpose.
+ignore:
+  files:
+    - "**/exercise/**"

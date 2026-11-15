@@ -40,11 +40,9 @@ jobs:
             echo "::endgroup::"
           done
 
-      # Style report only. The existing policies have open findings, so this
-      # step does not fail the run yet; drop continue-on-error once they are fixed.
+      # Rule overrides and the exercise/ exclusion live in .regal/config.yaml.
       - uses: jdx/mise-action@v3
         with:
           install_args: regal
       - name: regal lint
-        continue-on-error: true
-        run: regal lint $(git ls-files '*.rego' | grep -v '/exercise/' | xargs -n1 dirname | sort -u)
+        run: regal lint $(git ls-files '*.rego' | xargs -n1 dirname | sort -u)

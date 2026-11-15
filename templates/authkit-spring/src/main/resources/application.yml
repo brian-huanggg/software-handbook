@@ -1,5 +1,5 @@
 server:
-  # Finish in-flight requests on SIGTERM, like the Go API's Shutdown(10s).
+  # Finish in-flight requests on SIGTERM.
   shutdown: graceful
   tomcat:
     connection-timeout: 10s
@@ -17,18 +17,10 @@ spring:
     exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   jackson:
     deserialization:
-      # Boot turns this off by default. Reject unknown JSON fields, like the Go API.
+      # Boot turns this off by default. Reject unknown JSON fields.
       fail-on-unknown-properties: true
-      # Exactly one JSON value, like the Go API: {...}{...} is rejected.
+      # Exactly one JSON value: {...}{...} is rejected.
       fail-on-trailing-tokens: true
-  flyway:
-    # The Go stack's migrate service may have created the schema already
-    # (golang-migrate, no flyway_schema_history). FlywayConfig baselines at
-    # this version only when golang-migrate's schema_migrations is clean at
-    # the same version; any other non-empty schema without a history fails.
-    # On an empty database Flyway runs V1 and V2. Do not turn on
-    # baseline-on-migrate: it would also adopt a schema without our tables.
-    baseline-version: "2"
 
 logging:
   pattern:
@@ -36,7 +28,7 @@ logging:
     # every line written while a request is handled. JSON logs get it as a field.
     correlation: "[%X{request_id:--}] "
 
-# Every setting comes from the same environment variables as the Go API.
+# Every setting comes from an environment variable.
 # An unset or empty variable means "use the default"; required ones are
 # checked in AuthkitProperties so the app never starts with an unsafe default.
 authkit:

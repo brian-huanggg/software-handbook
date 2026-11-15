@@ -146,7 +146,7 @@ class SecurityTest {
     }
 
     /**
-     * Like Go, only /token/me reads the Authorization header. A client that
+     * Only /token/me reads the Authorization header. A client that
      * sends its expired access token along must still be able to refresh and
      * log out: the resource server must not answer those requests itself.
      */

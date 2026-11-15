@@ -27,8 +27,8 @@ class AuthenticationConfig {
     }
 
     /**
-     * Email and password login. {@link DaoAuthenticationProvider} gives two things
-     * the Go API wrote by hand: an unknown email still costs one password check
+     * Email and password login. {@link DaoAuthenticationProvider} gives two things:
+     * an unknown email still costs one password check
      * (so timing does not reveal accounts), and a hash made with old parameters
      * or a previous pepper is upgraded after a successful login.
      *

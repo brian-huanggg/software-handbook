@@ -23,8 +23,7 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Argon2id with an optional HMAC pepper, writing the same PHC strings as the Go
- * {@code password} package, so either API can verify the other's hashes:
+ * Argon2id with an optional HMAC pepper, writing standard PHC strings:
  *
  * <pre>$argon2id$v=19$m=...,t=...,p=...[,k=&lt;pepper id&gt;]$salt$hash</pre>
  *
@@ -56,8 +55,7 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
 
     // Upper bounds on parameters read from a stored hash, so a corrupt or
     // tampered row cannot make matches() allocate gigabytes or spin for minutes.
-    // Same caps as the Go API, so both accept the same hashes. What bounds the
-    // total memory is the slot weighting in argon2id(), not these caps.
+    // What bounds the total memory is the slot weighting in argon2id(), not these caps.
     static final int MAX_MEMORY_KIB = 256 * 1024;
     static final int MAX_TIME_COST = 10;
     static final int MAX_PARALLELISM = 16;
@@ -272,7 +270,7 @@ public final class PepperedArgon2Encoder implements PasswordEncoder {
             return new Decoded((int) mem, (int) time, (int) par, kid, salt, key);
         }
 
-        /** Standard alphabet, no padding, like Go's RawStdEncoding. */
+        /** Standard alphabet, no padding (RFC 4648 base64 without padding). */
         private static byte[] rawBase64(String s) {
             if (s.indexOf('=') >= 0) {
                 return null;

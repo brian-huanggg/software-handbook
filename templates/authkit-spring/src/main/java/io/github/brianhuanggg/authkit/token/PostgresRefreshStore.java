@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/** The {@code refresh_tokens} table, shared with the Go API. */
+/** The {@code refresh_tokens} table. */
 @Repository
 public class PostgresRefreshStore implements RefreshStore {
 

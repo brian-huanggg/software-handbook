@@ -9,7 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** The {@code sessions} table, shared with the Go API. */
+/** The {@code sessions} table. */
 @Repository
 public class PostgresSessionStore implements SessionStore {
 

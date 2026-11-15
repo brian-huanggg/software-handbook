@@ -10,7 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Conformance suite for every {@link SessionStore}, like Go's {@code storetest}.
+ * Conformance suite for every {@link SessionStore}.
  * Implementations supply a store and a user ID valid for it (the Postgres
  * table has a foreign key to {@code users}).
  */

@@ -42,15 +42,21 @@ handler 只是最後一步。在它之前，請求至少要先「到達這台機
 
 ### 全貌
 
-```text
-瀏覽器                                                      你的伺服器
-  │  1. DNS 解析 sho.rt → 203.0.113.7                          │
-  │  2. TCP 三次握手 ──────────────────────────────────────────►│ accept
-  │  3. TLS 握手（HTTPS 才有）◄───────────────────────────────►│
-  │  4. GET /abc123 HTTP/1.1 ─────────────────────────────────►│ 讀取、解析
-  │                                                            │ 路由 → middleware → handler
-  │  5. ◄──────────────────────────────── 302 Found + Location │ 寫回應
-  │  6. 復用連線送下一個請求，或關閉                            │
+```mermaid
+sequenceDiagram
+    participant B as 瀏覽器
+    participant D as DNS
+    participant S as 你的伺服器
+
+    B->>D: 1. 解析 sho.rt
+    D-->>B: 203.0.113.7
+    B->>S: 2. TCP 三次握手
+    Note over S: accept 連線
+    B->>S: 3. TLS 握手（HTTPS 才有）
+    B->>S: 4. GET /abc123 HTTP/1.1
+    Note over S: 讀取、解析<br/>路由 → middleware → handler
+    S-->>B: 5. 302 Found + Location
+    Note over B,S: 6. 復用連線送下一個請求，或關閉
 ```
 
 這張圖的重點：階段 1 到 3 發生在「請求」存在之前，你的 handler 完全看不到；階段 4 到 5 才是 HTTP 本身；階段 6 決定下一個請求要不要再付一次建立連線的成本。

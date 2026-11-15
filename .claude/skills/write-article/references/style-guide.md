@@ -66,8 +66,9 @@ Rules for recognition exercises:
 
 ## Figures
 
-- In order of preference: text diagrams (a ` ```text ` block with box-drawing characters), tables, SVG under `site/src/assets/`.
-- Do not use Mermaid (the site has no renderer installed at the moment).
+- In order of preference: Mermaid (a ` ```mermaid ` block; the site renders it with `astro-mermaid`), tables, text diagrams (a ` ```text ` block with box-drawing characters), SVG under `site/src/assets/`.
+- Use Mermaid `sequenceDiagram` for message flows between parties, and `flowchart` or `stateDiagram-v2` for decisions and states. Use a text diagram when the layout itself matters (memory layout, byte positions, tree structures).
+- Write participant names and labels in Traditional Chinese; keep protocol names, code, and URLs in English. Use `<br/>` for a line break inside a label.
 - Under each figure, add one sentence saying what the reader should look at.
 
 ## Starlight components

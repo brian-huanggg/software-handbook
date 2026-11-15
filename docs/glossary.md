@@ -72,6 +72,7 @@
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
 | JSON Web Key Set (JWKS) | JWKS | | 不翻譯；以 JSON 發布一組公鑰的格式（RFC 7517），驗證方依 `kid` 取用，OIDC 與 API 閘道靠它驗證 JWT |
 | JSON Web Token (JWT) | JWT | | 不翻譯；`header.payload.signature` 三段 base64url 的自包含 token（RFC 7519），簽章防竄改、不加密；到期前難以撤銷 |
+| keep-alive | keep-alive | 長連線、持久連線 | 不翻譯；HTTP/1.1 預設行為，回應結束後連線不關，留給下一個請求復用，省掉 TCP 與 TLS 握手；任一方送 `Connection: close` 才關閉 |
 | key ID (kid) | kid | | 不翻譯；標示用哪把金鑰簽章的識別字，JWT 放 header、PASETO 放 footer；只能用來查自己持有的金鑰，不能直接採用 token 帶的金鑰 |
 | key stretching | 金鑰延展 | 密鑰拉伸 | 把雜湊重複很多輪讓單次計算變貴；密碼雜湊的核心做法 |
 | kill switch | kill switch | 緊急開關 | 不翻譯；營運用旗標，出事時一關就停用某個功能，不需重新部署 |
@@ -79,8 +80,8 @@
 | layered verification | 分層驗證 | | 把審查拆成多道各自攔截不同風險的檢查，再依風險加上人類核准 |
 | load balancer | 負載平衡器 | 負載均衡器 | 站在多個後端前面，決定請求交給哪一台 |
 | load shedding | 負載卸除 | 負載篡除 | |
-| login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
 | lost update | 更新遺失 | 丟失更新 | 兩個交易讀到同一個舊值、各自算出新值，後寫的蓋掉先寫的；沒有鎖的「先讀再寫」會發生 |
+| login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
 | magic bytes | 檔頭（magic bytes） | 魔數 | 檔案格式開頭固定的幾個 byte（如 PNG 的 `89 50 4E 47`）；只證明開頭像，不證明整個檔案乾淨 |
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
@@ -118,11 +119,12 @@
 | refresh token rotation | refresh token 輪替 | | 每次用 refresh token 換新時就作廢舊的，每個 refresh token 只能用一次 |
 | release | release | 發行版、發布 | 不翻譯；Helm 中一個 chart 在某叢集與 namespace 的一次安裝，有名字與修訂號；一般語境的「發布」仍用中文 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
+| request lifecycle | 請求生命週期 | 請求週期 | 一個請求從連線建立、讀取解析、路由、handler、寫回應到連線復用或關閉的完整路徑 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | role-based access control (RBAC) | RBAC（角色型存取控制） | | 依使用者的角色授權；第一次出現寫全名，之後只寫 RBAC |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
-| row lock | 行鎖 | 列鎖、記錄鎖 | 鎖住單一資料列，持有到交易結束；`UPDATE`、`DELETE` 與 `SELECT ... FOR UPDATE` 都會加 |
 | Ryuk | Ryuk | | 不翻譯；Testcontainers 啟動的小容器，測試程序結束（含被強制終止）後負責清掉這次啟動的容器 |
+| row lock | 行鎖 | 列鎖、記錄鎖 | 鎖住單一資料列，持有到交易結束；`UPDATE`、`DELETE` 與 `SELECT ... FOR UPDATE` 都會加 |
 | salt | salt | 鹽 | 不翻譯；每個使用者各自隨機產生、與雜湊存在一起的值，讓相同密碼得到不同雜湊 |
 | same-origin policy | 同源政策 | 同源策略 | |
 | same-site | 同站 | | 只看 scheme 與可註冊網域，不看子網域與 port |
@@ -133,6 +135,7 @@
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
 | sensitive data exposure | 敏感資料外洩 | 敏感資料暴露 | 不該被看到的資料經由回應欄位、錯誤訊息、日誌等路徑離開伺服器；對外回應用只列允許欄位的型別（白名單）預防 |
 | session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |
+| Slowloris | Slowloris | | 不翻譯；客戶端建立大量連線後極慢地送出請求以占住伺服器連線的攻擊；對策是讀取逾時與 header 大小上限 |
 | session fixation | session fixation | 會話固定 | 不翻譯；攻擊者先讓受害者使用自己已知的 session ID，登入沿用該 ID 就被接管；對策是登入時換發新 ID |
 | session ID | session ID | 會話識別碼 | 不翻譯；不可猜測的隨機值（至少 128 位元、用 `crypto/rand`），放在 Cookie 裡當查表的鑰匙 |
 | session persistence | session 保持 | 會話黏滯、黏性會話 | 讓同一個使用者的請求固定到同一台後端；nginx 用 `ip_hash` 或 `hash` 實現 |

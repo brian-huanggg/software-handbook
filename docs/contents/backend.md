@@ -36,7 +36,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 
 | 狀態 | 標題 | 說明 |
 | --- | --- | --- |
-| ⬜ | 請求生命週期 | 從 socket 到 handler |
+| ✅ | [請求生命週期](../../site/src/content/docs/backend/l1/1-2-http-api/request-lifecycle.md) | 說出一個 HTTP 請求從 TCP 連線到 handler 的每個階段，並為各階段設好逾時與大小限制。 |
 | ⬜ | `net/http` | Handler、ServeMux、middleware 模式 |
 | ⬜ | HTTP 語意 | method、狀態碼、header、冒等性初步 |
 | ⬜ | REST 設計原則與資源命名 |  |

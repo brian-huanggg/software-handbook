@@ -4,6 +4,8 @@ import starlight from '@astrojs/starlight';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
 import mermaid from 'astro-mermaid';
 
+import { carbonWindow } from './src/lib/ec-carbon.mjs';
+
 import ai from './src/sidebar/ai.ts';
 import backend from './src/sidebar/backend.ts';
 import cs from './src/sidebar/cs.ts';
@@ -28,8 +30,35 @@ export default defineConfig({
 			locales: { root: { label: '繁體中文', lang: 'zh-TW' } },
 			// Theme tokens and zh-Hant typography (see the file header).
 			customCss: ['./src/styles/custom.css'],
+			// Flat code blocks: thin border, no shadow, no terminal title bar.
+			// Colours come from our --sl-* tokens (src/styles/custom.css), so the
+			// blocks follow the site's light/dark gray scale.
 			expressiveCode: {
-				styleOverrides: { borderRadius: '0.5rem' },
+				themes: ['github-dark', 'github-light'],
+				// Untitled shell blocks render like any other block instead of a
+				// terminal window. A `title="..."` still shows as an editor tab.
+				defaultProps: { frame: 'code' },
+				styleOverrides: {
+					borderRadius: 'var(--hb-radius-s)',
+					borderColor: 'var(--sl-color-gray-5)',
+					codeBackground: ({ theme }) =>
+						theme.type === 'dark' ? 'var(--sl-color-gray-6)' : 'var(--sl-color-gray-7)',
+					codePaddingBlock: '1rem',
+					codePaddingInline: '1.25rem',
+					frames: {
+						frameBoxShadowCssValue: 'none',
+						// Title tab sits flush on the block: same background, no indicator.
+						editorTabBarBackground: ({ resolveSetting }) => resolveSetting('codeBackground'),
+						editorActiveTabBackground: ({ resolveSetting }) => resolveSetting('codeBackground'),
+						editorActiveTabIndicatorTopColor: 'transparent',
+						// The active tab is painted over the tab bar's bottom line, so it
+						// draws that line itself; otherwise the line stops at the tab.
+						editorActiveTabIndicatorBottomColor: 'var(--sl-color-gray-5)',
+						editorTabBarBorderBottomColor: 'var(--sl-color-gray-5)',
+					},
+				},
+				// `carbon` in a fence's meta opts that block into a window frame.
+				plugins: [carbonWindow()],
 				// Inline EC styles per page. The external ec.*.css build emits only one
 				// of the hashed files, so pages link a missing one and render unstyled.
 				emitExternalStylesheet: false,

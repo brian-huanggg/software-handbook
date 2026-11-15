@@ -287,3 +287,52 @@ starlight-toc a {
 .sl-link-card {
 	border-radius: var(--hb-radius-m);
 }
+
+/* ---------------------------------------------------------------------------
+ * 6. Code blocks: Carbon window (opt-in with ```lang carbon, see
+ *    src/lib/ec-carbon.mjs). A borderless window with coloured title-bar dots
+ *    and a soft drop shadow: light window in light mode, dark in dark mode.
+ *    Expressive Code reads its --ec-* variables by inheritance, so redefining
+ *    them on the figure restyles only this block.
+ * ------------------------------------------------------------------------- */
+.expressive-code .frame.is-carbon {
+	--hb-carbon-bg: var(--sl-color-gray-6);
+	--ec-codeBg: var(--hb-carbon-bg);
+	--ec-frm-trmBg: var(--hb-carbon-bg);
+	--ec-frm-trmTtbBg: var(--hb-carbon-bg);
+	--ec-frm-trmTtbBrdBtmCol: transparent;
+	--ec-brdCol: rgb(255 255 255 / 0.08); /* edge on the dark page */
+	--ec-brdRad: var(--hb-radius-m);
+	--ec-codePadBlk: 1.25rem;
+	--ec-codePadInl: 1.5rem;
+
+	border-radius: var(--hb-radius-m);
+	box-shadow: 0 1.25rem 3rem -0.75rem rgb(0 0 0 / 0.8);
+}
+:root[data-theme='light'] .expressive-code .frame.is-carbon {
+	--hb-carbon-bg: var(--sl-color-black); /* white in light mode */
+	--ec-brdCol: transparent;
+	box-shadow:
+		0 0 0 1px rgb(0 0 0 / 0.04),
+		0 1.25rem 3rem -0.75rem rgb(0 0 0 / 0.3);
+}
+
+.expressive-code .frame.is-carbon .header {
+	padding-block: 0.875rem;
+}
+
+/* The dots are a mask of three circles; a three-stop background colours them. */
+.expressive-code .frame.is-carbon .header::before {
+	left: 1.25rem;
+	width: 2.8rem;
+	height: 0.75rem;
+	opacity: 1;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	background: linear-gradient(
+		to right,
+		#ff5f57 0 36.7%,
+		#febc2e 36.7% 73.3%,
+		#28c840 73.3%
+	);
+}

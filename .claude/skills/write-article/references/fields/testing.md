@@ -1,19 +1,19 @@
-# `testing` 領域的額外規則
+# Extra rules for the `testing` field
 
-只在寫 `testing` 領域的文章時讀本檔。本檔與 `references/style-guide.md` 衝突時，以本檔為準。
+Read this file only when writing an article in the `testing` field. When this file conflicts with `references/style-guide.md`, this file wins.
 
-## 讀者與寫法
+## Readers and writing
 
-- 讀者是想成為資深 QA 專家的工程師，已讀過後端 L1。
-- 不重講 Go 語法與 `go test` 的基本用法；需要時連回後端 1.5。L0、L1 仍從「品質與測試設計」的概念從零講起，但不從程式語言從零講起。
-- L3、L4 的讀者正在走向資深角色：語氣是同儕討論取捨，不是一步步帶操作。多寫判斷依據、反例與「什麼情況下不該這樣做」，少寫逐步截圖式教學。
-- 每篇至少回答一個資深 QA 會被問的問題：這個做法降低了哪種風險、成本是多少、怎麼說服團隊採用。
+- The reader is an engineer who wants to become a senior QA expert and has read backend L1.
+- Do not re-teach Go syntax or the basic use of `go test`; when needed, link back to backend 1.5. L0 and L1 still start from zero on the concepts of "quality and test design", but not from zero on the programming language.
+- The readers of L3 and L4 are moving toward senior roles: the tone is a peer discussing trade-offs, not a step-by-step walkthrough. Write more about the basis for decisions, counterexamples, and "when you should not do this", and less screenshot-style tutorial.
+- Every article answers at least one question a senior QA gets asked: which kind of risk this practice reduces, what it costs, and how to convince the team to adopt it.
 
-## 受測系統
+## Systems under test
 
-- 受測系統有兩個：短網址服務（自己的系統）與 Gitea（別人的系統），分工見 `docs/contents/testing.md` 末尾的對應表。Gitea 範例要寫明使用的版本。
-- 讀者已讀過後端 L1，但不一定讀完後端 L2–L4。用到短網址服務 v2 以後的功能（例如 2.4 契約測試需要 v3 的服務拆分）時，在文中用一兩句話交代該版本的架構，並連回後端領域，不要假設讀者已經學過。
+- There are two systems under test: the URL shortener service (our own system) and Gitea (someone else's system). The split is in the mapping table at the end of `docs/contents/testing.md`. Gitea examples must state the version used.
+- The reader has read backend L1, but has not necessarily finished backend L2–L4. When using features of URL shortener service v2 or later (for example 2.4 contract testing needs the service split of v3), explain the architecture of that version in a sentence or two in the text and link back to the backend field. Do not assume the reader has learned it.
 
-## 程式碼
+## Code
 
-- 測試領域的文章主題本身常就是某個測試套件（Testcontainers、Pact Go、`playwright-go`……），這屬於 `references/style-guide.md`「程式碼」規則允許引入第三方套件的情況。
+- The topic of a testing article is often itself a test package (Testcontainers, Pact Go, `playwright-go`, …). This is a case that the "Code" rule of `references/style-guide.md` allows third-party packages for.

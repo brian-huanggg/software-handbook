@@ -1,8 +1,8 @@
-# Markdown 規範
+# Markdown rules
 
-本站是 Astro Starlight，文章是 `.md`。以下規則都是實際會造成渲染錯誤的寫法。
+The site is Astro Starlight and articles are `.md`. Every rule below is a way of writing that really causes a rendering error. Examples that show Chinese text are part of the rule: the problem comes from the Chinese full-width punctuation, so do not translate them.
 
-1. 不要混用 HTML 標籤與 Markdown 語法：`<summary>` 等 HTML 標籤的同一行內只用 HTML
+1. Do not mix HTML tags and Markdown syntax: on the same line as an HTML tag such as `<summary>`, use only HTML.
 
 **Bad**
 
@@ -20,13 +20,13 @@
 <details><summary>Run the <code>code</code></summary></details>
 ```
 
-2. 粗體或斜體符號緊貼全形標點（例如：括號、引號、逗號、句號）時，在外側留一個空白，否則無法渲染。開頭與結尾都適用
+2. When bold or italic markers touch full-width punctuation (parentheses, quotation marks, commas, periods), leave one space on the outside, otherwise they do not render. This applies at both the start and the end.
 
 **Bad**
 
 ```markdown
-**同源政策（same-origin policy）**是瀏覽器的一條安全規則 （結尾緊貼「）」，粗體不會渲染）
-這條規則叫做**「同源」**政策 （開頭緊貼「「」，粗體不會渲染）
+**同源政策（same-origin policy）**是瀏覽器的一條安全規則 （the closing marker touches "）", so the bold does not render）
+這條規則叫做**「同源」**政策 （the opening marker touches "「", so the bold does not render）
 ```
 
 **Good**
@@ -36,7 +36,7 @@
 這條規則叫做 **「同源」** 政策
 ```
 
-3. `<details>` 內要寫 Markdown（段落、清單、程式碼區塊）時，`<summary>` 那一行之後與 `</details>` 之前都要空一行，否則內文會變成純文字
+3. When a `<details>` block contains Markdown (paragraphs, lists, code blocks), leave a blank line after the `<summary>` line and before `</details>`, otherwise the content becomes plain text.
 
 **Bad**
 
@@ -62,7 +62,7 @@ fmt.Println("hi")
 </details>
 ````
 
-4. 內文出現角括號（Go 泛型、路徑佔位符、HTML 標籤名稱）時，一律用反引號包起來，否則會被當成 HTML 標籤吃掉
+4. When the text contains angle brackets (Go generics, path placeholders, HTML tag names), always wrap them in backticks, otherwise they are swallowed as HTML tags.
 
 **Bad**
 
@@ -76,11 +76,11 @@ fmt.Println("hi")
 寫一個 `func Map[T any](s []T)` 回傳 `T`，檔案放在 `playground/<field>/` 下
 ```
 
-5. 程式碼區塊一定要標語言（`go`、`python`、`bash`、`http`、`text`）；區塊內還要放程式碼區塊時，外層改用四個反引號
-6. 文章內不寫 `#` 一級標題（Starlight 以 frontmatter 的 `title` 當一級標題）；標題從 `##` 開始，不跳級（`##` 下面不能直接接 `####`）
-7. 表格、清單、程式碼區塊、aside（`:::note`）前後都要空一行，否則會黏進上一段
-8. 表格儲存格內的 `|` 要寫成 `\|`；儲存格內不能換行，需要多行時改用清單或拆成多列
-9. 站內連結用網站路徑，結尾加 `/`，不寫 `.md` 副檔名、不寫相對檔案路徑
+5. Always give a language to a code block (`go`, `python`, `bash`, `http`, `text`). When a code block must contain another code block, use four backticks for the outer one.
+6. Do not write a `#` level-1 heading in an article (Starlight uses the frontmatter `title` as the level-1 heading). Headings start at `##` and never skip a level (a `##` cannot be followed directly by `####`).
+7. Leave a blank line before and after tables, lists, code blocks, and asides (`:::note`), otherwise they stick to the previous paragraph.
+8. Write `|` inside a table cell as `\|`. A cell cannot contain a line break; when several lines are needed, use a list or split into several rows.
+9. Internal links use the site path, end with `/`, and have no `.md` extension and no relative file path.
 
 **Bad**
 
@@ -94,6 +94,6 @@ fmt.Println("hi")
 [同源政策](/cs/n-network/n-4-application/same-origin-policy/)
 ```
 
-10. 不用行尾兩個空白換行（看不見，也常被編輯器刪掉）；要分段就空一行
-11. 不寫裸網址，一律用 `[說明](URL)`；裸網址後緊接中文標點時，標點會被當成網址的一部分
-12. 圖片一定要有替代文字：`![同源判斷流程](../../../assets/same-origin.svg)`，不寫 `![](...)`
+10. Do not use two trailing spaces for a line break (invisible, and editors often strip them). To start a new paragraph, leave a blank line.
+11. Do not write bare URLs. Always use `[description](URL)`. When Chinese punctuation follows a bare URL directly, the punctuation is treated as part of the URL.
+12. Images must always have alt text: `![同源判斷流程](../../../assets/same-origin.svg)`. Never write `![](...)`.

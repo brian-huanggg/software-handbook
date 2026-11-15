@@ -1,94 +1,96 @@
-# 風格指南
+# Style guide
 
-## 語言與語氣
+The articles are written in Traditional Chinese. The Chinese terms and punctuation in this guide are literal examples of the writing rules; do not translate them in the articles.
 
-- 繁體中文（台灣用語）：「程式」不是「程序」，「資料庫」不是「數據庫」，「伺服器」不是「服務器」，「執行緒」不是「線程」。
-- 術語第一次出現時寫「中文（English）」，例如「冪等（idempotency）」，之後只用中文。沒有通行中文譯名的詞直接用英文：goroutine、channel、handler、middleware。以 `docs/glossary.md` 為準。
-- 中英文、中文與數字之間加半形空格：「用 Go 寫一個 TCP 服務」。
-- 標點用全形（，。：；「」），程式碼與英文句子內用半形。
-- 稱呼讀者用「你」，作者自稱「我們」。語氣像資深同事帶新人：直接、具體、不說教。
-- 不寫空話：避免「眾所周知」「非常重要」「強大的」「簡單來說」。
-- 每段只講一件事，一段不超過 5 行。
+## Language and tone
 
-## 各領域的讀者
+- Traditional Chinese (Taiwan usage): 「程式」 not 「程序」, 「資料庫」 not 「數據庫」, 「伺服器」 not 「服務器」, 「執行緒」 not 「線程」.
+- The first time a term appears, write 「中文（English）」, for example 「冪等（idempotency）」, and use only the Chinese afterwards. Terms with no common Chinese translation stay in English: goroutine, channel, handler, middleware. `docs/glossary.md` is the authority.
+- Put a half-width space between Chinese and English, and between Chinese and digits: 「用 Go 寫一個 TCP 服務」.
+- Use full-width punctuation (，。：；「」) in Chinese text; use half-width punctuation inside code and English sentences.
+- Address the reader as 「你」 and the author as 「我們」. The tone is a senior colleague guiding a newcomer: direct, concrete, not preachy.
+- No empty words: avoid 「眾所周知」「非常重要」「強大的」「簡單來說」.
+- One idea per paragraph, and a paragraph is at most 5 lines.
 
-全書預設讀者是自學的初級工程師，但各領域的起點不同，寫作時以該領域目錄開頭的讀者描述為準。有專屬規則的領域另有檔案放在 `references/fields/`，與本檔衝突時以該檔為準：
+## Readers of each field
 
-| 領域 | 讀者 | 寫法上的差別 |
+The default reader of the whole book is a self-taught junior engineer, but each field starts at a different point. Follow the reader description at the top of that field's outline. Fields with their own rules have a file under `references/fields/`, and that file wins when it conflicts with this one:
+
+| Field | Reader | Difference in writing |
 | --- | --- | --- |
-| `cs`、`backend` | 自學的初級工程師 | 依下表的層級深度，從零講起 |
-| `devops`、`cyber` | 已會寫一個後端服務的工程師 | 不重講 Go 與 HTTP 基礎，直接連回後端領域 |
-| `testing` | 想成為資深 QA 專家的工程師，已讀過後端 L1 | 見 `references/fields/testing.md` |
-| `ai` | 會寫基本 Python 的工程師，各軌道先修見該軌道目錄開頭 | 見 `references/fields/ai.md` |
+| `cs`, `backend` | Self-taught junior engineer | Start from zero, with the depth in the level table below |
+| `devops`, `cyber` | Engineer who can already write a backend service | Do not re-teach Go and HTTP basics; link directly back to the backend field |
+| `testing` | Engineer who wants to become a senior QA expert, has read backend L1 | See `references/fields/testing.md` |
+| `ai` | Engineer who can write basic Python; prerequisites for each track are at the top of the track outline | See `references/fields/ai.md` |
 
-## 篇幅與深度（依層級）
+## Length and depth (by level)
 
-| 層級 | 正文字數 | 深度 |
+| Level | Body word count | Depth |
 | --- | --- | --- |
-| L0 | 2,000–3,500 | 從零講起，不假設任何背景；多用比喻，比喻之後一定接上真實機制 |
-| L1 | 2,000–3,500 | 假設讀過 L0；重點是「能寫出來」 |
-| L2 | 3,000–5,000 | 假設會寫基本服務；重點是「上線後會出什麼事」 |
-| L3 | 3,000–5,000 | 重點是設計與取捨，要有量化估算 |
-| L4 | 2,500–4,500 | 重點是決策框架與組織面，程式碼可以少 |
+| L0 | 2,000–3,500 | Start from zero, assume no background; use many analogies, and always follow an analogy with the real mechanism |
+| L1 | 2,000–3,500 | Assume L0 was read; the focus is "being able to write it" |
+| L2 | 3,000–5,000 | Assume the reader can write a basic service; the focus is "what goes wrong in production" |
+| L3 | 3,000–5,000 | The focus is design and trade-offs, with quantitative estimates |
+| L4 | 2,500–4,500 | The focus is decision frameworks and organization; code can be minimal |
 
-字數不含程式碼。超過上限就考慮拆成兩篇，並先問使用者。
+Word count excludes code. If it goes over the upper limit, consider splitting into two articles, and ask the user first.
 
-## 全書貫穿專案
+## The book-wide running project
 
-能用短網址服務舉例時就用它，並配合該層級的版本（L1→v1、L2→v2、L3→v3、L4→v4，見 `docs/contents/backend.md`）。不要引用讀者還沒學到的版本功能。
+Whenever the URL shortener service can be used as the example, use it, with the version that matches the level (L1→v1, L2→v2, L3→v3, L4→v4, see `docs/contents/backend.md`). Do not mention features of versions the reader has not reached.
 
-## 程式碼
+## Code
 
-- Go 使用最新穩定版，預設只用標準函式庫；只有當文章主題本身是某個套件（例如 Redis client）時才引入第三方套件。
-- 每個 Go 範例都放在 `playground/<field>/<level>/<section>/<slug>/`，是獨立的 module（module 路徑為 `handbook/playground/<field>/<slug>`）：`go.mod`、`main.go` 或套件檔，以及 `*_test.go`。
-- 文章裡的程式碼片段必須是範例檔案的真實片段，程式碼區塊的標題只寫檔名，不寫路徑：` ```go title="main.go" `。範例目錄的位置在「小練習」交代，不在每個區塊重複。同一篇有兩個以上同名檔案時，才在檔名前加最近一層目錄區分，例如 `policy/policy.go`。
-- 單一片段不超過 40 行；更長的程式碼只貼關鍵部分，其餘以註解 `// ...` 省略。
-- 錯誤一律處理，不寫 `_ = err`；註解寫「為什麼」，不寫「做什麼」。
-- 指令用 ` ```bash ` 區塊，輸出結果另開 ` ```text ` 區塊。
+- Go uses the latest stable version and by default only the standard library. Third-party packages are allowed only when the article topic is itself a package (for example a Redis client).
+- Every Go example goes in `playground/<field>/<level>/<section>/<slug>/` and is a standalone module (module path `handbook/playground/<field>/<slug>`): `go.mod`, `main.go` or package files, and `*_test.go`.
+- Code snippets in the article must be real excerpts of the example files. The code block title is only the file name, not the path: ` ```go title="main.go" `. The location of the example directory is stated in 「小練習」, not repeated in every block. Only when one article has two or more files with the same name, add the nearest parent directory in front of the file name to tell them apart, for example `policy/policy.go`.
+- A single snippet is at most 40 lines. For longer code, paste only the key part and omit the rest with the comment `// ...`.
+- Always handle errors; never write `_ = err`. Comments say "why", not "what".
+- Commands go in a ` ```bash ` block, and their output goes in a separate ` ```text ` block.
 
-## 小練習的題型
+## Exercise types in 「小練習」
 
-「小練習」固定包含兩類，共 1 到 3 題，由易到難：
+「小練習」 always contains two kinds, 1 to 3 exercises in total, from easy to hard:
 
-- **動手寫**：用 Go（`ai` 領域用 Python）補完或實作，用測試驗證。至少 1 題。
-- **辨識（recognition）**：給一段看起來像 AI 產生的程式碼，讓讀者練習 code review。至少 1 題。不用寫程式，看程式碼就能答。
+- **Hands-on**: complete or implement something in Go (Python for the `ai` field), verified by tests. At least 1.
+- **Recognition**: show code that looks AI-generated and let the reader practice code review. At least 1. No code is written; the reader answers by reading the code.
 
-辨識題的規則：
+Rules for recognition exercises:
 
-- 兩種形式擇一：**好壞對照**（給 A、B 兩份實作，問哪份有問題、為什麼）；**找錯**（給一份看似合理的程式碼，其中藏 1 到 3 個與本文主題相關的錯誤，請讀者指出）。
-- 錯誤必須是 AI 產生程式碼常見的類型：看起來能跑、測試會過，但違反本文講的原則（例如漏掉錯誤處理、設定過寬、忘記釋放資源、競態、把示範用的捷徑留在正式程式裡）。不放語法錯誤或編譯不過的錯。
-- 錯誤只能考本文講過的概念，且至少一個錯誤要落在「常見坑」其中一項。
-- 程式碼放在 `playground/.../<slug>/recognize/` 下，標題只寫檔名，並標明「AI 產生」。有錯的版本加上 build tag 或放在不被 `go test ./...` 掃描的檔名，避免弄壞範例的測試。
-- 答案放在 `<details><summary>參考解答</summary>…</details>`：逐一列出錯在哪一行、會造成什麼後果、正確寫法。好壞對照題還要說明「為什麼好的那份好」。
-- 不洩漏答案：題目與程式碼註解不能提示錯在哪裡，也不要把函式取名成 `unsafeXxx`、`buggyXxx`。
+- Choose one of two forms: **good vs. bad** (give implementations A and B, ask which has a problem and why), or **find the bugs** (give code that looks reasonable and hides 1 to 3 errors related to the article topic, and ask the reader to point them out).
+- The errors must be of the kind AI-generated code often has: it looks like it runs and the tests pass, but it violates a principle from the article (for example missing error handling, over-broad configuration, forgotten resource release, a race condition, a demo shortcut left in production code). Do not use syntax errors or errors that fail to compile.
+- Errors may test only concepts the article covered, and at least one error must fall under one item of 「常見坑與故障案例」.
+- Put the code under `playground/.../<slug>/recognize/`, give the title as the file name only, and mark it 「AI 產生」. Put a build tag on the wrong version, or give it a file name that `go test ./...` does not scan, so it does not break the tests of the example.
+- Put the answer in `<details><summary>參考解答</summary>…</details>`: list line by line what is wrong, what consequence it causes, and the correct way. For good-vs-bad exercises, also explain why the good one is good.
+- Do not leak the answer: the question and code comments must not hint at what is wrong, and do not name functions `unsafeXxx` or `buggyXxx`.
 
-## 圖
+## Figures
 
-- 依序優先使用：文字圖（` ```text ` 區塊，box-drawing 字元）、表格、`site/src/assets/` 下的 SVG。
-- 不使用 Mermaid（本站目前沒有安裝渲染器）。
-- 每張圖下方用一句話說明讀者該看什麼。
+- In order of preference: text diagrams (a ` ```text ` block with box-drawing characters), tables, SVG under `site/src/assets/`.
+- Do not use Mermaid (the site has no renderer installed at the moment).
+- Under each figure, add one sentence saying what the reader should look at.
 
-## Starlight 元件
+## Starlight components
 
-只用以下 aside，每篇總共不超過 4 個：
+Use only the asides below, at most 4 per article in total:
 
-- `:::note`：補充，不讀也不影響理解
-- `:::tip`：實務建議
-- `:::caution`：會造成錯誤或安全問題的地方
-- `:::danger`：會造成資料遺失或事故的操作
+- `:::note`: supplementary; reading it is not required for understanding
+- `:::tip`: practical advice
+- `:::caution`: places that cause errors or security problems
+- `:::danger`: operations that cause data loss or incidents
 
-## 快閃卡
+## Flashcards (「快閃卡」)
 
-- 每篇 5 到 10 張。一張卡只考一個概念；正面是問題，背面的答案在 1 到 3 句話內講完。
-- 題型混合，至少涵蓋三種：定義（X 是什麼）、判斷（這個情境會不會發生 Y）、因果（為什麼要這樣設計）、比較（X 和 Y 差在哪）、除錯（看到這個症狀，可能的原因是什麼）。
-- 判斷題至少 2 張，且要給具體輸入（URL、header、指令、程式碼片段），不只問抽象概念。
-- 答案只能來自本文內容，不考文章沒講過的東西。
-- 不出「X 對嗎？」「對」這種只有結論的題目；背面一定附上理由。
-- 不與「小練習」重複：小練習要動手寫程式，快閃卡是不用動手、心算就能答的題目。
-- 卡片排列順序跟著文章段落順序，由淺到深。
-- 格式見 `assets/template.md` 的「快閃卡」與 `references/markdown-lint.md` 第 1、3 條。
+- 5 to 10 per article. One card tests one concept; the front is the question, and the answer on the back takes 1 to 3 sentences.
+- Mix the question types and cover at least three: definition (what is X), judgment (will this situation cause Y), causation (why is it designed this way), comparison (how do X and Y differ), debugging (given this symptom, what are the possible causes).
+- At least 2 judgment questions, with concrete input (a URL, header, command, or code snippet), not only abstract concepts.
+- Answers come only from the article; do not test what the article did not cover.
+- No "Is X correct?" / "Yes" questions that give only a conclusion; the back always includes the reason.
+- Do not duplicate 「小練習」: exercises require writing code, flashcards are questions answerable in your head without writing anything.
+- Order the cards in the order of the article sections, from easy to hard.
+- For the format, see 「快閃卡」 in `assets/template.md` and rules 1 and 3 of `references/markdown-lint.md`.
 
-## 引用與事實
+## Citations and facts
 
-- 數字（延遲、吞吐量、價格）要標註來源或寫明是估算。
-- 不確定的事寫「通常」「多數實作」，並說明例外；不要編造事故、論文或連結。
+- Numbers (latency, throughput, price) must cite a source or say they are estimates.
+- When unsure, write 「通常」 or 「多數實作」 and explain the exceptions. Do not invent incidents, papers, or links.

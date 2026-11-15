@@ -6,69 +6,79 @@ sidebar:
 ---
 
 <!--
-  使用方式：複製本檔，填寫每個段落，寫完刪除所有註解。
-  九個 ## 標題一字不改、順序不變。
+  How to use: copy this file, fill in every section, and delete all comments when done.
+  The nine ## headings are literal Chinese strings: do not change a single character, and keep the order.
+  Frontmatter placeholders: title = same as the item text in docs/contents/<field>.md;
+  description = what the reader can do after reading, within 60 characters; order = sequence number in the section.
 -->
 
 ## 先想想
 
 <!--
-  一個具體情境（最好是短網址服務遇到的狀況），配上一個問題，讓讀者先自己推論。
-  3 到 6 句話。不要在這裡給答案；在「怎麼運作」的結尾明確回答這個問題。
-  可以用 <details><summary>提示</summary>…</details> 給一個提示。
+  Think First.
+  One concrete situation (preferably one the URL shortener service runs into), plus one question, so the reader reasons it out first.
+  3 to 6 sentences. Do not give the answer here; answer it explicitly at the end of 「怎麼運作」.
+  You may give one hint with <details><summary>提示</summary>…</details>.
 -->
 
 ## 是什麼
 
 <!--
-  第一段只有一句話的定義，用粗體標出名詞本身。
-  接著最多一段補充：它屬於哪一類東西、和讀者已知的哪個概念最接近。
+  What It Is.
+  The first paragraph is a one-sentence definition, with the term itself in bold.
+  Then at most one paragraph of supplement: what kind of thing it is, and which concept the reader already knows it is closest to.
 -->
 
 ## 為什麼存在
 
 <!--
-  它解決什麼痛點。先講「沒有它的時候」會發生什麼事（最好有數字或具體後果），再講它怎麼改變情況。
+  Why It Exists.
+  Which pain point it solves. First say what happens "without it" (preferably with numbers or concrete consequences), then how it changes the situation.
 -->
 
 ## 怎麼運作
 
 <!--
-  原理與圖解。由淺到深，用 ### 子標題分步驟。
-  至少一張圖（格式見 references/style-guide.md 的「圖」）。
-  結尾用一個段落回答「先想想」的問題，開頭寫「回到一開始的問題：」。
+  How It Works.
+  Principles and diagrams. Go from shallow to deep, using ### subheadings for the steps.
+  At least one figure (format in "Figures" of references/style-guide.md).
+  End with a paragraph that answers the question from 「先想想」, starting with 「回到一開始的問題：」.
 -->
 
 ## 取捨與替代方案
 
 <!--
-  代價是什麼、何時不該用。至少一張比較表：| 方案 | 優點 | 代價 | 適用情境 |
-  最後一段寫「什麼時候不該用」，至少兩點。
+  Trade-offs and Alternatives.
+  What the cost is, and when not to use it. At least one comparison table: | 方案 | 優點 | 代價 | 適用情境 |
+  The last paragraph is 「什麼時候不該用」, with at least two points.
 -->
 
 ## 常見坑與故障案例
 
 <!--
-  3 到 5 個坑，每個都是 ### 標題，內容依序是：症狀 → 原因 → 怎麼避免或修正。
-  至少一個是真實事故（附公開事故報告或文章連結）；找不到可靠來源時，標示為「示意案例」。
+  Common Pitfalls and Failure Cases.
+  3 to 5 pitfalls, each with a ### heading, whose content is in order: symptom → cause → how to avoid or fix.
+  At least one is a real incident (with a link to a public incident report or article); if no reliable source can be found, label it 「示意案例」.
 -->
 
 ## 小練習
 
 <!--
-  1 到 3 題，由易到難，至少包含一題動手寫與一題辨識（規則見 references/style-guide.md 的「小練習的題型」）。
-  動手寫（用 Go，`ai` 領域用 Python）：說明目標、起始程式碼的位置（playground/<field>/...）、怎麼驗證做對了（例如哪個測試會通過）。
-  辨識：用 ### 辨識 當子標題，貼一段 AI 產生的程式碼（程式碼區塊標題只寫檔名），請讀者做 code review：好壞對照，或找出藏在其中的錯誤。
-  每題的參考解答放在 <details><summary>參考解答</summary>…</details>。
+  Exercises.
+  1 to 3 exercises from easy to hard, with at least one hands-on and one recognition exercise (rules in "Exercise types in 「小練習」" of references/style-guide.md).
+  Hands-on (in Go, Python for the `ai` field): state the goal, where the starter code is (playground/<field>/...), and how to verify it is done (for example which test will pass).
+  Recognition: use ### 辨識 as the subheading, paste a piece of AI-generated code (code block title is only the file name), and ask the reader to do a code review: good vs. bad, or find the errors hidden in it.
+  Put each exercise's reference answer in <details><summary>參考解答</summary>…</details>.
 -->
 
 ## 快閃卡
 
 <!--
-  5 到 10 張，涵蓋本文「是什麼」「為什麼存在」「怎麼運作」「取捨與替代方案」「常見坑」的核心概念。
-  寫法規則見 references/style-guide.md 的「快閃卡」。
-  每張一個 <details>：正面寫在 <summary> 裡（只用純文字或 HTML，不用 Markdown），
-  背面與 <summary> 之間、與 </details> 之間各空一行。例如：
+  Flashcards.
+  5 to 10 cards, covering the core concepts of 「是什麼」「為什麼存在」「怎麼運作」「取捨與替代方案」「常見坑」 of this article.
+  Writing rules are in "Flashcards" of references/style-guide.md.
+  One <details> per card: the front goes inside <summary> (plain text or HTML only, no Markdown),
+  with one blank line between <summary> and the back, and one between the back and </details>. For example:
 
   <details>
   <summary>https://a.com 和 https://a.com:443 是同源嗎？</summary>
@@ -81,7 +91,8 @@ sidebar:
 ## 延伸閱讀
 
 <!--
-  3 到 6 個連結，優先官方文件、原始論文、RFC、知名工程部落格。
-  格式：- [標題](URL)：一句話說明為什麼值得讀
-  只放你確定存在的連結；不確定就不放。
+  Further Reading.
+  3 to 6 links, preferring official documentation, original papers, RFCs, and well-known engineering blogs.
+  Format: - [標題](URL)：一句話說明為什麼值得讀
+  Include only links you are sure exist; if unsure, leave them out.
 -->

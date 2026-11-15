@@ -1,30 +1,30 @@
-# `ai` 領域的額外規則
+# Extra rules for the `ai` field
 
-只在寫 `ai` 領域的文章時讀本檔。本檔與 `references/style-guide.md` 衝突時，以本檔為準。
+Read this file only when writing an article in the `ai` field. When this file conflicts with `references/style-guide.md`, this file wins.
 
-## 讀者與寫法
+## Readers and writing
 
-- 主要語言是 Python，不是 Go。不從 Python 語法從零講起，但 NumPy、pandas、PyTorch 等工具在 L1 第一次出現時要講清楚。
-- 理論基礎軌道的數學：先給直覺，再給公式，最後用 NumPy 或 PyTorch 驗證公式。公式用行內程式碼或 ` ```text ` 區塊寫出（本站沒有安裝數學渲染器），每個符號都要說明意思。
-- 不假設讀者有 GPU 或付費 API。需要 GPU 的範例要附上 CPU 可跑完的縮小版設定；會產生 API 費用的練習要標出大約金額，並優先提供本機 Ollama 的做法。
-- 模型名稱、價格、基準分數變得很快：寫明查證日期，不寫「目前最強」這類會過期的說法。
-- 代理人與應用工程的安全主題（提示注入、資料外洩）同樣遵守 `SKILL.md` 的「資安主題的額外規則」：攻擊只針對自己的範例程式，並附上修補與驗證。
+- The main language is Python, not Go. Do not start from Python syntax, but when tools such as NumPy, pandas, and PyTorch first appear in L1, explain them clearly.
+- Math in the theory foundations track: give intuition first, then the formula, and finally verify the formula with NumPy or PyTorch. Write formulas as inline code or in a ` ```text ` block (the site has no math renderer installed), and explain what every symbol means.
+- Do not assume the reader has a GPU or a paid API. An example that needs a GPU must include a scaled-down setting that finishes on a CPU. An exercise that incurs API cost must state the approximate amount, and should prefer the local Ollama way first.
+- Model names, prices, and benchmark scores change fast: state the date they were checked, and do not write claims that expire, such as "currently the strongest".
+- Security topics in agents and applied engineering (prompt injection, data leakage) also follow "Extra rules for security topics" in `SKILL.md`: attacks target only your own example program, and come with a fix and a verification.
 
-## 貫穿例子
+## Running examples
 
-取代全書的短網址服務，依軌道而不同，見各軌道目錄開頭：
+These replace the URL shortener service used by the rest of the book, and differ by track. See the top of each track outline:
 
-- 理論基礎：表格資料、MNIST 與一份繁體中文語料
-- 應用工程：「手冊問答助理」
-- 代理人：「手冊維護代理人」
+- Theory foundations: tabular data, MNIST, and a Traditional Chinese corpus
+- Applied engineering: the 「手冊問答助理」 (handbook Q&A assistant)
+- Agents: the 「手冊維護代理人」 (handbook maintenance agent)
 
-版本與層級相符（L1→v1……）。短網址服務只在需要連回後端領域時提到。
+The version matches the level (L1→v1, …). The URL shortener service is mentioned only when linking back to the backend field is needed.
 
-## Python 範例
+## Python examples
 
-- 每個範例放在 `playground/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案：`pyproject.toml`（鎖定 Python 版本與套件版本）、`uv.lock`、原始碼與 `tests/`（pytest）。
-- 程式碼通過 `ruff check`，公開函式加型別標註。
-- 訓練類範例固定隨機種子，並在 README 寫明預期的執行時間與硬體。
-- 需要 API key 時只從環境變數讀取，並附上 `.env.example`，不放真實金鑰。
-- 片段標題寫法與 Go 相同：` ```python title="qa.py" `（只寫檔名，不寫路徑），省略處用 `# ...`。
-- 其餘規則（片段長度、註解寫「為什麼」）照 `references/style-guide.md` 的「程式碼」。
+- Every example goes in `playground/ai/<track>/<level>/<section>/<slug>/` and is a standalone `uv` project: `pyproject.toml` (pinning the Python version and package versions), `uv.lock`, source code, and `tests/` (pytest).
+- Code passes `ruff check`, and public functions have type annotations.
+- Training examples fix the random seed, and the README states the expected run time and hardware.
+- When an API key is needed, read it only from environment variables and include a `.env.example`. Never include a real key.
+- Snippet titles are written the same way as for Go: ` ```python title="qa.py" ` (file name only, no path), and omissions are marked with `# ...`.
+- For the other rules (snippet length, comments say "why"), follow "Code" in `references/style-guide.md`.

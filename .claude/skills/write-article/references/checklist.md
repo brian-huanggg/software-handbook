@@ -1,46 +1,48 @@
-# 交稿檢查清單
+# Delivery checklist
 
-逐項檢查；任何一項沒通過，修正後再交稿，或在回報中說明原因。
+Check every item. If an item fails, fix it before delivering, or explain the reason in the report.
 
-## 結構
+The nine section headings named below are the literal Chinese headings of `assets/template.md`: 「先想想」, 「是什麼」, 「為什麼存在」, 「怎麼運作」, 「取捨與替代方案」, 「常見坑與故障案例」, 「小練習」, 「快閃卡」, 「延伸閱讀」.
 
-- [ ] 檔案路徑與 frontmatter 符合 `SKILL.md` 的規定
-- [ ] `title` 清楚簡短，不超過 30 個字元
-- [ ] 九個 `##` 標題與 `assets/template.md` 完全一致，順序正確
-- [ ] 所有 template 註解都已刪除
-- [ ] 「怎麼運作」結尾回答了「先想想」的問題
-- [ ] 「取捨與替代方案」有比較表與「什麼時候不該用」
-- [ ] 「常見坑」每個都有 症狀 → 原因 → 對策
-- [ ] 「小練習」有至少一題動手寫與一題辨識，辨識題的答案列出錯誤位置、後果、正確寫法，且題目沒有洩漏答案
-- [ ] 「快閃卡」有 5 到 10 張，每張都是 `<details>` 加 `<summary>`，`<summary>` 內沒有 Markdown 語法
-- [ ] 快閃卡至少涵蓋三種題型，判斷題至少 2 張，每張答案都能在本文找到依據
+## Structure
+
+- [ ] File path and frontmatter follow `SKILL.md`
+- [ ] `title` is clear and short, at most 30 characters
+- [ ] The nine `##` headings match `assets/template.md` exactly, in the correct order
+- [ ] All template comments are deleted
+- [ ] The end of 「怎麼運作」 answers the question from 「先想想」
+- [ ] 「取捨與替代方案」 has a comparison table and a "when not to use it" paragraph
+- [ ] Every item in 「常見坑與故障案例」 has symptom → cause → fix
+- [ ] 「小練習」 has at least one hands-on exercise and one recognition exercise. The recognition answer lists the wrong place, the consequence, and the correct way, and the question does not leak the answer
+- [ ] 「快閃卡」 has 5 to 10 cards, each is a `<details>` with a `<summary>`, and the `<summary>` contains no Markdown syntax
+- [ ] The flashcards cover at least three question types, at least 2 are judgment questions, and every answer can be found in the article
 
 ## Markdown
 
-- [ ] 逐條符合 `references/markdown-lint.md`（特別是粗體緊貼全形標點、`<details>` 內的空行、角括號包反引號）
+- [ ] Follows `references/markdown-lint.md` rule by rule (especially bold next to full-width punctuation, blank lines inside `<details>`, and angle brackets wrapped in backticks)
 
-## 內容
+## Content
 
-- [ ] 字數在該層級的範圍內
-- [ ] 沒有用到讀者還沒學過的概念；需要用到時附上章節連結
-- [ ] 至少一張圖
-- [ ] 例子使用短網址服務（`ai` 領域用該軌道的貫穿例子），且版本與層級相符
-- [ ] 術語與 `docs/glossary.md` 一致，新術語已加入
-- [ ] 該領域有 `references/fields/<field>.md` 時，逐條符合其中規則
-- [ ] 沒有編造的連結、數字或事故
+- [ ] Word count is within the range for the level
+- [ ] No concept the reader has not learned yet; when one is needed, add a link to its chapter
+- [ ] At least one figure
+- [ ] Examples use the URL shortener service (for the `ai` field, the running example of that track), and the version matches the level
+- [ ] Terms match `docs/glossary.md`, and new terms are added
+- [ ] If the field has `references/fields/<field>.md`, every rule in it is followed
+- [ ] No invented links, numbers, or incidents
 
-## 程式碼
+## Code
 
-- [ ] `playground/<field>/...` 存在，且有測試
-- [ ] 文章中的片段與範例檔案內容一致，程式碼區塊標題只寫檔名（不含路徑）
-- [ ] 辨識題的程式碼放在 `recognize/`，且不會讓 `go test ./...`（或 pytest）失敗
-- [ ] `go vet ./...` 與 `go test ./...` 通過；`ai` 領域則是 `uv run ruff check .` 與 `uv run pytest` 通過（或已註明未執行與原因）
+- [ ] `playground/<field>/...` exists and has tests
+- [ ] Snippets in the article match the example files, and code block titles contain only the file name (no path)
+- [ ] Code for recognition exercises is in `recognize/` and does not make `go test ./...` (or pytest) fail
+- [ ] `go vet ./...` and `go test ./...` pass; for the `ai` field, `uv run ruff check .` and `uv run pytest` pass (or the report says they were not run, and why)
 
-## 資安主題（若適用）
+## Security topics (if applicable)
 
-- [ ] 攻擊只針對本機範例程式，並附上授權提醒
-- [ ] 每個攻擊都有修補方式與驗證步驟
+- [ ] Attacks target only local example programs, and the authorization reminder is included
+- [ ] Every attack has a fix and a verification step
 
-## 收尾
+## Wrap-up
 
-- [ ] `docs/contents/<field>.md` 已打勾並加上連結
+- [ ] `docs/contents/<field>.md` is checked off and has the link

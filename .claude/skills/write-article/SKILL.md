@@ -1,75 +1,77 @@
 ---
 name: write-article
-description: 撰寫或改寫本書（計算機科學、後端、DevOps、資安、測試、AI）的一篇章節文章。當使用者要求「寫一篇」「寫這章」「write article/chapter」，或指定 docs/contents/<field>.md 或 docs/contents/ai/ 下某份軌道目錄裡的某個項目時使用。
+description: Write or rewrite one chapter article of this book (computer science, backend, DevOps, cybersecurity, testing, AI). Use when the user asks to "write an article/chapter" (e.g. "寫一篇", "寫這章"), or names an item in docs/contents/<field>.md or in a track outline under docs/contents/ai/.
 ---
 
-# 撰寫一篇書籍文章
+# Write one book article
 
-本書寫給自學的初級工程師，以 Go 為主要語言；`ai` 領域例外，主要語言是 Python。全書分成數個領域（field），每個領域一份目錄：`docs/contents/cs.md`、`docs/contents/backend.md`、`docs/contents/devops.md`、`docs/contents/cyber.md`、`docs/contents/testing.md`。網站是 `site/`（Astro Starlight），每個領域有自己的側欄。
+The book is written in Traditional Chinese (繁體中文, Taiwan usage) for self-taught junior engineers. The main language is Go; the `ai` field is the exception and uses Python. The book is split into fields, each with one outline file: `docs/contents/cs.md`, `docs/contents/backend.md`, `docs/contents/devops.md`, `docs/contents/cyber.md`, `docs/contents/testing.md`. The website is `site/` (Astro Starlight), and each field has its own sidebar.
 
-`ai` 領域分成三條軌道（track），每條軌道一份目錄：`docs/contents/ai/foundations.md`（理論基礎）、`docs/contents/ai/engineering.md`（應用工程）、`docs/contents/ai/ai-agents.md`（代理人）。三條軌道共用一個側欄 `site/src/sidebar/ai.ts`。下文寫 `<field>` 的地方，對 `ai` 領域一律讀作 `ai/<track>`：目錄是上述該軌道的目錄檔（代理人軌道的檔名是 `ai-agents.md`，避免被誤認為代理人的指示檔，但 `<track>` 仍是 `agents`），文章路徑是 `site/src/content/docs/ai/<track>/...`，範例路徑是 `playground/ai/<track>/...`。
-每篇文章都必須遵守本 skill，讓不同 agent 寫出來的章節讀起來像同一位作者。
+The `ai` field is split into three tracks, each with one outline file: `docs/contents/ai/foundations.md` (theory foundations), `docs/contents/ai/engineering.md` (applied engineering), `docs/contents/ai/ai-agents.md` (agents). The three tracks share one sidebar, `site/src/sidebar/ai.ts`. Wherever this document writes `<field>`, read it as `ai/<track>` for the `ai` field: the outline is the track file above (the agents track file is named `ai-agents.md` so it is not mistaken for an instruction file for agents, but `<track>` is still `agents`), the article path is `site/src/content/docs/ai/<track>/...`, and the example path is `playground/ai/<track>/...`.
+Every article must follow this skill, so that chapters written by different agents read as if written by one author.
 
-規則的優先順序：使用者這次的指示 > 本檔 > `references/fields/<field>.md` > `references/style-guide.md` > 你自己的習慣。
+Rule priority: the user's instruction in this request > this file > `references/fields/<field>.md` > `references/style-guide.md` > your own habits.
 
-本 skill 的檔案：`assets/template.md`（文章模板）、`references/style-guide.md`（全書風格）、`references/markdown-lint.md`（Markdown 寫法）、`references/checklist.md`（交稿檢查）、`references/fields/`（個別領域的額外規則，目前有 `ai.md`、`testing.md`）。下文提到這些檔案時，路徑都從本 skill 目錄算起。
+Files of this skill: `assets/template.md` (article template), `references/style-guide.md` (book-wide style), `references/markdown-lint.md` (Markdown writing rules), `references/checklist.md` (delivery checklist), `references/fields/` (extra rules for individual fields; currently `ai.md` and `testing.md`). All paths to these files are relative to this skill directory.
 
-## 輸入
+**Language note.** The skill instructions are in English, but the articles are in Traditional Chinese. The nine section headings in `assets/template.md` are literal Chinese strings and must be copied exactly. Examples in these files that show Chinese typography are part of the rules; do not translate them.
 
-開始前先確認這四件事；缺任何一項就問使用者，不要猜：
+## Input
 
-1. **領域**：`cs`、`backend`、`devops`、`cyber`、`testing` 或 `ai`。`ai` 領域還要確認是哪一條軌道：`foundations`、`engineering` 或 `agents`。
-2. **主題**：對應 `docs/contents/<field>.md` 的哪一個項目（例如「2.3 快取穿透、擊穿、雪崩與對策」）。
-3. **層級**：L0–L4，由該項目所在的章節決定。層級決定深度與篇幅（見 `references/style-guide.md`）。`cs` 領域不分層級，而是依主題分組（C、D、O、N、T、Z）；篇幅與深度一律照 L0，路徑中的 `<level>` 換成該主題分組在 `site/src/sidebar/cs.ts` 裡的 `dir`（例如 `n-network`）。
-4. **是新寫還是改寫**：改寫時先完整讀過現有文章。
+Confirm these four things before starting. If any is missing, ask the user. Do not guess:
 
-## 流程
+1. **Field**: `cs`, `backend`, `devops`, `cyber`, `testing`, or `ai`. For `ai`, also confirm the track: `foundations`, `engineering`, or `agents`.
+2. **Topic**: which item of `docs/contents/<field>.md` (for example "2.3 快取穿透、擊穿、雪崩與對策").
+3. **Level**: L0–L4, determined by the chapter the item belongs to. The level sets depth and length (see `references/style-guide.md`). The `cs` field has no levels; it is grouped by topic (C, D, O, N, T, Z). Length and depth always follow L0, and `<level>` in paths becomes the `dir` of that topic group in `site/src/sidebar/cs.ts` (for example `n-network`).
+4. **New or rewrite**: when rewriting, read the existing article in full first.
 
-1. **讀上下文**
-   - `docs/contents/<field>.md`：找出本篇的前一篇與後一篇，知道讀者已經學過什麼、接下來要學什麼。
-   - 同一節已寫好的文章（`site/src/content/docs/<field>/<level>/<section>/`），避免重複講解，並沿用相同的例子。
-   - `docs/glossary.md`：術語一律照表使用。
-   - `references/style-guide.md`、`references/markdown-lint.md` 與 `assets/template.md`。
-   - 該領域有 `references/fields/<field>.md` 時也要讀（`ai` 領域讀 `references/fields/ai.md`，不分軌道）。
-2. **寫大綱**：依 `assets/template.md` 的九個段落，每段一到兩句話說明要寫什麼。主題橫跨兩篇以上，或篇幅明顯超出範圍時，先把大綱給使用者確認。
-3. **寫正文**：複製 `assets/template.md`，照段落順序填寫。段落標題一字不改，不新增、不刪除、不調換順序。
-4. **寫程式範例**：Go 範例放在 `playground/<field>/<level>/<section>/<slug>/`，是可獨立執行的 Go module；辨識題的程式碼放在該目錄的 `recognize/` 下；`ai` 領域的 Python 範例放在 `playground/ai/<track>/<level>/<section>/<slug>/`，是獨立的 `uv` 專案（見 `references/style-guide.md` 的「程式碼」與 `references/fields/ai.md`）。
-5. **驗證**：逐項檢查 `references/checklist.md`。Go 範例在環境有 `go` 時執行 `go vet ./...` 與 `go test ./...`；Python 範例在環境有 `uv` 時執行 `uv run ruff check .` 與 `uv run pytest`。工具不存在、或範例需要 GPU、付費 API 而無法執行時，在回報中寫明「程式碼未經執行驗證」與原因。
-6. **收尾**
-   - 新術語加進 `docs/glossary.md`。
-   - 在 `docs/contents/<field>.md` 把該項目的 `- [ ]` 改成 `- [x]`，並在後面加上文章連結。
-   - 回報：檔案路徑、字數、未通過或略過的檢查項目、想請使用者決定的地方。
+## Workflow
 
-## 檔案位置與命名
+1. **Read the context**
+   - `docs/contents/<field>.md`: find the previous and next article, so you know what the reader has already learned and what comes next.
+   - Articles already written in the same section (`site/src/content/docs/<field>/<level>/<section>/`): avoid repeating explanations and reuse the same examples.
+   - `docs/glossary.md`: use terms exactly as listed.
+   - `references/style-guide.md`, `references/markdown-lint.md`, and `assets/template.md`.
+   - If the field has `references/fields/<field>.md`, read it too (for `ai`, read `references/fields/ai.md`, regardless of track).
+2. **Write the outline**: following the nine sections of `assets/template.md`, write one or two sentences per section about what it will cover. If the topic spans two or more articles, or the length clearly exceeds the range, show the outline to the user for confirmation first.
+3. **Write the body**: copy `assets/template.md` and fill it in section order. Keep section headings exactly as they are. Do not add, remove, or reorder sections.
+4. **Write the code examples**: Go examples go in `playground/<field>/<level>/<section>/<slug>/`, a standalone Go module that can run on its own. Code for recognition exercises goes under `recognize/` in that directory. Python examples for the `ai` field go in `playground/ai/<track>/<level>/<section>/<slug>/`, a standalone `uv` project (see "Code" in `references/style-guide.md` and `references/fields/ai.md`).
+5. **Verify**: go through `references/checklist.md` item by item. If `go` is available, run `go vet ./...` and `go test ./...` for Go examples. If `uv` is available, run `uv run ruff check .` and `uv run pytest` for Python examples. If a tool is missing, or the example needs a GPU or a paid API and cannot run, write "code not verified by execution" and the reason in the report.
+6. **Wrap up**
+   - Add new terms to `docs/glossary.md`.
+   - In `docs/contents/<field>.md`, change the item's `- [ ]` to `- [x]` and add the article link after it.
+   - Report: file paths, word count, checks that failed or were skipped, and anything you want the user to decide.
+
+## File locations and naming
 
 ```
 site/src/content/docs/<field>/<level>/<section>/<slug>.md
-playground/<field>/<level>/<section>/<slug>/      # Go 範例
-playground/ai/<track>/<level>/<section>/<slug>/   # ai 領域的 Python 範例
+playground/<field>/<level>/<section>/<slug>/      # Go example
+playground/ai/<track>/<level>/<section>/<slug>/   # Python example for the ai field
 ```
 
-- `<field>`：`cs`、`backend`、`devops`、`cyber`、`testing`，或 `ai/foundations`、`ai/engineering`、`ai/agents`。
-- `<level>`：`l0` … `l4`；`cs` 領域是主題分組的 `dir`，例如 `n-network`
-- `<section>`：**一律照 `site/src/sidebar/<field>.ts` 裡該節的 `dir`**（`ai` 領域照 `site/src/sidebar/ai.ts` 裡該軌道的 `dir`），例如 `2-3-cache`，不要自己取名。該節還不在檔案裡（新領域或新的一節）時，依「節號加英文 kebab-case」取名，並把 `{ label, dir }` 加進該檔對應層級的 `sections`，`label` 與目錄的節標題一致（`cs` 領域例外：`label` 去掉代號，例如節標題「N.4 應用層」的 `label` 寫「應用層」）。
-- 側欄只顯示已有文章的節，文章本身依 frontmatter 的 `sidebar.order` 排序，不必另外登記。
-- `<slug>`：英文 kebab-case、2 到 5 個字，例如 `cache-stampede`。
+- `<field>`: `cs`, `backend`, `devops`, `cyber`, `testing`, or `ai/foundations`, `ai/engineering`, `ai/agents`.
+- `<level>`: `l0` … `l4`; for the `cs` field it is the `dir` of the topic group, for example `n-network`.
+- `<section>`: **always use the `dir` of that section in `site/src/sidebar/<field>.ts`** (for `ai`, the `dir` of that track in `site/src/sidebar/ai.ts`), for example `2-3-cache`. Do not invent a name. If the section is not in the file yet (a new field or a new section), name it "section number plus English kebab-case", and add `{ label, dir }` to the `sections` of the matching level in that file. `label` matches the section heading in the outline (exception for the `cs` field: `label` drops the code letter, so for the heading "N.4 應用層" the `label` is 「應用層」).
+- The sidebar shows only sections that already have articles. Articles are ordered by `sidebar.order` in the frontmatter, so no separate registration is needed.
+- `<slug>`: English kebab-case, 2 to 5 words, for example `cache-stampede`.
 
-Frontmatter 固定為：
+The frontmatter is always:
 
 ```yaml
 ---
-title: 快取穿透、擊穿、雪崩與對策     # 與 docs/contents/<field>.md 的項目文字一致
-description: 一句話說明讀完能做到什麼    # 60 字以內
+title: 快取穿透、擊穿、雪崩與對策     # same as the item text in docs/contents/<field>.md
+description: 一句話說明讀完能做到什麼    # one sentence on what the reader can do after reading; within 60 characters
 sidebar:
-  order: 5                             # 本項目在該節中的序號（從 1 起算）
+  order: 5                             # position of this item within the section (starts at 1)
 ---
 ```
 
-- `title` 要清楚、簡短，不超過 30 個字元。項目文字超過時，先與使用者確認如何縮短，並同步修改 `docs/contents/<field>.md` 的項目文字。
+- `title` must be clear and short, at most 30 characters. If the item text is longer, first ask the user how to shorten it, and update the item text in `docs/contents/<field>.md` to match.
 
-## 資安主題的額外規則
+## Extra rules for security topics
 
-- 攻擊示範只針對讀者在本機自己寫、自己跑的程式（例如 `localhost` 上的範例服務），絕不針對第三方系統或真實網站。
-- 每個攻擊都要在同一篇文章裡附上修補方式，並驗證修補後攻擊確實失效。
-- 在「怎麼運作」段落開頭放一個 `:::caution` 提醒：只能在自己擁有或獲得授權的系統上測試。
-- 不提供繞過偵測、隱藏蹤跡或大規模掃描的內容。
+- Attack demonstrations target only programs the reader writes and runs locally (for example an example service on `localhost`). Never target third-party systems or real websites.
+- Every attack must come with its fix in the same article, and you must verify that the attack no longer works after the fix.
+- At the start of the 「怎麼運作」 section, put a `:::caution` aside reminding readers to test only on systems they own or are authorized to test.
+- Do not provide content on evading detection, hiding traces, or large-scale scanning.

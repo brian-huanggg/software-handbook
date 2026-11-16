@@ -10,10 +10,10 @@ interface Session {
 
 const sessions = new Map<string, Session>();
 
-export function create_session(): string {
+export function createSession(): string {
     const sessionId = randomBytes(32).toString("base64url"); // randomBytes(32) 回傳 Buffer，是 32 個原始位元組
     sessions.set(sessionId, {
-        status: "unauthenticated",
+        status: "authenticated",
         createdAt: Date.now(),
         expiresIn: SESSION_TTL,
     });

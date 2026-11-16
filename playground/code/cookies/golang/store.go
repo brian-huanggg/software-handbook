@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-const sessionTTL = 3600 * time.Second // Default: millisecond (ms)
+const sessionTTL = 3600 * time.Second
 
 type session struct {
 	status    string
 	createdAt time.Time
-	expiredAt time.Time
+	expiresIn time.Duration
 }
 
 var (
@@ -25,16 +25,15 @@ func createSession() (string, error) {
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
-	id := base64.RawURLEncoding.EncodeToString(b) // Need to convert byte (buffer) to strong
+	id := base64.RawURLEncoding.EncodeToString(b) // convert bytes to string
 
-	now := time.Now()
 	mu.Lock()
 	defer mu.Unlock()
 
 	sessions[id] = session{
-		status:    "unauthenticated",
-		createdAt: now,
-		expiredAt: now.Add(sessionTTL),
+		status:    "authenticated",
+		createdAt: time.Now(),
+		expiresIn: sessionTTL,
 	}
 
 	return id, nil

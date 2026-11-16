@@ -32,6 +32,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /login", loginHandler)
+	mux.HandleFunc("/", http.NotFound) // anything else: 404
 
 	log.Println("App is listening on http://localhost:3000")
 	log.Fatal(http.ListenAndServe(":3000", mux))

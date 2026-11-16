@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class SessionStore {
     public static final Duration TTL = Duration.ofSeconds(3600);
 
-    public record Session(String status, Instant createdAt, Instant expiredAt) {}
+    public record Session(String status, Instant createdAt, Duration expiresIn) {}
 
     private final SecureRandom random = new SecureRandom();
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
@@ -24,7 +24,7 @@ public class SessionStore {
         String id = Base64.getUrlEncoder().withoutPadding().encodeToString(b);
 
         Instant now = Instant.now();
-        sessions.put(id, new Session("authenticaterd", now, now.plus(TTL)));
+        sessions.put(id, new Session("authenticated", now, TTL));
         
         return id;
     }

@@ -74,6 +74,7 @@
 | gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
+| handler | handler | 處理器、處理程序 | 不翻譯；實作 `http.Handler`（`ServeHTTP` 方法）的東西，收到請求並寫出回應 |
 | Helm | Helm |  | 不翻譯；Kubernetes 的套件管理器，把清單打包成可安裝、升級、回滾的 release |
 | HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |
 | hook | hook | 鉤子 | 不翻譯；Helm 中掛在 release 生命週期某時間點（如 `pre-upgrade`）的清單，由 Helm 建立並等它結束；不屬於 release，需用 `hook-delete-policy` 清理 |
@@ -103,6 +104,7 @@
 | magic bytes | 檔頭（magic bytes） | 魔數 | 檔案格式開頭固定的幾個 byte（如 PNG 的 `89 50 4E 47`）；只證明開頭像，不證明整個檔案乾淨 |
 | MC/DC (modified condition/decision coverage) | MC/DC（修正條件／判定覆蓋） | | 每個原子條件都有獨立影響對，最少 N+1 個案例；DO-178C Level A 的要求；分 unique-cause 與 masking 兩種 |
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
+| middleware | middleware | 中介軟體 | 不翻譯；接收一個 handler、回傳另一個 handler 的函式，用來包住記錄、認證等共通邏輯 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | MIME sniffing | MIME 嗅探 | 內容嗅探 | 依內容前段猜類型的 WHATWG 演算法；Go 的 `http.DetectContentType` 實作它；回應加 `nosniff` 禁止瀏覽器自行嗅探 |
 | monotonic clock | 單調時鐘 | 單調遞增時鐘 | 只會前進、不受校時與閏秒影響的時鐘，用來量測經過時間（Go 的 `time.Since`）；不能用來回答「現在幾點」 |
@@ -157,6 +159,7 @@
 | self-contained token | 自包含 token | | 身分與期限寫在 token 裡、驗證方只驗簽章不查儲存的 token（JWT、PASETO）；到期前難以撤銷 |
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
 | sensitive data exposure | 敏感資料外洩 | 敏感資料暴露 | 不該被看到的資料經由回應欄位、錯誤訊息、日誌等路徑離開伺服器；對外回應用只列允許欄位的型別（白名單）預防 |
+| ServeMux | ServeMux | 路由多工器 | 不翻譯；標準庫的請求路由器，依 method 與路徑把請求轉給 handler；Go 1.22 起支援 `{name}` 路徑參數 |
 | session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |
 | short-circuit evaluation | 短路求值 | 短路運算 | 前面的條件已決定結果時，`&&`、`\|\|` 後面的條件不會被求值；會讓某些條件在測試裡「從沒被求值」 |
 | Slowloris | Slowloris | | 不翻譯；客戶端建立大量連線後極慢地送出請求以占住伺服器連線的攻擊；對策是讀取逾時與 header 大小上限 |

@@ -37,7 +37,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 | 狀態 | 標題 | 說明 |
 | --- | --- | --- |
 | ✅ | [請求生命週期](../../site/src/content/docs/backend/l1/1-2-http-api/request-lifecycle.md) | 說出一個 HTTP 請求從 TCP 連線到 handler 的每個階段，並為各階段設好逾時與大小限制。 |
-| ⬜ | `net/http` | Handler、ServeMux、middleware 模式 |
+| ✅ | [net/http](../../site/src/content/docs/backend/l1/1-2-http-api/net-http.md) | 用標準庫的 Handler、ServeMux 與 middleware 組出有路由、記錄、認證與 panic 保護的 HTTP 服務，並說出各層的順序為什麼重要。 |
 | ⬜ | HTTP 語意 | method、狀態碼、header、冒等性初步 |
 | ⬜ | REST 設計原則與資源命名 |  |
 | ⬜ | JSON 編解碼與輸入驗證 |  |

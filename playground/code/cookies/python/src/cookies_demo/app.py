@@ -17,4 +17,4 @@ def login(response: Response):
         secure=True,
         samesite="lax",
     )
-    return {"message": "Login Successful, cookie has been set"}
+    return {"message": "Login successful, cookie has been set"}

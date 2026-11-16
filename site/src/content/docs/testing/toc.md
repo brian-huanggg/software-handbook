@@ -75,8 +75,8 @@ sidebar:
 
 | 標題 | 說明 |
 | --- | --- |
-| 敘述、分支、條件覆蓋 |  |
-| 路徑覆蓋與 MC/DC | 路徑與 MC/DC 的概念 |
+| [敘述、分支、條件覆蓋](/testing/l1/1-3-white-box/coverage-criteria/) | 說得出三種覆蓋準則各自保證什麼、漏掉什麼，並能為一個複合判斷挑出最少的測試案例。 |
+| [路徑覆蓋與 MC/DC](/testing/l1/1-3-white-box/path-mcdc/) | 能為前後接續的判斷列出路徑、算出基本路徑數，並用獨立影響對設計 MC/DC 案例。 |
 | 用 go test -cover 看漏測 | 用 `go test -cover` 看見沒被執行的程式碼 |
 | 白箱測試的極限 | 覆蓋到不等於測到 |
 

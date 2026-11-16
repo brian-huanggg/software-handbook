@@ -2,6 +2,8 @@
 
 全書統一用語。寫文章時照這張表使用；遇到新術語就加一列，依英文字母排序。
 
+| English | 本書用法 | 不要用 | 備註 |
+| --- | --- | --- | --- |
 | agent | Agent | 代理人、智能體 | 不翻譯、首字大寫；能自己呼叫工具、依結果決定下一步的 LLM 程式；複合詞寫「多 Agent」「程式碼 Agent」，中英文之間留半形空格 |
 | bead | bead | | 不翻譯；Beads 裡的一個任務，有 ID、優先度、狀態與依賴 |
 | branch coverage | 分支覆蓋 | 判定覆蓋 | 每個判斷式的整體結果，真與假各至少出現一次 |
@@ -12,8 +14,6 @@
 | decision/condition coverage | 判定／條件覆蓋 | | 同時滿足分支覆蓋與條件覆蓋 |
 | derived value | 派生值 | 衍生值 | 可由其他欄位與「現在」算出來的值（如「是否過期」）；存成欄位就會與來源不同步，應即時推算 |
 | Dolt | Dolt | | 不翻譯；有版本控制、支援分支與合併的 SQL 資料庫，Beads 用它存任務 |
-| English | 本書用法 | 不要用 | 備註 |
-| --- | --- | --- | --- |
 | access control | 權限控制 | 存取控制 | 授權決策與強制執行的總稱；OWASP Top 10:2021 的 A01 |
 | access token | access token | 存取令牌 | 不翻譯；用來呼叫 API 的短效憑證（常是 JWT），效期通常 5 到 15 分鐘，過期後靠 refresh token 換新 |
 | admission control | admission control | 准入控制 | 不翻譯；Kubernetes 在資源建立前攔截並驗證的機制，可用來拒絕未簽章映像 |
@@ -25,6 +25,7 @@
 | authentication (authn) | 認證 | 驗證、鑑權 | 確認呼叫者是誰；失敗回 401；第一次出現寫「認證（authentication，簡稱 authn）」 |
 | authorization (authz) | 授權 | 鑑權 | 決定已知身分能對哪些資源做哪些事；失敗回 403；第一次出現寫「授權（authorization，簡稱 authz）」 |
 | base64url | base64url | | 不翻譯；把位元組編碼成 URL 安全字元（`-`、`_`、無 `=` 填充）的方式，JWT 各段用它；是編碼不是加密 |
+| basis path testing | 基本路徑測試 | | 為 V(G) 條基本路徑各寫一個案例；保證分支覆蓋，但只規定條數，不規定挑哪幾條 |
 | bastion host | 跳板機 | 堡壘機 | 對外開放、專門用來連進內網資料庫等主機的中繼主機；DBeaver 的 SSH tunnel 經它轉接 |
 | BCNF | BCNF（Boyce-Codd 正規化） | | 每條非平凡的函數相依，決定者都必須是超鍵；比 3NF 嚴，拆表後可能丟掉跨欄位約束 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
@@ -50,6 +51,7 @@
 | Cross-Origin Resource Sharing (CORS) | 跨源資源共用（CORS） | 跨域資源共享 | 第一次出現寫全名，之後只寫 CORS |
 | cross-site request forgery (CSRF) | 跨站請求偽造（CSRF） | 跨站請求攻擊 | 讓受害者已登入的瀏覽器送出非本意的請求；第一次出現寫全名，之後只寫 CSRF |
 | cross-site scripting (XSS) | 跨站腳本（XSS） | 跨站指令碼 | 攻擊者讓自己的 JavaScript 在目標網站的頁面裡執行；第一次出現寫全名，之後只寫 XSS |
+| cyclomatic complexity | 循環複雜度 | 圈複雜度 | McCabe 提出，V(G) = E − N + 2，只有 if 與迴圈時等於判斷個數加 1；等於基本路徑的條數 |
 | dangling record | 懸空紀錄 | 懸掛紀錄 | 資料庫裡的紀錄指向不存在的檔案；比孤兒檔案更糟，使用者看得到 |
 | DBeaver | DBeaver | | 不翻譯；通用資料庫用戶端，用 JDBC 驅動連多種資料庫；本書用 Community 版 |
 | dead tuple | dead tuple | 死元組、廢棄列 | 不翻譯；Postgres 更新或刪除後留在表裡、等 VACUUM 回收的舊版本資料列 |
@@ -81,6 +83,7 @@
 | image | 映像 | 鏡像、鏡像檔 | 唯讀 layer 加啟動設定；container 由它啟動 |
 | implicit assertion | implicit assertion | | 不翻譯；PASETO 簽發與驗證雙方各自帶入、不出現在 token 裡的值（如租戶編號），會被簽進去，不一致就驗不過 |
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
+| independence pair | 獨立影響對 | | 兩個案例只差一個原子條件、判斷結果也不同；MC/DC 要求每個條件都有一組 |
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
 | integration test | 整合測試 | 集成測試 | 讓程式碼接上真的資料庫、快取等依賴一起跑的測試；與只用 fake 的單元測試相對 |
 | isolation level | 隔離級別 | 隔離等級 | 決定一個交易能看到其他交易哪些變動；Postgres 預設 Read Committed，MySQL 預設 Repeatable Read |
@@ -98,12 +101,14 @@
 | lost update | 更新遺失 | 丟失更新 | 兩個交易讀到同一個舊值、各自算出新值，後寫的蓋掉先寫的；沒有鎖的「先讀再寫」會發生 |
 | login CSRF | 登入 CSRF | | 偽造登入請求，讓受害者在不知情下登入攻擊者的帳號 |
 | magic bytes | 檔頭（magic bytes） | 魔數 | 檔案格式開頭固定的幾個 byte（如 PNG 的 `89 50 4E 47`）；只證明開頭像，不證明整個檔案乾淨 |
+| MC/DC (modified condition/decision coverage) | MC/DC（修正條件／判定覆蓋） | | 每個原子條件都有獨立影響對，最少 N+1 個案例；DO-178C Level A 的要求；分 unique-cause 與 masking 兩種 |
 | merge queue | 合併佇列 | 合併隊列 | 合併前在最新 main 上重跑檢查，避免兩個各自通過的 PR 合在一起才壞 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | MIME sniffing | MIME 嗅探 | 內容嗅探 | 依內容前段猜類型的 WHATWG 演算法；Go 的 `http.DetectContentType` 實作它；回應加 `nosniff` 禁止瀏覽器自行嗅探 |
 | monotonic clock | 單調時鐘 | 單調遞增時鐘 | 只會前進、不受校時與閏秒影響的時鐘，用來量測經過時間（Go 的 `time.Since`）；不能用來回答「現在幾點」 |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | multipart/form-data | multipart/form-data | 多部分表單 | 不翻譯；請求本體切成多個 part，每個 part 是欄位或檔案（RFC 7578） |
+| multiple condition coverage | 多重條件覆蓋 | 條件組合覆蓋 | N 個原子條件的 2^N 種組合全測 |
 | mutation XSS (mXSS) | 突變型 XSS | | 經 sanitizer 處理過的 HTML 在瀏覽器重新解析時改變結構，酬載因此復活 |
 | MVCC | MVCC（多版本並行控制） |  | 保留資料的多個版本，讓讀取不擋寫入；Postgres 把舊版本留在表裡，InnoDB 放進 undo log |
 | nonce | nonce | 隨機數 | 不翻譯；CSP 中每個回應都重新產生的隨機值，只有帶它的 `<script>` 才能執行 |
@@ -119,6 +124,7 @@
 | pane | 窗格（pane） | 面板 | 終端多工器中的一個真正的終端機，可分割、可脫離後繼續執行；Herdr 的 agent 跑在窗格裡 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |
 | password hashing | 密碼雜湊 | 口令哈希 | 用刻意設計成慢且吃記憶體的函式處理密碼後再儲存；與 SHA-256 等通用雜湊不同類 |
+| path coverage | 路徑覆蓋 | | CFG 上每一條完整路徑都走過；路徑數指數成長，有迴圈時無上限 |
 | path traversal | 路徑穿越 | 目錄遍歷 | 用 `../` 等外部字串讓路徑跳出預定目錄；`filepath.Clean` 不擋，用 `filepath.IsLocal` 與 `os.Root`；CWE-22 |
 | payload | 酬載 | 載荷 | 攻擊者送進目標、要讓它執行的內容；在 XSS 中是那段注入的標記或腳本 |
 | pepper | pepper | 胡椒 | 不翻譯；全站共用、存在資料庫以外的祕密值，與 salt 搭配使用 |

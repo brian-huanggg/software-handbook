@@ -33,6 +33,3 @@ __pycache__/
 # Editor/IDE
 .idea/
 .vscode/
-
-# Personal Usage
-plan.md

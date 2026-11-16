@@ -4,8 +4,12 @@
 
 | agent | Agent | 代理人、智能體 | 不翻譯、首字大寫；能自己呼叫工具、依結果決定下一步的 LLM 程式；複合詞寫「多 Agent」「程式碼 Agent」，中英文之間留半形空格 |
 | bead | bead | | 不翻譯；Beads 裡的一個任務，有 ID、優先度、狀態與依賴 |
+| branch coverage | 分支覆蓋 | 判定覆蓋 | 每個判斷式的整體結果，真與假各至少出現一次 |
 | clock drift | 時鐘漂移 | | 一台機器的時鐘隨時間逐漸變快或變慢；靠 NTP 校準，但校準不是即時的 |
 | clock skew | 時鐘偏移 | 時鐘歪斜 | 兩台機器的時鐘在同一個瞬間讀數不同；多節點各自用系統時間判斷過期，就會得到不一致的答案 |
+| condition coverage | 條件覆蓋 | | 判斷式裡每個原子條件，各自至少被求值為真與為假一次；不保證分支覆蓋 |
+| control flow graph (CFG) | 控制流程圖（CFG） | 控制流圖 | 把程式碼畫成節點與箭頭的圖，覆蓋準則都以它為基礎；第一次出現寫全名，之後只寫 CFG |
+| decision/condition coverage | 判定／條件覆蓋 | | 同時滿足分支覆蓋與條件覆蓋 |
 | derived value | 派生值 | 衍生值 | 可由其他欄位與「現在」算出來的值（如「是否過期」）；存成欄位就會與來源不同步，應即時推算 |
 | Dolt | Dolt | | 不翻譯；有版本控制、支援分支與合併的 SQL 資料庫，Beads 用它存任務 |
 | English | 本書用法 | 不要用 | 備註 |
@@ -148,6 +152,7 @@
 | semi-synchronous replication | 半同步複寫 | | 主節點等至少一個副本收到才回覆；逾時會退回非同步 |
 | sensitive data exposure | 敏感資料外洩 | 敏感資料暴露 | 不該被看到的資料經由回應欄位、錯誤訊息、日誌等路徑離開伺服器；對外回應用只列允許欄位的型別（白名單）預防 |
 | session | session | 會話 | 不翻譯；伺服器端替一次登入保存的狀態紀錄，以 session ID 為鑰匙；跟 session 保持（負載平衡）是兩件事 |
+| short-circuit evaluation | 短路求值 | 短路運算 | 前面的條件已決定結果時，`&&`、`\|\|` 後面的條件不會被求值；會讓某些條件在測試裡「從沒被求值」 |
 | Slowloris | Slowloris | | 不翻譯；客戶端建立大量連線後極慢地送出請求以占住伺服器連線的攻擊；對策是讀取逾時與 header 大小上限 |
 | session fixation | session fixation | 會話固定 | 不翻譯；攻擊者先讓受害者使用自己已知的 session ID，登入沿用該 ID 就被接管；對策是登入時換發新 ID |
 | session ID | session ID | 會話識別碼 | 不翻譯；不可猜測的隨機值（至少 128 位元、用 `crypto/rand`），放在 Cookie 裡當查表的鑰匙 |
@@ -164,6 +169,7 @@
 | state snapshot transfer (SST) | SST | | 節點重新加入時複製整份資料；第一次出現寫全名 |
 | stateful authentication | 有狀態認證 | | 伺服器保存每次登入的紀錄，每個請求靠查表驗證；可立即撤銷，代價是每個請求一次儲存往返 |
 | stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
+| statement coverage | 敘述覆蓋 | 語句覆蓋、行覆蓋 | 每一條陳述式至少被執行一次；`go test -cover` 量的就是這個 |
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
 | superkey | 超鍵 | 超級鍵 | 能決定整列所有欄位的欄位組合 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |

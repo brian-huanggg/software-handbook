@@ -9,8 +9,10 @@
 | branch coverage | 分支覆蓋 | 判定覆蓋 | 每個判斷式的整體結果，真與假各至少出現一次 |
 | clock drift | 時鐘漂移 | | 一台機器的時鐘隨時間逐漸變快或變慢；靠 NTP 校準，但校準不是即時的 |
 | clock skew | 時鐘偏移 | 時鐘歪斜 | 兩台機器的時鐘在同一個瞬間讀數不同；多節點各自用系統時間判斷過期，就會得到不一致的答案 |
+| cohesion | 內聚 | 凝聚 | 一個模組內的東西為同一個目的而存在的程度；依功能切分讓同一功能的程式碼放在一起 |
 | condition coverage | 條件覆蓋 | | 判斷式裡每個原子條件，各自至少被求值為真與為假一次；不保證分支覆蓋 |
 | control flow graph (CFG) | 控制流程圖（CFG） | 控制流圖 | 把程式碼畫成節點與箭頭的圖，覆蓋準則都以它為基礎；第一次出現寫全名，之後只寫 CFG |
+| coupling | 耦合 | | 模組之間互相依賴的程度；改一處要連帶改多少地方 |
 | decision/condition coverage | 判定／條件覆蓋 | | 同時滿足分支覆蓋與條件覆蓋 |
 | derived value | 派生值 | 衍生值 | 可由其他欄位與「現在」算出來的值（如「是否過期」）；存成欄位就會與來源不同步，應即時推算 |
 | Dolt | Dolt | | 不翻譯；有版本控制、支援分支與合併的 SQL 資料庫，Beads 用它存任務 |
@@ -84,6 +86,7 @@
 | idempotency | 冪等 | 冒等、幂等 | 同一個請求送一次與送 N 次，伺服器最後的狀態相同；談的是狀態不是回應，所以第二次 DELETE 回 404 仍算冪等 |
 | image | 映像 | 鏡像、鏡像檔 | 唯讀 layer 加啟動設定；container 由它啟動 |
 | implicit assertion | implicit assertion | | 不翻譯；PASETO 簽發與驗證雙方各自帶入、不出現在 token 裡的值（如租戶編號），會被簽進去，不一致就驗不過 |
+| import cycle | import 循環 | 循環引用 | 兩個以上套件互相 import；Go 編譯器直接拒絕，錯誤為 import cycle not allowed |
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
 | independence pair | 獨立影響對 | | 兩個案例只差一個原子條件、判斷結果也不同；MC/DC 要求每個條件都有一組 |
 | insecure direct object reference (IDOR) | IDOR（不安全的直接物件參照） | 不安全直接對象引用 | 只靠 ID 取資料、不檢查呼叫者是否有權限；第一次出現寫全名，之後只寫 IDOR |
@@ -108,6 +111,7 @@
 | middleware | middleware | 中介軟體 | 不翻譯；接收一個 handler、回傳另一個 handler 的函式，用來包住記錄、認證等共通邏輯 |
 | migration | 遷移（資料庫結構版本控制時寫 migration） | 遠移 | |
 | MIME sniffing | MIME 嗅探 | 內容嗅探 | 依內容前段猜類型的 WHATWG 演算法；Go 的 `http.DetectContentType` 實作它；回應加 `nosniff` 禁止瀏覽器自行嗅探 |
+| modular monolith | 模組化單體 | 模組化單體式 | 單一部署單位，但內部依功能切成邊界清楚的模組 |
 | monotonic clock | 單調時鐘 | 單調遞增時鐘 | 只會前進、不受校時與閏秒影響的時鐘，用來量測經過時間（Go 的 `time.Since`）；不能用來回答「現在幾點」 |
 | multi-stage build | multi-stage build | 多階段建置 | 不翻譯；Builder 階段建置，Production 階段只複製產物 |
 | multipart/form-data | multipart/form-data | 多部分表單 | 不翻譯；請求本體切成多個 part，每個 part 是欄位或檔案（RFC 7578） |
@@ -123,6 +127,9 @@
 | orphan file | 孤兒檔案 | 孤立檔案 | 物件儲存裡沒有任何紀錄引用的檔案；無害但佔空間，靠定期掃描清除 |
 | outbox pattern | Outbox 模式 | 發件箱模式 | 把「之後要做的事」和業務資料寫在同一個交易的表，再由背景程序送出；跨系統一致性的待刪除表是它的最小版本 |
 | output encoding | 輸出編碼 | 輸出轉義 | 資料放進頁面時，依所在位置（HTML 本文、屬性、URL、JavaScript）做對應的跳脫；XSS 的主要修法 |
+| package (Go) | 套件 | 包 | Go 的可見性單位；同一資料夾的檔案屬於同一個套件 |
+| package by feature | 依功能切分 | 按功能分包 | 目錄第一層依業務功能分組，分層退到功能套件內部 |
+| package by layer | 依層切分 | 按層分包 | 目錄第一層依技術角色分組（handler、service、store） |
 | page split | 頁分裂 | 頁面分割 | B+ 樹的目標頁已滿時切成兩頁，兩頁各剩約一半；隨機主鍵會頻繁發生 |
 | pane | 窗格（pane） | 面板 | 終端多工器中的一個真正的終端機，可分割、可脫離後繼續執行；Herdr 的 agent 跑在窗格裡 |
 | PASETO | PASETO | | 不翻譯；Platform-Agnostic SECurity TOkens，以 version 固定演算法、沒有 `alg` 欄位的自包含 token 格式；`public` 簽章、`local` 加密 |

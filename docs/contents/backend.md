@@ -257,6 +257,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 | 狀態 | 標題 | 說明 |
 | --- | --- | --- |
 | ⬜ | 單體、模組化單體、微服務 | 何時該拆 |
+| ✅ | [套件切法：依層或依功能](../../site/src/content/docs/backend/l3/3-3-service-architecture/package-slicing.md) | 比較依層切與依功能切，在 Go 裡用功能劃出套件邊界並避開 import 循環。 |
 | ⬜ | Go 模組化單體實作 | 模組邊界、`internal` 套件、跨模組只走介面、依賴方向的自動檢查 |
 | ⬜ | 依領域拆服務 | DDD 基礎、bounded context |
 | ⬜ | 服務間通訊 | 同步 vs 非同步 |

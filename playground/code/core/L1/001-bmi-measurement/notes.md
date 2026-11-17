@@ -1,6 +1,6 @@
-# 各語言核心概念對照
+# 001 BMI Measurement：跨語言對照
 
-以 `mbi-measurement` 練習為例，對照同一個 BMI 程式在五種語言中的寫法。欄位順序與資料夾一致：Python、TypeScript、Go、Java、C++。
+對照同一個 BMI 程式在五種語言中的寫法。欄位順序與資料夾一致：Python、TypeScript、Go、Java、C++。
 
 ## 對照表
 

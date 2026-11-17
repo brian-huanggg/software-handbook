@@ -1,6 +1,4 @@
-# Cookies
-
-## Pseudocode
+# Pseudocode
 
 ```
 // 模擬伺服器端的 Session 儲存空間（實務上常使用 Redis 或資料庫）

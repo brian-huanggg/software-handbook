@@ -62,6 +62,34 @@ TypeScript 和 C++ 依序學，不要同時學。工作上先需要哪一門，�
 | D 錯誤處理 | 016–020 | 輸入驗證、錯誤回傳與例外、錯誤包裝 |
 | E 集合 | 021–025 | 陣列、list、map 的增刪查改與走訪 |
 
+| 題號 | 題目 | 重點 |
+|---|---|---|
+| 001 | BMI Measurement | 常數、函式、分類、格式化輸出 |
+| 002 | Temperature Conversion | 整數與浮點數除法、對照表輸出 |
+| 003 | Seconds to Duration | `/` 與 `%`、單位換算 |
+| 004 | Receipt Formatting | 金額用整數、四捨五入、欄寬對齊 |
+| 005 | String Number Conversion | 字串轉數字、截斷與取整方向 |
+| 006 | Grade Letter | 提早 return、`switch` 範圍判斷 |
+| 007 | FizzBuzz Extended | 迴圈、`%`、規則資料化 |
+| 008 | Days in Month | 閏年、`switch` 多值 `case` |
+| 009 | Multiplication Table | 巢狀迴圈 |
+| 010 | Prime Numbers | `break`、`continue` |
+| 011 | Discount Calculator | 函式拆分、純函式 |
+| 012 | Multiple Returns | 多回傳值或 tuple、負數除法 |
+| 013 | Value vs Reference | 傳值與傳參考 |
+| 014 | Recursion | 遞迴與迴圈、整數溢位 |
+| 015 | Function Values | 高階函式、closure |
+| 016 | Input Validation | 驗證與錯誤訊息 |
+| 017 | Safe Divide | 錯誤值與例外、`Inf` 與 `NaN` |
+| 018 | Error Kinds | 依錯誤種類分支 |
+| 019 | Error Wrapping | 錯誤鏈、判斷根本原因 |
+| 020 | Custom Error and Cleanup | 自訂錯誤型別、`defer` / `finally` |
+| 021 | Array Basics | 固定長度陣列、原地反轉 |
+| 022 | Todo List | 動態清單、邊界檢查 |
+| 023 | Phone Book | map 增刪查改、走訪順序 |
+| 024 | Matrix | 巢狀集合 |
+| 025 | Inventory | L1 綜合題 |
+
 ### L2 資料處理（共用，026–050）
 
 | 章節 | 題號 | 內容 |

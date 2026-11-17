@@ -1,6 +1,6 @@
 const CM_THRESHOLD = 3 // Recognize meter if height exceeds the threshold
 const UNDERWEIGHT_MAX = 18.5
-const HEALTHY_MAX = 24
+const HEALTHY_MAX = 25
 const OVERWEIGHT_MAX = 30
 
 function toMeters(height: number): number {

@@ -8,7 +8,7 @@ import (
 const (
 	cmThreshold    = 3
 	underweightMax = 18.5
-	healthyMax     = 24
+	healthyMax     = 25
 	overweightMax  = 30
 )
 

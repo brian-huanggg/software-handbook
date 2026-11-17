@@ -1,7 +1,7 @@
 public class Main {
     static final double CM_THRESHOLD = 3;
     static final double UNDERWEIGHT_MAX = 18.5;
-    static final double HEALTHY_MAX = 24;
+    static final double HEALTHY_MAX = 25;
     static final double OVERWEIGHT_MAX = 30;
 
     static double toMeters(double h) {

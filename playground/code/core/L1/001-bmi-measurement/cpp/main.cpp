@@ -5,7 +5,7 @@
 
 constexpr double cmThreshold = 3;
 constexpr double underweightMax = 18.5;
-constexpr double healthyMax = 24;
+constexpr double healthyMax = 25;
 constexpr double overweightMax = 30;
 
 double toMeters(double h){

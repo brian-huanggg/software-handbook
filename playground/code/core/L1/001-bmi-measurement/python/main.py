@@ -20,7 +20,7 @@ def sort_bmi(bmi: float) -> str:
     """Sort BMI"""
     if bmi < 18.5:
         return "Underweight"
-    elif bmi < 24:
+    elif bmi < 25:
         return "Healthy"
     elif bmi < 30:
         return "Overweight"

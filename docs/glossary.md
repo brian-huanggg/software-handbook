@@ -79,8 +79,9 @@
 | HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |
 | hook | hook | 鉤子 | 不翻譯；Helm 中掛在 release 生命週期某時間點（如 `pre-upgrade`）的清單，由 Helm 建立並等它結束；不屬於 release，需用 `hook-delete-policy` 清理 |
 | HS256 | HS256 | | 不翻譯；以 HMAC-SHA256 簽章的 JWT 演算法，對稱金鑰，驗證方也有簽發能力；非對稱的有 RS256、ES256 |
+| HTTP semantics | HTTP 語意 | HTTP 語義 | method、狀態碼與 header 代表什麼的約定（RFC 9110），與傳輸用的 HTTP/1.1、HTTP/2、HTTP/3 無關 |
 | HttpOnly | HttpOnly | | 不翻譯；Cookie 屬性，禁止 `document.cookie` 讀取；擋不住腳本以使用者身分送出請求 |
-| idempotency | 冪等 | 冒等、幂等 | |
+| idempotency | 冪等 | 冒等、幂等 | 同一個請求送一次與送 N 次，伺服器最後的狀態相同；談的是狀態不是回應，所以第二次 DELETE 回 404 仍算冪等 |
 | image | 映像 | 鏡像、鏡像檔 | 唯讀 layer 加啟動設定；container 由它啟動 |
 | implicit assertion | implicit assertion | | 不翻譯；PASETO 簽發與驗證雙方各自帶入、不出現在 token 裡的值（如租戶編號），會被簽進去，不一致就驗不過 |
 | incremental state transfer (IST) | IST | | 節點重新加入時只補缺少的 write-set；第一次出現寫全名 |
@@ -139,6 +140,7 @@
 | rainbow table | 彩虹表 | | 預先算好的「密碼對雜湊」對照表；每人獨立的 salt 可使其失效 |
 | reconciliation scan | 對帳掃描 | 比對掃描 | 從物件儲存反查，找出沒有任何紀錄引用且超過寬限期的孤兒檔案；寬限期避免誤刪尚未提交的新上傳 |
 | recovery point objective (RPO) | RPO | | 故障後最多可接受丟失的資料量；RPO = 0 表示不丟已確認的寫入；第一次出現寫全名 |
+| redirect | 重新導向 | 重定向、轉址 | 回 3xx 與 `Location` 要客戶端改去別處；301／308 永久，302／307 暫時，307／308 保留原 method 與 body |
 | reflected XSS | 反射型 XSS | | 酬載在請求裡，伺服器立刻把它放進回應；要受害者點擊連結才發生 |
 | refresh token | refresh token | 更新令牌 | 不翻譯；長效、只用來換新 access token 的憑證，伺服器要能撤銷，登出時撤銷它 |
 | refresh token rotation | refresh token 輪替 | | 每次用 refresh token 換新時就作廢舊的，每個 refresh token 只能用一次 |
@@ -150,6 +152,7 @@
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |
 | Ryuk | Ryuk | | 不翻譯；Testcontainers 啟動的小容器，測試程序結束（含被強制終止）後負責清掉這次啟動的容器 |
 | row lock | 行鎖 | 列鎖、記錄鎖 | 鎖住單一資料列，持有到交易結束；`UPDATE`、`DELETE` 與 `SELECT ... FOR UPDATE` 都會加 |
+| safe method | 安全的 method | 安全方法 | 客戶端預期不改變伺服器狀態的 method（GET、HEAD、OPTIONS）；爬蟲、預先載入會主動送出，所以不能用來改資料 |
 | salt | salt | 鹽 | 不翻譯；每個使用者各自隨機產生、與雜湊存在一起的值，讓相同密碼得到不同雜湊 |
 | same-origin policy | 同源政策 | 同源策略 | |
 | same-site | 同站 | | 只看 scheme 與可註冊網域，不看子網域與 port |
@@ -179,6 +182,7 @@
 | stateful authentication | 有狀態認證 | | 伺服器保存每次登入的紀錄，每個請求靠查表驗證；可立即撤銷，代價是每個請求一次儲存往返 |
 | stateless authentication | 無狀態認證 | | 身分與期限寫在簽章過的憑證裡，伺服器只驗簽章；到期前難以撤銷 |
 | statement coverage | 敘述覆蓋 | 語句覆蓋、行覆蓋 | 每一條陳述式至少被執行一次；`go test -cover` 量的就是這個 |
+| status code | 狀態碼 | 狀態代碼 | 回應的三位數結果；4xx 是客戶端的錯、原樣重送沒用，5xx 是伺服器的錯、稍後重試可能會好 |
 | stored XSS | 儲存型 XSS | | 酬載先被存進伺服器，之後在別人看到那份資料時執行；最危險的一種 |
 | superkey | 超鍵 | 超級鍵 | 能決定整列所有欄位的欄位組合 |
 | supply chain attack | 供應鏈攻擊 | 供應商攻擊 | 攻擊你所依賴的映像、套件或建置流程，而非直接攻擊你 |

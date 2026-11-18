@@ -10,6 +10,7 @@
 | clock drift | 時鐘漂移 | | 一台機器的時鐘隨時間逐漸變快或變慢；靠 NTP 校準，但校準不是即時的 |
 | clock skew | 時鐘偏移 | 時鐘歪斜 | 兩台機器的時鐘在同一個瞬間讀數不同；多節點各自用系統時間判斷過期，就會得到不一致的答案 |
 | cohesion | 內聚 | 凝聚 | 一個模組內的東西為同一個目的而存在的程度；依功能切分讓同一功能的程式碼放在一起 |
+| collection | 集合 | 集合資源 | REST 中同類資源的總稱，有自己的複數名詞 URL（如 `/links`）；成員稱為項目（item），URL 是集合加上識別碼（如 `/links/g3`） |
 | condition coverage | 條件覆蓋 | | 判斷式裡每個原子條件，各自至少被求值為真與為假一次；不保證分支覆蓋 |
 | control flow graph (CFG) | 控制流程圖（CFG） | 控制流圖 | 把程式碼畫成節點與箭頭的圖，覆蓋準則都以它為基礎；第一次出現寫全名，之後只寫 CFG |
 | coupling | 耦合 | | 模組之間互相依賴的程度；改一處要連帶改多少地方 |
@@ -154,6 +155,8 @@
 | release | release | 發行版、發布 | 不翻譯；Helm 中一個 chart 在某叢集與 namespace 的一次安裝，有名字與修訂號；一般語境的「發布」仍用中文 |
 | replication | 複寫 | 複製、同步 | 把資料變更送到其他節點 |
 | request lifecycle | 請求生命週期 | 請求週期 | 一個請求從連線建立、讀取解析、路由、handler、寫回應到連線復用或關閉的完整路徑 |
+| resource | 資源 | 資料、實體 | REST 中有自己 URL 的東西，路徑用名詞表示（如連結 `/links/g3`）；動作由 HTTP method 表達，不寫進路徑 |
+| REST | REST | 休息式、表現層狀態轉移 | 不翻譯；本書指資源導向的 API 慣例：名詞路徑加 HTTP method；第一次出現寫「REST（Representational State Transfer）」 |
 | risk tier | 風險分級 | 風險等級 | 由改動的內容（而非作者）決定需要 0、1 或 2 位人類核准 |
 | role-based access control (RBAC) | RBAC（角色型存取控制） | | 依使用者的角色授權；第一次出現寫全名，之後只寫 RBAC |
 | rollback | 回滾 | 回退 | 把已上線的改動撤回（關旗標或 revert），分層驗證的最後一道安全網 |

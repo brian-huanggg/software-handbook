@@ -34,7 +34,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 | [請求生命週期](/backend/l1/1-2-http-api/request-lifecycle/) | 說出一個 HTTP 請求從 TCP 連線到 handler 的每個階段，並為各階段設好逾時與大小限制。 |
 | [net/http](/backend/l1/1-2-http-api/net-http/) | 用標準庫的 Handler、ServeMux 與 middleware 組出有路由、記錄、認證與 panic 保護的 HTTP 服務，並說出各層的順序為什麼重要。 |
 | [HTTP 語意](/backend/l1/1-2-http-api/http-semantics/) | 為每個端點選對 method、狀態碼與 header，並分清哪些請求可以安全重試、哪些會被快取。 |
-| REST 設計原則與資源命名 |  |
+| [REST 設計原則與資源命名](/backend/l1/1-2-http-api/rest-design/) | 用名詞、集合與項目設計 URL，並分清路徑、查詢參數與 method 各自該放什麼資訊。 |
 | JSON 編解碼與輸入驗證 |  |
 | 統一的錯誤回應格式 |  |
 | 設定管理 | 環境變數、設定檔 |
@@ -252,6 +252,7 @@ L3 的重心從「怎麼寫」轉到「怎麼設計與取捨」，語言退居�
 | 標題 | 說明 |
 | --- | --- |
 | 單體、模組化單體、微服務 | 何時該拆 |
+| [套件切法：依層或依功能](/backend/l3/3-3-service-architecture/package-slicing/) | 比較依層切與依功能切，在 Go 裡用功能劃出套件邊界並避開 import 循環。 |
 | Go 模組化單體實作 | 模組邊界、`internal` 套件、跨模組只走介面、依賴方向的自動檢查 |
 | 依領域拆服務 | DDD 基礎、bounded context |
 | 服務間通訊 | 同步 vs 非同步 |

@@ -32,6 +32,7 @@
 | bastion host | 跳板機 | 堡壘機 | 對外開放、專門用來連進內網資料庫等主機的中繼主機；DBeaver 的 SSH tunnel 經它轉接 |
 | BCNF | BCNF（Boyce-Codd 正規化） | | 每條非平凡的函數相依，決定者都必須是超鍵；比 3NF 嚴，拆表後可能丟掉跨欄位約束 |
 | bcrypt | bcrypt | | 不翻譯；內建 salt、以 cost 調整工作量的密碼雜湊，只使用前 72 bytes 的密碼 |
+| BREACH | BREACH | | 不翻譯；利用 HTTP 壓縮後的長度變化，逐字猜出回應中祕密（如 CSRF token）的攻擊；要同時有壓縮、回顯輸入、含祕密才成立 |
 | Bearer token | Bearer token | 持有者令牌 | 不翻譯；誰持有就能用的 token，放在 `Authorization: Bearer <token>`；被偷走就等於被冒用 |
 | blast radius | 影響範圍 | 爆炸半徑 | 一次出錯會波及的使用者與系統範圍；功能旗標與分階段發布用來縮小它 |
 | bulkhead | 艙壁隔離 | 隔板 | |
@@ -45,6 +46,7 @@
 | clustered index | 叢集索引 | 聚簇索引 | 表本身就是依主鍵排序的 B+ 樹，資料列在葉節點；InnoDB 的預設儲存方式 |
 | code review | 程式碼審查 | 代碼審查、程式碼評審 | 合併前由人或工具檢查改動；AI 時代拆成多層驗證，人只看高風險與方向 |
 | connection type | 連線類型 | | DBeaver 連線的 Development、Test、Production 分類；決定預設提交模式與是否要求確認 |
+| content negotiation | 內容協商 | 內容協商機制 | 客戶端用 `Accept-Encoding` 等 header 說能收什麼，伺服器挑一種並用 `Content-Encoding` 等 header 標明 |
 | consistent hashing | 一致性雜湊 | 一致性哈希 | 把 server 放上雜湊環，增減一台只影響相鄰的 key；nginx 用 `hash ... consistent` |
 | container | 容器 | 貨櫃 | 共用主機核心、靠 namespace 與 cgroup 隔離的行程 |
 | Content Security Policy (CSP) | 內容安全政策（CSP） | | 伺服器以標頭告訴瀏覽器哪些來源的腳本可以執行；nonce 型政策只放行帶本次回應 nonce 的腳本。第一次出現寫全名，之後只寫 CSP |
@@ -77,6 +79,7 @@
 | gap lock | 間隙鎖 |  | InnoDB 在 Repeatable Read 下鎖住索引列與列之間的空隙，防止幻讀；Postgres 沒有 |
 | Golden Image | Golden Image | 黃金映像 | 平台團隊建置、掃描、簽章並維護的核准 base image；組織內服務一律從它開始 |
 | goroutine | goroutine | 協程、Go 程 | 不翻譯 |
+| gzip | gzip | | 不翻譯；HTTP 最通用的內容壓縮編碼，格式為 RFC 1952，內部用 DEFLATE；只該壓縮文字類內容 |
 | handler | handler | 處理器、處理程序 | 不翻譯；實作 `http.Handler`（`ServeHTTP` 方法）的東西，收到請求並寫出回應 |
 | Helm | Helm |  | 不翻譯；Kubernetes 的套件管理器，把清單打包成可安裝、升級、回滾的 release |
 | HMAC | HMAC | 雜湊訊息驗證碼 | 不翻譯；用金鑰加雜湊函式算出的驗證碼，HS256 即 HMAC-SHA256；比對要用常數時間函式 |

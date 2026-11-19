@@ -42,6 +42,7 @@ L1 的目標是獨立完成一個接資料庫、有測試的 REST API。
 | ✅ | [REST 設計原則與資源命名](../../site/src/content/docs/backend/l1/1-2-http-api/rest-design.md) | 用名詞、集合與項目設計 URL，並分清路徑、查詢參數與 method 各自該放什麼資訊。 |
 | ⬜ | JSON 編解碼與輸入驗證 |  |
 | ⬜ | 統一的錯誤回應格式 |  |
+| ✅ | [HTTP 回應壓縮](../../site/src/content/docs/backend/l1/1-2-http-api/http-compression.md) | 用 gzip 壓縮文字類回應，選對該壓縮的類型、長度門檻與等級，並避開 Vary、重複壓縮與 BREACH 的坑。 |
 | ⬜ | 設定管理 | 環境變數、設定檔 |
 | ⬜ | 框架選型 | 標準庫 vs chi、gin、echo |
 
